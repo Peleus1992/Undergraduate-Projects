@@ -1,0 +1,395 @@
+This is XeTeX, Version 3.1415926-2.5-0.9999.3 (MiKTeX 2.9) (preloaded format=xelatex 2014.6.23)  14 OCT 2014 22:45
+entering extended mode
+**llncs.tex
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\llncs.tex"
+LaTeX2e <2011/06/27>
+Babel <v3.8m> and hyphenation patterns for english, afrikaans, ancientgreek, ar
+abic, armenian, assamese, basque, bengali, bokmal, bulgarian, catalan, coptic, 
+croatian, czech, danish, dutch, esperanto, estonian, farsi, finnish, french, ga
+lician, german, german-x-2013-05-26, greek, gujarati, hindi, hungarian, iceland
+ic, indonesian, interlingua, irish, italian, kannada, kurmanji, latin, latvian,
+ lithuanian, malayalam, marathi, mongolian, mongolianlmc, monogreek, ngerman, n
+german-x-2013-05-26, nynorsk, oriya, panjabi, pinyin, polish, portuguese, roman
+ian, russian, sanskrit, serbian, slovak, slovenian, spanish, swedish, swissgerm
+an, tamil, telugu, turkish, turkmen, ukenglish, ukrainian, uppersorbian, usengl
+ishmax, welsh, loaded.
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\llncs.cls"
+Document Class: llncs 2010/07/12 v2.17 
+ LaTeX document class for Lecture Notes in Computer Science
+("G:\Peleus_Program Files\MikTex\tex\latex\base\article.cls"
+Document Class: article 2007/10/19 v1.4h Standard LaTeX document class
+("G:\Peleus_Program Files\MikTex\tex\latex\base\size10.clo"
+File: size10.clo 2007/10/19 v1.4h Standard LaTeX file (size option)
+)
+\c@part=\count80
+\c@section=\count81
+\c@subsection=\count82
+\c@subsubsection=\count83
+\c@paragraph=\count84
+\c@subparagraph=\count85
+\c@figure=\count86
+\c@table=\count87
+\abovecaptionskip=\skip41
+\belowcaptionskip=\skip42
+\bibindent=\dimen102
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\tools\multicol.sty"
+Package: multicol 2011/06/27 v1.7a multicolumn formatting (FMi)
+\c@tracingmulticols=\count88
+\mult@box=\box26
+\multicol@leftmargin=\dimen103
+\c@unbalance=\count89
+\c@collectmore=\count90
+\doublecol@number=\count91
+\multicoltolerance=\count92
+\multicolpretolerance=\count93
+\full@width=\dimen104
+\page@free=\dimen105
+\premulticols=\dimen106
+\postmulticols=\dimen107
+\multicolsep=\skip43
+\multicolbaselineskip=\skip44
+\partial@page=\box27
+\last@line=\box28
+\mult@rightbox=\box29
+\mult@grightbox=\box30
+\mult@gfirstbox=\box31
+\mult@firstbox=\box32
+\@tempa=\box33
+\@tempa=\box34
+\@tempa=\box35
+\@tempa=\box36
+\@tempa=\box37
+\@tempa=\box38
+\@tempa=\box39
+\@tempa=\box40
+\@tempa=\box41
+\@tempa=\box42
+\@tempa=\box43
+\@tempa=\box44
+\@tempa=\box45
+\@tempa=\box46
+\@tempa=\box47
+\@tempa=\box48
+\@tempa=\box49
+\c@columnbadness=\count94
+\c@finalcolumnbadness=\count95
+\last@try=\dimen108
+\multicolovershoot=\dimen109
+\multicolundershoot=\dimen110
+\mult@nat@firstbox=\box50
+\colbreak@box=\box51
+\multicol@sort@counter=\count96
+)
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\aliascnt.sty"
+Package: aliascnt 2009/09/08 v1.3 Alias counter (HO)
+
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\remreset.sty"))
+\c@chapter=\count97
+LaTeX Font Info:    Redeclaring math symbol \Gamma on input line 362.
+LaTeX Font Info:    Redeclaring math symbol \Delta on input line 363.
+LaTeX Font Info:    Redeclaring math symbol \Theta on input line 364.
+LaTeX Font Info:    Redeclaring math symbol \Lambda on input line 365.
+LaTeX Font Info:    Redeclaring math symbol \Xi on input line 366.
+LaTeX Font Info:    Redeclaring math symbol \Pi on input line 367.
+LaTeX Font Info:    Redeclaring math symbol \Sigma on input line 368.
+LaTeX Font Info:    Redeclaring math symbol \Upsilon on input line 369.
+LaTeX Font Info:    Redeclaring math symbol \Phi on input line 370.
+LaTeX Font Info:    Redeclaring math symbol \Psi on input line 371.
+LaTeX Font Info:    Redeclaring math symbol \Omega on input line 372.
+\tocchpnum=\dimen111
+\tocsecnum=\dimen112
+\tocsectotal=\dimen113
+\tocsubsecnum=\dimen114
+\tocsubsectotal=\dimen115
+\tocsubsubsecnum=\dimen116
+\tocsubsubsectotal=\dimen117
+\tocparanum=\dimen118
+\tocparatotal=\dimen119
+\tocsubparanum=\dimen120
+\@tempcntc=\count98
+\fnindent=\dimen121
+\c@@inst=\count99
+\c@@auth=\count100
+\c@auco=\count101
+\instindent=\dimen122
+\authrun=\box52
+\authorrunning=\toks14
+\tocauthor=\toks15
+\titrun=\box53
+\titlerunning=\toks16
+\toctitle=\toks17
+\c@theorem=\count102
+\c@case=\count103
+\c@conjecture=\count104
+\c@corollary=\count105
+\c@definition=\count106
+\c@example=\count107
+\c@exercise=\count108
+\c@lemma=\count109
+\c@note=\count110
+\c@problem=\count111
+\c@property=\count112
+\c@proposition=\count113
+\c@question=\count114
+\c@solution=\count115
+\c@remark=\count116
+\headlineindent=\dimen123
+)
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\llncsdoc.sty")
+("G:\Peleus_Program Files\MikTex\tex\latex\subfigure\subfigure.sty"
+Package: subfigure 2002/07/30 v2.1.4 subfigure package
+\subfigtopskip=\skip45
+\subfigcapskip=\skip46
+\subfigcaptopadj=\dimen124
+\subfigbottomskip=\skip47
+\subfigcapmargin=\dimen125
+\subfiglabelskip=\skip48
+\c@subfigure=\count117
+\c@lofdepth=\count118
+\c@subtable=\count119
+\c@lotdepth=\count120
+
+****************************************
+* Local config file subfigure.cfg used *
+****************************************
+("G:\Peleus_Program Files\MikTex\tex\latex\subfigure\subfigure.cfg")
+\subfig@top=\skip49
+\subfig@bottom=\skip50
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\amsmath\amsmath.sty"
+Package: amsmath 2013/01/14 v2.14 AMS math features
+\@mathmargin=\skip51
+
+For additional information on amsmath, use the `?' option.
+("G:\Peleus_Program Files\MikTex\tex\latex\amsmath\amstext.sty"
+Package: amstext 2000/06/29 v2.01
+
+("G:\Peleus_Program Files\MikTex\tex\latex\amsmath\amsgen.sty"
+File: amsgen.sty 1999/11/30 v2.0
+\@emptytoks=\toks18
+\ex@=\dimen126
+))
+("G:\Peleus_Program Files\MikTex\tex\latex\amsmath\amsbsy.sty"
+Package: amsbsy 1999/11/29 v1.2d
+\pmbraise@=\dimen127
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\amsmath\amsopn.sty"
+Package: amsopn 1999/12/14 v2.01 operator names
+)
+\inf@bad=\count121
+LaTeX Info: Redefining \frac on input line 210.
+\uproot@=\count122
+\leftroot@=\count123
+LaTeX Info: Redefining \overline on input line 306.
+\classnum@=\count124
+\DOTSCASE@=\count125
+LaTeX Info: Redefining \ldots on input line 378.
+LaTeX Info: Redefining \dots on input line 381.
+LaTeX Info: Redefining \cdots on input line 466.
+\Mathstrutbox@=\box54
+\strutbox@=\box55
+\big@size=\dimen128
+LaTeX Font Info:    Redeclaring font encoding OML on input line 566.
+LaTeX Font Info:    Redeclaring font encoding OMS on input line 567.
+
+
+Package amsmath Warning: Unable to redefine math accent \vec.
+
+\macc@depth=\count126
+\c@MaxMatrixCols=\count127
+\dotsspace@=\muskip10
+\c@parentequation=\count128
+\dspbrk@lvl=\count129
+\tag@help=\toks19
+\row@=\count130
+\column@=\count131
+\maxfields@=\count132
+\andhelp@=\toks20
+\eqnshift@=\dimen129
+\alignsep@=\dimen130
+\tagshift@=\dimen131
+\tagwidth@=\dimen132
+\totwidth@=\dimen133
+\lineht@=\dimen134
+\@envbody=\toks21
+\multlinegap=\skip52
+\multlinetaggap=\skip53
+\mathdisplay@stack=\toks22
+LaTeX Info: Redefining \[ on input line 2665.
+LaTeX Info: Redefining \] on input line 2666.
+) ("G:\Peleus_Program Files\MikTex\tex\latex\amsfonts\amssymb.sty"
+Package: amssymb 2013/01/14 v3.01 AMS font symbols
+
+("G:\Peleus_Program Files\MikTex\tex\latex\amsfonts\amsfonts.sty"
+Package: amsfonts 2013/01/14 v3.01 Basic AMSFonts support
+\symAMSa=\mathgroup4
+\symAMSb=\mathgroup5
+LaTeX Font Info:    Overwriting math alphabet `\mathfrak' in version `bold'
+(Font)                  U/euf/m/n --> U/euf/b/n on input line 106.
+))
+("G:\Peleus_Program Files\MikTex\tex\latex\graphics\graphicx.sty"
+Package: graphicx 1999/02/16 v1.0f Enhanced LaTeX Graphics (DPC,SPQR)
+
+("G:\Peleus_Program Files\MikTex\tex\latex\graphics\keyval.sty"
+Package: keyval 1999/03/16 v1.13 key=value parser (DPC)
+\KV@toks@=\toks23
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\graphics\graphics.sty"
+Package: graphics 2009/02/05 v1.0o Standard LaTeX Graphics (DPC,SPQR)
+
+("G:\Peleus_Program Files\MikTex\tex\latex\graphics\trig.sty"
+Package: trig 1999/03/16 v1.09 sin cos tan (DPC)
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\00miktex\graphics.cfg"
+File: graphics.cfg 2007/01/18 v1.5 graphics configuration of teTeX/TeXLive
+)
+Package graphics Info: Driver file: xetex.def on input line 91.
+
+("G:\Peleus_Program Files\MikTex\tex\xelatex\xetex-def\xetex.def"
+File: xetex.def 2014/04/28 v4.01 LaTeX color/graphics driver for XeTeX (RRM/JK)
+
+))
+\Gin@req@height=\dimen135
+\Gin@req@width=\dimen136
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\booktabs\booktabs.sty"
+Package: booktabs 2005/04/14 v1.61803 publication quality tables
+\heavyrulewidth=\dimen137
+\lightrulewidth=\dimen138
+\cmidrulewidth=\dimen139
+\belowrulesep=\dimen140
+\belowbottomsep=\dimen141
+\aboverulesep=\dimen142
+\abovetopsep=\dimen143
+\cmidrulesep=\dimen144
+\cmidrulekern=\dimen145
+\defaultaddspace=\dimen146
+\@cmidla=\count133
+\@cmidlb=\count134
+\@aboverulesep=\dimen147
+\@belowrulesep=\dimen148
+\@thisruleclass=\count135
+\@lastruleclass=\count136
+\@thisrulewidth=\dimen149
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\psnfss\times.sty"
+Package: times 2005/04/12 PSNFSS-v9.2a (SPQR) 
+)
+("G:\Peleus_Program Files\MikTex\tex\latex\url\url.sty"
+\Urlmuskip=\muskip11
+Package: url 2013/09/16  ver 3.4  Verb mode for urls, etc.
+)
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\llncs.aux"
+
+LaTeX Warning: Label `fig_sim' multiply defined.
+
+
+LaTeX Warning: Label `fig_sim' multiply defined.
+
+
+LaTeX Warning: Label `fig_sim' multiply defined.
+
+)
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
+LaTeX Font Info:    ... okay on input line 15.
+LaTeX Font Info:    Try loading font information for OT1+ptm on input line 15.
+ ("G:\Peleus_Program Files\MikTex\tex\latex\psnfss\ot1ptm.fd"
+File: ot1ptm.fd 2001/06/04 font definitions for OT1/ptm.
+)
+Requested font "ptmr7t" at 10.0pt
+Requested font "ptmr7t" at 14.4pt
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <14.4> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 51.
+Requested font "ptmb7t" at 14.4pt
+Requested font "cmex7" at 7.0pt
+Requested font "cmex7" at 5.0pt
+LaTeX Font Info:    Try loading font information for U+msa on input line 51.
+
+("G:\Peleus_Program Files\MikTex\tex\latex\amsfonts\umsa.fd"
+File: umsa.fd 2013/01/14 v3.01 AMS symbols A
+)
+Requested font "msam10" at 10.0pt
+Requested font "msam7" at 7.0pt
+Requested font "msam5" at 5.0pt
+LaTeX Font Info:    Try loading font information for U+msb on input line 51.
+
+("G:\Peleus_Program Files\MikTex\tex\latex\amsfonts\umsb.fd"
+File: umsb.fd 2013/01/14 v3.01 AMS symbols B
+)
+Requested font "msbm10" at 10.0pt
+Requested font "msbm7" at 7.0pt
+Requested font "msbm5" at 5.0pt
+Requested font "ptmr7t" at 9.0pt
+Requested font "cmr9" at 9.0pt
+Requested font "cmr6" at 6.0pt
+Requested font "cmmi9" at 9.0pt
+Requested font "cmmi6" at 6.0pt
+Requested font "cmsy9" at 9.0pt
+Requested font "cmsy6" at 6.0pt
+Requested font "cmex9" at 9.0pt
+Requested font "cmex7" at 6.0pt
+Requested font "msam10" at 9.0pt
+Requested font "msam7" at 6.0pt
+Requested font "msbm10" at 9.0pt
+Requested font "msbm7" at 6.0pt
+LaTeX Font Info:    Try loading font information for OT1+pcr on input line 51.
+
+("G:\Peleus_Program Files\MikTex\tex\latex\psnfss\ot1pcr.fd"
+File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
+)
+Requested font "pcrr7t" at 9.0pt
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <9> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 54.
+Requested font "ptmb7t" at 9.0pt
+Requested font "ptmr7t" at 12.0pt
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <12> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 59.
+Requested font "ptmb7t" at 12.0pt
+ [1
+
+
+]
+LaTeX Font Info:    Font shape `OT1/ptm/bx/n' in size <10> not available
+(Font)              Font shape `OT1/ptm/b/n' tried instead on input line 70.
+Requested font "ptmb7t" at 10.0pt
+File: fig1.jpg Graphic file (type QTm)
+
+<use  "fig1.jpg" > [2]
+Requested font "ptmri7t" at 10.0pt
+ [3]
+File: fig2.jpg Graphic file (type QTm)
+ <use  "fig2.jpg" > [4]
+File: fig3.jpg Graphic file (type QTm)
+ <use  "fig3.jpg" >
+
+LaTeX Warning: `!h' float specifier changed to `!ht'.
+
+[5]
+File: fig4.jpg Graphic file (type QTm)
+ <use  "fig4.jpg" > [6] [7] [8]
+("F:\research-related\new paper\revision\台湾会议排版\ICS-20141014\llncs.aux")
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
+Here is how much of TeX's memory you used:
+ 2272 strings out of 429025
+ 25632 string characters out of 3167299
+ 86049 words of memory out of 3000000
+ 5519 multiletter control sequences out of 15000+200000
+ 13309 words of font info for 44 fonts, out of 3000000 for 9000
+ 912 hyphenation exceptions out of 8191
+ 29i,6n,26p,1390b,298s stack positions out of 5000i,500n,10000p,200000b,50000s
+
+Output written on llncs.pdf (8 pages).

@@ -1,0 +1,218 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     18/Jul/2014  09:08:05 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\hal\micro\cortexm3\button.c          #
+#    Command line =  "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\hal\micro\cortexm3\button.c" -D      #
+#                    BOARD_MB851 -D "PLATFORM_HEADER=\"hal/micro/cortexm3/com #
+#                    piler/iar.h\"" -D "BOARD_HEADER=\"hal/micro/cortexm3/stm #
+#                    32w108/board.h\"" -D CORTEXM3 -D CORTEXM3_STM32W108 -D   #
+#                    PHY_STM32W108XX -D DISABLE_WATCHDOG -D SUN_ROLE -D       #
+#                    "__SOURCEFILE__=\"button.c\"" -lC                        #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Lis #
+#                    t\" --diag_suppress Pa050 -o                             #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Obj #
+#                    \" --debug --endian=little --cpu=Cortex-M3 -e            #
+#                    --fpu=None --dlib_config "G:\Peleus_Program Files\IAR    #
+#                    for ARM\arm\INC\c\DLib_Config_Normal.h" -I               #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\hal\micro\cortexm3\" -I              #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\simp #
+#                    lemac\include\" -I "F:\Project-related\STM32W108\myCode\ #
+#                    实验4 16点组网\工程源代码\simplemac\demos\sample\..\..\. #
+#                    .\" -I "F:\Project-related\STM32W108\myCode\实验4        #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\hal\ #
+#                    " -I "F:\Project-related\STM32W108\myCode\实验4          #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\HAL\ #
+#                    MICRO\CORTEXM3\STM32W108\" -I                            #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\simp #
+#                    lemac\" -I "F:\Project-related\STM32W108\myCode\实验4    #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\shar #
+#                    ed\" -Ohz --use_c++_inline                               #
+#    List file    =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Lis #
+#                    t\button.lst                                             #
+#    Object file  =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Obj #
+#                    \button.o                                                #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+F:\Project-related\STM32W108\myCode\实验4 16点组网\工程源代码\hal\micro\cortexm3\button.c
+      1          /** @file /hal/micro/cortexm3/button.c
+      2           * @brief button APIs
+      3           *
+      4           * <!--(C) COPYRIGHT 2010 STMicroelectronics. All rights reserved.        -->
+      5           */
+      6          
+      7          #include PLATFORM_HEADER
+      8          #include BOARD_HEADER
+      9          #include "hal/micro/button.h"
+     10          #include "hal/micro/micro-common.h"
+     11          #include "hal/micro/cortexm3/micro-common.h"
+     12          
+     13          
+
+   \                                 In section .text, align 2, keep-with-next
+     14          void halInitButton(void)
+     15          {
+   \                     halInitButton:
+   \   00000000   80B5               PUSH     {R7,LR}
+     16          #ifdef PLANET_ROLE
+     17             /* Set GPIO pin to PUD (input pull-up or pull-down) for button S1 */
+     18          
+     19            halGpioConfig(BUTTON_S3,GPIOCFG_IN_PUD);
+     20          
+     21            //halGpioConfig(BUTTON_S8,GPIOCFG_IN_PUD);
+     22           /* Set the button S1 gpio pin to pull-up */
+     23            BUTTON_S3_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S3_GPIO_PIN;
+     24          #elif SUN_ROLE
+     25            halGpioConfig(BUTTON_S2,GPIOCFG_IN_PUD);
+   \   00000002   0821               MOVS     R1,#+8
+   \   00000004   1020               MOVS     R0,#+16
+   \   00000006   ........           BL       halGpioConfig
+     26            halGpioConfig(BUTTON_S3,GPIOCFG_IN_PUD);
+   \   0000000A   0821               MOVS     R1,#+8
+   \   0000000C   1320               MOVS     R0,#+19
+   \   0000000E   ........           BL       halGpioConfig
+     27            halGpioConfig(BUTTON_S4,GPIOCFG_IN_PUD);
+   \   00000012   0821               MOVS     R1,#+8
+   \   00000014   0E20               MOVS     R0,#+14
+   \   00000016   ........           BL       halGpioConfig
+     28            halGpioConfig(BUTTON_S5,GPIOCFG_IN_PUD);
+   \   0000001A   0821               MOVS     R1,#+8
+   \   0000001C   0820               MOVS     R0,#+8
+   \   0000001E   ........           BL       halGpioConfig
+     29            //halGpioConfig(BUTTON_S8,GPIOCFG_IN_PUD);
+     30           /* Set the button S1 gpio pin to pull-up */
+     31            BUTTON_S2_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S2_GPIO_PIN;
+   \   00000022   ....               LDR.N    R0,??DataTable1  ;; 0x4000b80c
+   \   00000024   0168               LDR      R1,[R0, #+0]
+   \   00000026   41F00101           ORR      R1,R1,#0x1
+   \   0000002A   0160               STR      R1,[R0, #+0]
+     32            BUTTON_S3_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S3_GPIO_PIN;
+   \   0000002C   0168               LDR      R1,[R0, #+0]
+   \   0000002E   41F00801           ORR      R1,R1,#0x8
+   \   00000032   0160               STR      R1,[R0, #+0]
+     33            BUTTON_S4_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S4_GPIO_PIN;
+   \   00000034   ....               LDR.N    R0,??DataTable1_1  ;; 0x4000b40c
+   \   00000036   0168               LDR      R1,[R0, #+0]
+   \   00000038   41F04001           ORR      R1,R1,#0x40
+   \   0000003C   0160               STR      R1,[R0, #+0]
+     34            BUTTON_S5_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S5_GPIO_PIN;
+   \   0000003E   0168               LDR      R1,[R0, #+0]
+   \   00000040   41F00101           ORR      R1,R1,#0x1
+   \   00000044   0160               STR      R1,[R0, #+0]
+     35          #endif
+     36           // BUTTON_S8_OUTPUT_GPIO |= GPIOOUT_PULLUP << BUTTON_S8_GPIO_PIN;
+     37          }/* end halInitButton() */
+   \   00000046   01BD               POP      {R0,PC}          ;; return
+     38          
+     39          
+
+   \                                 In section .text, align 2, keep-with-next
+     40          int8u halGetButtonStatus(HalBoardButton button)
+     41          {
+     42          #ifdef PLANET_ROLE
+     43            if (button == BUTTON_S3)
+     44              return (BUTTON_S3_INPUT_GPIO & (1<<BUTTON_S3_GPIO_PIN)) ? BUTTON_RELEASED : BUTTON_PRESSED;
+     45            else 
+     46              return BUTTON_UNKNOWN;
+     47          #elif SUN_ROLE
+     48            if (button == BUTTON_S2)
+   \                     halGetButtonStatus:
+   \   00000000   ....               LDR.N    R1,??DataTable1_2  ;; 0x4000b808
+   \   00000002   1028               CMP      R0,#+16
+   \   00000004   01D1               BNE.N    ??halGetButtonStatus_0
+     49              return (BUTTON_S2_INPUT_GPIO & (1<<BUTTON_S2_GPIO_PIN)) ? BUTTON_RELEASED : BUTTON_PRESSED;
+   \   00000006   0868               LDR      R0,[R1, #+0]
+   \   00000008   0BE0               B.N      ??halGetButtonStatus_1
+     50            else if (button == BUTTON_S3)
+   \                     ??halGetButtonStatus_0:
+   \   0000000A   1328               CMP      R0,#+19
+   \   0000000C   03D1               BNE.N    ??halGetButtonStatus_2
+     51              return (BUTTON_S3_INPUT_GPIO & (1<<BUTTON_S3_GPIO_PIN)) ? BUTTON_RELEASED : BUTTON_PRESSED;
+   \   0000000E   0868               LDR      R0,[R1, #+0]
+   \   00000010   0006               LSLS     R0,R0,#+24
+   \   00000012   C00E               LSRS     R0,R0,#+27
+   \   00000014   05E0               B.N      ??halGetButtonStatus_1
+     52            else if (button == BUTTON_S4)
+   \                     ??halGetButtonStatus_2:
+   \   00000016   ....               LDR.N    R1,??DataTable1_3  ;; 0x4000b408
+   \   00000018   0E28               CMP      R0,#+14
+   \   0000001A   05D1               BNE.N    ??halGetButtonStatus_3
+     53              return (BUTTON_S4_INPUT_GPIO & (1<<BUTTON_S4_GPIO_PIN)) ? BUTTON_RELEASED : BUTTON_PRESSED;
+   \   0000001C   0868               LDR      R0,[R1, #+0]
+   \   0000001E   0006               LSLS     R0,R0,#+24
+   \   00000020   800F               LSRS     R0,R0,#+30
+   \                     ??halGetButtonStatus_1:
+   \   00000022   00F00100           AND      R0,R0,#0x1
+   \   00000026   7047               BX       LR
+     54            else if (button == BUTTON_S5)
+   \                     ??halGetButtonStatus_3:
+   \   00000028   0828               CMP      R0,#+8
+   \   0000002A   08BF               IT       EQ 
+   \   0000002C   0868               LDREQ    R0,[R1, #+0]
+     55              return (BUTTON_S5_INPUT_GPIO & (1<<BUTTON_S5_GPIO_PIN)) ? BUTTON_RELEASED : BUTTON_PRESSED;
+   \   0000002E   F8D0               BEQ.N    ??halGetButtonStatus_1
+     56            else 
+     57              return BUTTON_UNKNOWN;
+   \   00000030   0320               MOVS     R0,#+3
+   \   00000032   7047               BX       LR               ;; return
+     58          #endif
+     59          }/* end halGetButtonStatus()*/
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable1:
+   \   00000000   0CB80040           DC32     0x4000b80c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable1_1:
+   \   00000000   0CB40040           DC32     0x4000b40c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable1_2:
+   \   00000000   08B80040           DC32     0x4000b808
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable1_3:
+   \   00000000   08B40040           DC32     0x4000b408
+     60          
+     61          
+
+   Maximum stack usage in bytes:
+
+     Function           .cstack
+     --------           -------
+     halGetButtonStatus      0
+     halInitButton           8
+
+
+   Section sizes:
+
+     Function/Label     Bytes
+     --------------     -----
+     halInitButton        72
+     halGetButtonStatus   52
+     ??DataTable1          4
+     ??DataTable1_1        4
+     ??DataTable1_2        4
+     ??DataTable1_3        4
+
+ 
+ 140 bytes in section .text
+ 
+ 140 bytes of CODE memory
+
+Errors: none
+Warnings: none

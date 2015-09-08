@@ -1,0 +1,444 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     18/Jul/2014  09:08:08 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\hal\micro\cortexm3\system-timer.c    #
+#    Command line =  "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\hal\micro\cortexm3\system-timer.c"   #
+#                    -D BOARD_MB851 -D "PLATFORM_HEADER=\"hal/micro/cortexm3/ #
+#                    compiler/iar.h\"" -D "BOARD_HEADER=\"hal/micro/cortexm3/ #
+#                    stm32w108/board.h\"" -D CORTEXM3 -D CORTEXM3_STM32W108   #
+#                    -D PHY_STM32W108XX -D DISABLE_WATCHDOG -D SUN_ROLE -D    #
+#                    "__SOURCEFILE__=\"system-timer.c\"" -lC                  #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Lis #
+#                    t\" --diag_suppress Pa050 -o                             #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Obj #
+#                    \" --debug --endian=little --cpu=Cortex-M3 -e            #
+#                    --fpu=None --dlib_config "G:\Peleus_Program Files\IAR    #
+#                    for ARM\arm\INC\c\DLib_Config_Normal.h" -I               #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\hal\micro\cortexm3\" -I              #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\simp #
+#                    lemac\include\" -I "F:\Project-related\STM32W108\myCode\ #
+#                    实验4 16点组网\工程源代码\simplemac\demos\sample\..\..\. #
+#                    .\" -I "F:\Project-related\STM32W108\myCode\实验4        #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\hal\ #
+#                    " -I "F:\Project-related\STM32W108\myCode\实验4          #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\HAL\ #
+#                    MICRO\CORTEXM3\STM32W108\" -I                            #
+#                    "F:\Project-related\STM32W108\myCode\实验4               #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\simp #
+#                    lemac\" -I "F:\Project-related\STM32W108\myCode\实验4    #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\shar #
+#                    ed\" -Ohz --use_c++_inline                               #
+#    List file    =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Lis #
+#                    t\system-timer.lst                                       #
+#    Object file  =  F:\Project-related\STM32W108\myCode\实验4                #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_SUN\Obj #
+#                    \system-timer.o                                          #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+F:\Project-related\STM32W108\myCode\实验4 16点组网\工程源代码\hal\micro\cortexm3\system-timer.c
+      1          /** @file hal/micro/cortexm3/system-timer.c
+      2           * @brief STM32W108 System Timer HAL functions.
+      3           * 
+      4           * \b NOTE:  The Sleep Timer count and compare registers are only 16 bits, but
+      5           * the counter and comparators themselves are actually 32bits.  To deal with
+      6           * this, there are High ("H") and Low ("L") registers.  The High register is
+      7           * the "action" register.  When working with SLEEPTMR_CNT, reading the "H"
+      8           * register will return the upper 16 bits and simultaneously trigger the
+      9           * capture of the lower 16bits in the "L" register.  The "L" register may then
+     10           * be read.  When working with the SLEEPTMR_CMP registers, writing "L" will
+     11           * set a shadow register.  Writing "H" will cause the value from the "H" write
+     12           * and the "L" shadow register to be combined and simultaneously loaded into
+     13           * the true 32bit comparator.
+     14           * 
+     15           * <!--(C) COPYRIGHT 2010 STMicroelectronics. All rights reserved.        -->
+     16           */
+     17          #include PLATFORM_HEADER
+     18          #include "error.h"
+     19          #include "hal/micro/micro-common.h"
+     20          #include "hal/micro/cortexm3/micro-common.h"
+     21          #include "micro/system-timer.h"
+     22          
+     23          
+     24          //A simple flag used by internalSleepForQs to check that it has exited
+     25          //from sleep mode at the request of the expected timer interrupt.
+
+   \                                 In section .bss, align 1
+     26          static boolean sleepTimerInterruptOccurred = FALSE;
+   \                     sleepTimerInterruptOccurred:
+   \   00000000                      DS8 1
+     27          
+     28          // halInternalStartSystemTimer() was moved to micro.c
+     29          
+     30          /**
+     31           * Return a 16 bit real time clock value.  With 1024 clock ticks per second,
+     32           * a single clock tick occurs every 0.9769625 milliseconds, and a rollover
+     33           * of the 16-bit timer occurs every 64 seconds.
+     34           */
+
+   \                                 In section .text, align 2, keep-with-next
+     35          int16u halCommonGetInt16uMillisecondTick(void)
+     36          {
+   \                     halCommonGetInt16uMillisecondTick:
+   \   00000000   80B5               PUSH     {R7,LR}
+     37            return (int16u)halCommonGetInt32uMillisecondTick();
+   \   00000002   ........           BL       halCommonGetInt32uMillisecondTick
+   \   00000006   80B2               UXTH     R0,R0
+   \   00000008   02BD               POP      {R1,PC}          ;; return
+     38          }
+     39          
+
+   \                                 In section .text, align 2, keep-with-next
+     40          int16u halCommonGetInt16uQuarterSecondTick(void)
+     41          {
+   \                     halCommonGetInt16uQuarterSecondTick:
+   \   00000000   80B5               PUSH     {R7,LR}
+     42            return (int16u)(halCommonGetInt32uMillisecondTick() >> 8);
+   \   00000002   ........           BL       halCommonGetInt32uMillisecondTick
+   \   00000006   0002               LSLS     R0,R0,#+8
+   \   00000008   000C               LSRS     R0,R0,#+16
+   \   0000000A   02BD               POP      {R1,PC}          ;; return
+     43          }
+     44          
+     45          /**
+     46           * Return a 32 bit real time clock value.  With 1024 clock ticks per second,
+     47           * a single clock tick occurs every 0.9769625 milliseconds, and a rollover
+     48           * of the 32-bit timer occurs approximately every 48.5 days.
+     49           */
+
+   \                                 In section .text, align 2, keep-with-next
+     50          int32u halCommonGetInt32uMillisecondTick(void)
+     51          {
+     52            int32u time;
+     53            
+     54            time = SLEEPTMR_CNTH<<16;
+   \                     halCommonGetInt32uMillisecondTick:
+   \   00000000   ....               LDR.N    R0,??DataTable3  ;; 0x40006010
+   \   00000002   0168               LDR      R1,[R0, #+0]
+     55            time |= SLEEPTMR_CNTL;
+   \   00000004   4068               LDR      R0,[R0, #+4]
+     56            
+     57            return time;
+   \   00000006   40EA0140           ORR      R0,R0,R1, LSL #+16
+   \   0000000A   7047               BX       LR               ;; return
+     58          }
+
+   \                                 In section .text, align 2, keep-with-next
+     59          void settime(int32u time)
+     60          {
+     61            SLEEPTMR_CNTL=(time>>0)&0xffff;
+   \                     settime:
+   \   00000000   ....               LDR.N    R1,??DataTable3  ;; 0x40006010
+   \   00000002   82B2               UXTH     R2,R0
+   \   00000004   4A60               STR      R2,[R1, #+4]
+     62            SLEEPTMR_CNTH=(time>>16)&0xffff;
+   \   00000006   000C               LSRS     R0,R0,#+16
+   \   00000008   0860               STR      R0,[R1, #+0]
+     63          }
+   \   0000000A   7047               BX       LR               ;; return
+     64          
+
+   \                                 In section .text, align 2, keep-with-next
+     65          void halSleepTimerIsr(void)
+     66          {
+     67            //clear the second level interrupts
+     68            INT_SLEEPTMRFLAG = INT_SLEEPTMRWRAP | INT_SLEEPTMRCMPA | INT_SLEEPTMRCMPB;
+   \                     halSleepTimerIsr:
+   \   00000000   ....               LDR.N    R0,??DataTable3_1  ;; 0x4000a014
+   \   00000002   0721               MOVS     R1,#+7
+   \   00000004   0160               STR      R1,[R0, #+0]
+     69            
+     70            //mark a sleep timer interrupt as having occurred
+     71            sleepTimerInterruptOccurred = TRUE;
+   \   00000006   ....               LDR.N    R0,??DataTable3_2
+   \   00000008   0121               MOVS     R1,#+1
+   \   0000000A   0170               STRB     R1,[R0, #+0]
+     72          }
+   \   0000000C   7047               BX       LR               ;; return
+     73          
+     74          #define CONVERT_QS_TO_TICKS(x) (x << 8)
+     75          #define CONVERT_TICKS_TO_QS(x) (x >> 8)
+     76          #define TIMER_MAX_QS           0x1000000 // = 4194304 seconds * 4 = 16777216
+
+   \                                 In section .text, align 2, keep-with-next
+     77          static StStatus internalSleepForQs(boolean useGpioWakeMask,
+     78                                                int32u *duration,
+     79                                                int32u gpioWakeBitMask)
+     80          {
+   \                     internalSleepForQs:
+   \   00000000   2DE9F44F           PUSH     {R2,R4-R11,LR}
+   \   00000004   0C46               MOV      R4,R1
+     81            StStatus status = ST_SUCCESS;
+   \   00000006   0025               MOVS     R5,#+0
+     82            int32u sleepOverflowCount;
+     83            int32u remainder;
+     84            int32u startCount;
+     85            
+     86            //There is really no reason to bother with a duration of 0qs
+     87            if(*duration==0) {
+   \   00000008   2068               LDR      R0,[R4, #+0]
+   \   0000000A   10B9               CBNZ.N   R0,??internalSleepForQs_0
+     88              INTERRUPTS_ON();
+   \   0000000C   ........           BL       _enableBasePri
+     89              return status;
+   \   00000010   48E0               B.N      ??internalSleepForQs_1
+     90            }
+     91            
+     92            ATOMIC(
+     93              //disable top-level interrupt while configuring
+     94              INT_CFGCLR = INT_SLEEPTMR;
+     95              
+     96              //Our tick is calibrated to 1024Hz, giving a tick of 976.6us and an
+     97              //overflow of 4194304.0 seconds.  Calculate the number of sleep overflows
+     98              //in the duration
+     99              sleepOverflowCount = (*duration)/TIMER_MAX_QS;
+    100              //calculate the remaining ticks
+    101              remainder = CONVERT_QS_TO_TICKS((*duration)%TIMER_MAX_QS);
+    102              //grab the starting sleep count
+    103              startCount = halCommonGetInt32uMillisecondTick();
+    104              
+    105              sleepTimerInterruptOccurred = FALSE;
+    106              
+    107              if(remainder) {
+    108                //set CMPA value
+    109                SLEEPTMR_CMPAL = (startCount+remainder)&0xFFFF;
+    110                SLEEPTMR_CMPAH = ((startCount+remainder)>>16)&0xFFFF;
+    111                //clear any stale interrupt flag and set the CMPA interrupt
+    112                INT_SLEEPTMRFLAG = INT_SLEEPTMRCMPA;
+    113                INT_SLEEPTMRCFG = INT_SLEEPTMRCMPA;
+    114              }
+    115              if(sleepOverflowCount) {
+    116                //set CMPB value
+    117                SLEEPTMR_CMPBL = startCount&0xFFFF;
+    118                SLEEPTMR_CMPBH = (startCount>>16)&0xFFFF;
+    119                //clear any stale interrupt flag and set the CMPB interrupt
+    120                //this will also disable the CMPA interrupt, since we only want to wake
+    121                //on overflows, not the remainder yet
+    122                INT_SLEEPTMRFLAG = INT_SLEEPTMRCMPB;
+    123                INT_SLEEPTMRCFG = INT_SLEEPTMRCMPB;
+    124              }
+    125              
+    126              //enable top-level interrupt
+    127              INT_CFGSET = INT_SLEEPTMR;
+    128            )
+   \                     ??internalSleepForQs_0:
+   \   00000012   ........           BL       _disableBasePri
+   \   00000016   8346               MOV      R11,R0
+   \   00000018   ....               LDR.N    R0,??DataTable3_3  ;; 0xe000e180
+   \   0000001A   1021               MOVS     R1,#+16
+   \   0000001C   0160               STR      R1,[R0, #+0]
+   \   0000001E   2068               LDR      R0,[R4, #+0]
+   \   00000020   070E               LSRS     R7,R0,#+24
+   \   00000022   4FEA0028           LSL      R8,R0,#+8
+   \   00000026   ........           BL       halCommonGetInt32uMillisecondTick
+   \   0000002A   8146               MOV      R9,R0
+   \   0000002C   ........           LDR.W    R10,??DataTable3_2
+   \   00000030   8AF80050           STRB     R5,[R10, #+0]
+   \   00000034   ....               LDR.N    R6,??DataTable3_1  ;; 0x4000a014
+   \   00000036   ....               LDR.N    R0,??DataTable3_4  ;; 0x40006018
+   \   00000038   4FF6FF71           MOVW     R1,#+65535
+   \   0000003C   B8F1000F           CMP      R8,#+0
+   \   00000040   09D0               BEQ.N    ??internalSleepForQs_2
+   \   00000042   08EB0902           ADD      R2,R8,R9
+   \   00000046   01EA0203           AND      R3,R1,R2
+   \   0000004A   4360               STR      R3,[R0, #+4]
+   \   0000004C   120C               LSRS     R2,R2,#+16
+   \   0000004E   0260               STR      R2,[R0, #+0]
+   \   00000050   0222               MOVS     R2,#+2
+   \   00000052   3260               STR      R2,[R6, #+0]
+   \   00000054   3264               STR      R2,[R6, #+64]
+   \                     ??internalSleepForQs_2:
+   \   00000056   47B1               CBZ.N    R7,??internalSleepForQs_3
+   \   00000058   01EA0901           AND      R1,R1,R9
+   \   0000005C   C160               STR      R1,[R0, #+12]
+   \   0000005E   4FEA1941           LSR      R1,R9,#+16
+   \   00000062   8160               STR      R1,[R0, #+8]
+   \   00000064   0420               MOVS     R0,#+4
+   \   00000066   3060               STR      R0,[R6, #+0]
+   \   00000068   3064               STR      R0,[R6, #+64]
+   \                     ??internalSleepForQs_3:
+   \   0000006A   ....               LDR.N    R0,??DataTable3_5  ;; 0xe000e100
+   \   0000006C   1021               MOVS     R1,#+16
+   \   0000006E   0160               STR      R1,[R0, #+0]
+   \   00000070   5846               MOV      R0,R11
+   \   00000072   ........           BL       _writeBasePri
+   \   00000076   02E0               B.N      ??internalSleepForQs_4
+    129            
+    130            while(*duration > 0) {
+    131              {
+    132                halSleepWithOptions(SLEEPMODE_WAKETIMER, gpioWakeBitMask);
+    133              }
+    134              
+    135              INT_SLEEPTMRCFG = INT_SLEEPTMRCFG_RESET; //disable all SleepTMR interrupts
+    136              
+    137              //If we didn't come out of sleep via a compare or overflow interrupt,
+    138              //it was an abnormal sleep interruption; report the event.
+    139              if(!sleepTimerInterruptOccurred) {
+    140                status = ST_SLEEP_INTERRUPTED;
+    141                //Update duration to account for how long last sleep was.  Using the
+    142                //startCount variable is always valid because full timer wraps always
+    143                //return to this value and the remainder is an offset from this value.
+    144                //And since the duration is always reduced after each full timer wrap,
+    145                //we only need to calculate the final duration here.
+    146                *duration -= CONVERT_TICKS_TO_QS(halCommonGetInt32uMillisecondTick() -
+    147                                                 startCount);
+    148                break;
+    149              } else {
+    150                if(sleepOverflowCount) {
+    151                  sleepOverflowCount--;
+    152                  *duration -= TIMER_MAX_QS;
+    153                } else {
+    154                  *duration -= CONVERT_TICKS_TO_QS(remainder);
+    155                }
+    156                sleepTimerInterruptOccurred = FALSE;
+    157                if(sleepOverflowCount) {
+    158                  //enable sleeping for a full timer wrap
+    159                  INT_SLEEPTMRFLAG = INT_SLEEPTMRCMPB;
+   \                     ??internalSleepForQs_5:
+   \   00000078   0420               MOVS     R0,#+4
+   \                     ??internalSleepForQs_6:
+   \   0000007A   3060               STR      R0,[R6, #+0]
+    160                  INT_SLEEPTMRCFG = INT_SLEEPTMRCMPB;
+   \   0000007C   3064               STR      R0,[R6, #+64]
+    161                } else if(!sleepOverflowCount && (*duration>0)){
+   \                     ??internalSleepForQs_4:
+   \   0000007E   2068               LDR      R0,[R4, #+0]
+   \   00000080   80B1               CBZ.N    R0,??internalSleepForQs_1
+   \   00000082   0099               LDR      R1,[SP, #+0]
+   \   00000084   0220               MOVS     R0,#+2
+   \   00000086   ........           BL       halSleepWithOptions
+   \   0000008A   3564               STR      R5,[R6, #+64]
+   \   0000008C   9AF80000           LDRB     R0,[R10, #+0]
+   \   00000090   58B9               CBNZ.N   R0,??internalSleepForQs_7
+   \   00000092   8525               MOVS     R5,#+133
+   \   00000094   ........           BL       halCommonGetInt32uMillisecondTick
+   \   00000098   2168               LDR      R1,[R4, #+0]
+   \   0000009A   A0EB0900           SUB      R0,R0,R9
+   \   0000009E   A1EB1020           SUB      R0,R1,R0, LSR #+8
+   \   000000A2   2060               STR      R0,[R4, #+0]
+    162                  //enable sleeping for the remainder
+    163                  INT_SLEEPTMRFLAG = INT_SLEEPTMRCMPA;
+    164                  INT_SLEEPTMRCFG = INT_SLEEPTMRCMPA;
+    165                }
+    166              }
+    167            }
+    168            
+    169            return status;
+   \                     ??internalSleepForQs_1:
+   \   000000A4   2846               MOV      R0,R5
+   \   000000A6   BDE8F28F           POP      {R1,R4-R11,PC}   ;; return
+   \                     ??internalSleepForQs_7:
+   \   000000AA   2068               LDR      R0,[R4, #+0]
+   \   000000AC   002F               CMP      R7,#+0
+   \   000000AE   1ABF               ITTE     NE 
+   \   000000B0   7F1E               SUBNE    R7,R7,#+1
+   \   000000B2   A0F18070           SUBNE    R0,R0,#+16777216
+   \   000000B6   A0EB1820           SUBEQ    R0,R0,R8, LSR #+8
+   \   000000BA   2060               STR      R0,[R4, #+0]
+   \   000000BC   8AF80050           STRB     R5,[R10, #+0]
+   \   000000C0   002F               CMP      R7,#+0
+   \   000000C2   D9D1               BNE.N    ??internalSleepForQs_5
+   \   000000C4   2068               LDR      R0,[R4, #+0]
+   \   000000C6   0028               CMP      R0,#+0
+   \   000000C8   18BF               IT       NE 
+   \   000000CA   0220               MOVNE    R0,#+2
+   \   000000CC   D5D1               BNE.N    ??internalSleepForQs_6
+   \   000000CE   E9E7               B.N      ??internalSleepForQs_1
+    170          }
+    171          
+
+   \                                 In section .text, align 2, keep-with-next
+    172          StStatus halSleepForQsWithOptions(int32u *duration, int32u gpioWakeBitMask)
+    173          {
+    174            return internalSleepForQs(TRUE, duration, gpioWakeBitMask);
+   \                     halSleepForQsWithOptions:
+   \   00000000   0A46               MOV      R2,R1
+   \   00000002   0146               MOV      R1,R0
+   \   00000004   0120               MOVS     R0,#+1
+   \   00000006   ....               B.N      internalSleepForQs
+    175          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3:
+   \   00000000   10600040           DC32     0x40006010
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_1:
+   \   00000000   14A00040           DC32     0x4000a014
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_2:
+   \   00000000   ........           DC32     sleepTimerInterruptOccurred
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_3:
+   \   00000000   80E100E0           DC32     0xe000e180
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_4:
+   \   00000000   18600040           DC32     0x40006018
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable3_5:
+   \   00000000   00E100E0           DC32     0xe000e100
+    176          
+
+   Maximum stack usage in bytes:
+
+     Function                       .cstack
+     --------                       -------
+     halCommonGetInt16uMillisecondTick
+                                         8
+     halCommonGetInt16uQuarterSecondTick
+                                         8
+     halCommonGetInt32uMillisecondTick
+                                         0
+     halSleepForQsWithOptions            8
+     halSleepTimerIsr                    0
+     internalSleepForQs                 40
+     settime                             0
+
+
+   Section sizes:
+
+     Function/Label                 Bytes
+     --------------                 -----
+     sleepTimerInterruptOccurred       1
+     halCommonGetInt16uMillisecondTick
+                                      10
+     halCommonGetInt16uQuarterSecondTick
+                                      12
+     halCommonGetInt32uMillisecondTick
+                                      12
+     settime                          12
+     halSleepTimerIsr                 14
+     internalSleepForQs              208
+     halSleepForQsWithOptions          8
+     ??DataTable3                      4
+     ??DataTable3_1                    4
+     ??DataTable3_2                    4
+     ??DataTable3_3                    4
+     ??DataTable3_4                    4
+     ??DataTable3_5                    4
+
+ 
+   1 byte  in section .bss
+ 300 bytes in section .text
+ 
+ 300 bytes of CODE memory
+   1 byte  of DATA memory
+
+Errors: none
+Warnings: none

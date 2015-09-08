@@ -1,0 +1,828 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     08/Jul/2014  10:29:38 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\hal\micro\cortexm3\clocks.c              #
+#    Command line =  "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\hal\micro\cortexm3\clocks.c" -D          #
+#                    BOARD_MB851 -D "PLATFORM_HEADER=\"hal/micro/cortexm3/com #
+#                    piler/iar.h\"" -D "BOARD_HEADER=\"hal/micro/cortexm3/stm #
+#                    32w108/board.h\"" -D CORTEXM3 -D CORTEXM3_STM32W108 -D   #
+#                    PHY_STM32W108XX -D DISABLE_WATCHDOG -D PLANET_ROLE -D    #
+#                    BOARD_MB851 -D "__SOURCEFILE__=\"clocks.c\"" -lC         #
+#                    "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\" --diag_suppress Pa050 -o "E:\实验4                   #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \" --debug --endian=little --cpu=Cortex-M3 -e            #
+#                    --fpu=None --dlib_config "D:\study                       #
+#                    soft\IAR6.10\IARsoft\arm\INC\c\DLib_Config_Normal.h" -I  #
+#                    "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\hal\micro\cortexm3\" -I "E:\实验4        #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\include\" -I "E:\实验4 无线传感器节点多点通信实验 -    #
+#                    副本 - 副本\工程源代码\simplemac\demos\sample\..\..\..\" #
+#                     -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -        #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\hal\"    #
+#                    -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -         #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\HAL\MICR #
+#                    O\CORTEXM3\STM32W108\" -I "E:\实验4                      #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\" -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -     #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\shared\" #
+#                     -Ohz --use_c++_inline                                   #
+#    List file    =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\clocks.lst                                             #
+#    Object file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \clocks.o                                                #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\实验4 无线传感器节点多点通信实验 - 副本 - 副本\工程源代码\hal\micro\cortexm3\clocks.c
+      1          /*
+      2           * File: clocks.c
+      3           * Description: STM32W108 internal, clock specific HAL functions
+      4           * This file is provided for completeness and it should not be modified
+      5           * by customers as it comtains code very tightly linked to undocumented
+      6           * device features
+      7           *
+      8           * <!--(C) COPYRIGHT 2010 STMicroelectronics. All rights reserved.        -->
+      9           */
+     10          
+     11          #include PLATFORM_HEADER
+     12          #include "error.h"
+     13          
+     14          #include "hal/hal.h"
+     15          #include "hal/micro/cortexm3/mpu.h"
+     16          #include "hal/micro/cortexm3/mfg-token.h"
+     17          
+     18          
+     19          //Provide a simple means for enabling calibration debug output
+     20          #define CALDBG(x)
+     21          //#define CALDBG(x) x
+     22          
+     23          //The slowest frequency for the 10kHz RC source is 8kHz (125us).  The PERIOD
+     24          //register updates every 16 cycles, so to be safe 17 cycles = 2125us.  But,
+     25          //we need twice this maximum time because the period measurement runs
+     26          //asynchronously, and the value of CLKRC_TUNE is changed immediately before
+     27          //the delay.
+     28          #define SLOWRC_PERIOD_SETTLE_TIME 4250
+     29          //The CLK_PERIOD register measures the number of 12MHz clock cycles that
+     30          //occur in 16 cycles of the SlowRC clock.  This is meant to smooth out the the
+     31          //noise inherently present in the analog RC source.  While these 16 cycles
+     32          //smooths out most noise, there is still some jitter in the bottom bits of
+     33          //CLK_PERIOD.  To further smooth out the noise, we take several readings of
+     34          //CLK_PERIOD and average them out.  Testing has shown that the bottom 3 and 4
+     35          //bits of CLK_PERIOD contain most of the jitter.  Averaging 8 samples will
+     36          //smooth out 3 bits of jitter and provide a realiable and stable reading useful
+     37          //in the calculations, while taking much less time than 16 or 32 samples.
+     38          #define SLOWRC_PERIOD_SAMPLES 8
+     39          //The register CLK1K_CAL is a fractional divider that divides the 10kHz analog
+     40          //source with the goal of generating a 1024Hz, clk1k output.
+     41          //  10000Hz / CLK1K_CAL = 1024Hz.
+     42          //Since the CLK_PERIOD register measures the number of 12MHz cycles in 16
+     43          //cycles of the RC:
+     44          //     16 * 12000000
+     45          //     ------------- = ~10kHz
+     46          //      CLK_PERIOD
+     47          //and
+     48          //  ~10kHz / 1024 = X
+     49          //where X is the fractional number that belongs in CLK1K_CAL.  Since the
+     50          //integer portion of CLK1K_CAL is bits 15:11 and the fractional is 10:0,
+     51          //multiplying X by 2048 (bit shift left by 11) generates the proper CLK1K_CAL
+     52          //register value.
+     53          //
+     54          //Putting this all together:
+     55          //     16 * 12000000 * 2048     384000000
+     56          //     --------------------  = ------------  =  CLK1K_CAL
+     57          //      CLK_PERIOD * 1024       CLK_PERIOD
+     58          //
+     59          #define CLK1K_NUMERATOR 384000000
+
+   \                                 In section .text, align 2, keep-with-next
+     60          void halInternalCalibrateSlowRc( void )
+     61          {
+   \                     halInternalCalibrateSlowRc:
+   \   00000000   2DE9F041           PUSH     {R4-R8,LR}
+     62            int8u i;
+     63            int32u average=0;
+   \   00000004   0024               MOVS     R4,#+0
+     64            int16s delta;
+     65            int32u period;
+     66            
+     67            CALDBG(
+     68              stSerialPrintf(ST_ASSERT_SERIAL_PORT, "halInternalCalibrateSlowRc:\r\n");
+     69            )
+     70            
+     71            ////---- STEP 1: coarsely tune SlowRC in analog section to ~10kHz ----////
+     72              //To operate properly across the full temperature and voltage range,
+     73              //the RC source in the analog section needs to be first coarsely tuned
+     74              //to 10kHz.  The CLKRC_TUNE register, which is 2's compliment, provides 16
+     75              //steps at ~400Hz per step yielding approximate frequences of 8kHz at 7
+     76              //and 15kHz at -8.
+     77              //Start with our reset values for TUNE and CAL
+     78              CLK_PERIODMODE = 0; //measure SlowRC
+   \   00000006   ....               LDR.N    R5,??DataTable5  ;; 0x40004010
+   \   00000008   2C60               STR      R4,[R5, #+0]
+     79              CLKRC_TUNE = CLKRC_TUNE_RESET;
+   \   0000000A   ....               LDR.N    R6,??DataTable5_1  ;; 0x4000000c
+   \   0000000C   3460               STR      R4,[R6, #+0]
+     80              CLK1K_CAL = CLK1K_CAL_RESET;
+   \   0000000E   4FF4A040           MOV      R0,#+20480
+   \   00000012   7060               STR      R0,[R6, #+4]
+     81              //wait for the PERIOD register to properly update
+     82              halCommonDelayMicroseconds(SLOWRC_PERIOD_SETTLE_TIME);
+   \   00000014   41F29A08           MOVW     R8,#+4250
+   \   00000018   4046               MOV      R0,R8
+   \   0000001A   ........           BL       halCommonDelayMicroseconds
+     83              //Measure the current CLK_PERIOD to obtain a baseline
+     84              CALDBG(
+     85                stSerialPrintf(ST_ASSERT_SERIAL_PORT,
+     86                "period: %u, ", CLK_PERIOD);
+     87                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "%u Hz\r\n", 
+     88                                 ((int16u)(((int32u)192000000)/((int32u)CLK_PERIOD))));
+     89              )
+     90              //For 10kHz, the ideal CLK_PERIOD is 19200.  Calculate the PERIOD delta.
+     91              //It's possible for a chip's 10kHz source RC to be too far out of range
+     92              //for the CLKRC_TUNE to bring it back to 10kHz.  Therefore, we have to
+     93              //ensure that our delta correction does not exceed the tune range so
+     94              //tune has to be capped to the end of the vailable range so it does not
+     95              //wrap.  Even if we cannot achieve 10kHz, the 1kHz calibration can still
+     96              //properly correct to 1kHz.
+     97              //Each CLKRC_TUNE step yields a CLK_PERIOD delta of *approximately* 800.
+     98              //Calculate how many steps we are off.  While dividing by 800 may seem
+     99              //like an ugly calculation, the precision of the result is worth the small
+    100              //bit of code and time needed to do a divide.
+    101              period = CLK_PERIOD;
+   \   0000001E   6868               LDR      R0,[R5, #+4]
+    102              //Round to the nearest integer
+    103              delta = (19200+400) - period;
+    104              delta /= 800;
+   \   00000020   44F69041           MOVW     R1,#+19600
+   \   00000024   081A               SUBS     R0,R1,R0
+   \   00000026   00B2               SXTH     R0,R0
+   \   00000028   4FF44871           MOV      R1,#+800
+   \   0000002C   90FBF1F0           SDIV     R0,R0,R1
+    105              //CLKRC_TUNE is a 4 bit signed number.  cap the delta to 7/-8
+    106              if(delta > 7) {
+   \   00000030   00F30300           SSAT     R0,#+4,R0
+    107                delta = 7;
+    108              }
+    109              if(delta < -8) {
+    110                delta = -8;
+    111              }
+    112              CALDBG(
+    113                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "TUNE steps delta: %d\r\n",
+    114                                  delta);
+    115              )
+    116              CLKRC_TUNE = delta;
+   \   00000034   3060               STR      R0,[R6, #+0]
+    117              //wait for PERIOD to update before taking another sample
+    118              halCommonDelayMicroseconds(SLOWRC_PERIOD_SETTLE_TIME);
+   \   00000036   4046               MOV      R0,R8
+   \   00000038   ........           BL       halCommonDelayMicroseconds
+    119              CALDBG(
+    120                stSerialPrintf(ST_ASSERT_SERIAL_PORT,
+    121                "period: %u, ", CLK_PERIOD);
+    122                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "%u Hz\r\n", 
+    123                                 ((int16u)(((int32u)192000000)/((int32u)CLK_PERIOD))));
+    124              )
+    125              //The analog section should now be producing an output of ~10kHz
+    126              
+    127            ////---- STEP 2: fine tune the SlowRC to 1024Hz ----////
+    128              //Our goal is to generate a 1024Hz source.  The register CLK1K_CAL is a
+    129              //fractional divider that divides the 10kHz analog source and generates
+    130              //the clk1k output.  At reset, the default value is 0x5000 which yields a
+    131              //division of 10.000.  By averaging several samples of CLK_PERIOD, we
+    132              //can then calculate the proper divisor need for CLK1K_CAL to make 1024Hz.
+    133              for(i=0;i<SLOWRC_PERIOD_SAMPLES;i++) {
+   \   0000003C   0827               MOVS     R7,#+8
+    134                halCommonDelayMicroseconds(SLOWRC_PERIOD_SETTLE_TIME);
+   \                     ??halInternalCalibrateSlowRc_0:
+   \   0000003E   4046               MOV      R0,R8
+   \   00000040   ........           BL       halCommonDelayMicroseconds
+    135                average += CLK_PERIOD;
+   \   00000044   6868               LDR      R0,[R5, #+4]
+   \   00000046   0419               ADDS     R4,R0,R4
+    136              }
+   \   00000048   7F1E               SUBS     R7,R7,#+1
+   \   0000004A   F8D1               BNE.N    ??halInternalCalibrateSlowRc_0
+    137              //calculate the average, with proper rounding
+    138              average = (average+(SLOWRC_PERIOD_SAMPLES/2))/SLOWRC_PERIOD_SAMPLES;
+    139              CALDBG(
+    140                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "average: %u, %u Hz\r\n",
+    141                  ((int16u)average), ((int16u)(((int32u)192000000)/((int32u)average))));
+    142              )
+    143              
+    144              //using an average period sample, calculate the clk1k divisor
+    145              CLK1K_CAL = (int16u)(CLK1K_NUMERATOR/average);
+   \   0000004C   ....               LDR.N    R0,??DataTable5_2  ;; 0x16e36000
+   \   0000004E   211D               ADDS     R1,R4,#+4
+   \   00000050   C908               LSRS     R1,R1,#+3
+   \   00000052   B0FBF1F0           UDIV     R0,R0,R1
+   \   00000056   80B2               UXTH     R0,R0
+   \   00000058   7060               STR      R0,[R6, #+4]
+    146              CALDBG(
+    147                stSerialPrintf(ST_ASSERT_SERIAL_PORT,"CLK1K_CAL=%2X\r\n",CLK1K_CAL);
+    148              )
+    149              //The SlowRC timer is now producing a 1024Hz tick (+/-2Hz).
+    150              
+    151            CALDBG(
+    152              stSerialPrintf(ST_ASSERT_SERIAL_PORT, "DONE\r\n");
+    153            )
+    154          }
+   \   0000005A   BDE8F081           POP      {R4-R8,PC}       ;; return
+    155          
+    156          
+    157          //The slowest frequency for the FastRC source is 4MHz (250ns).  The PERIOD
+    158          //register updates every 256 cycles, so to be safe 257 cycles = 64us.  But,
+    159          //we need twice this maximum time because the period measurement runs
+    160          //asynchronously, and the value of OSCHF_TUNE is changed immediately before
+    161          //the delay.
+    162          #define FASTRC_PERIOD_SETTLE_TIME 128
+    163          //The CLK_PERIOD register measures the number of 12MHz cycles in 256
+    164          //cycles of OSCHF:
+    165          //     256 * 12000000
+    166          //     ------------- = ~12MHz
+    167          //      CLK_PERIOD
+
+   \                                 In section .text, align 2, keep-with-next
+    168          void halInternalCalibrateFastRc(void)
+    169          {
+   \                     halInternalCalibrateFastRc:
+   \   00000000   38B5               PUSH     {R3-R5,LR}
+    170            int32s newTune = -16;
+   \   00000002   6FF00F04           MVN      R4,#+15
+    171            
+    172            CALDBG(
+    173              stSerialPrintf(ST_ASSERT_SERIAL_PORT, "halInternalCalibrateFastRc:\r\n");
+    174            )
+    175            
+    176            ////---- coarsely tune FastRC in analog section to ~12MHz ----////
+    177              //The RC source in the analog section needs to be coarsely tuned
+    178              //to 12MHz.  The OSCHF_TUNE register, which is 2's compliment, provides 32
+    179              //steps at ~0.5MHz per step yielding approximate frequences of 4MHz at 15
+    180              //and 20MHz at -16.
+    181              CLK_PERIODMODE = 1; //measure FastRC
+   \   00000006   ....               LDR.N    R5,??DataTable5_3  ;; 0x40004008
+   \   00000008   0120               MOVS     R0,#+1
+   \   0000000A   A860               STR      R0,[R5, #+8]
+    182              CALDBG(
+    183                //start at the fastest possible frequency
+    184                OSCHF_TUNE = newTune;
+    185                //wait for the PERIOD register to properly update
+    186                halCommonDelayMicroseconds(FASTRC_PERIOD_SETTLE_TIME);
+    187                //Measure the current CLK_PERIOD to obtain a baseline
+    188                stSerialPrintf(ST_ASSERT_SERIAL_PORT,
+    189                "period: %u, ", CLK_PERIOD);
+    190                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "%u kHz\r\n", 
+    191                                 ((int16u)((((int32u)3072000000)/((int32u)CLK_PERIOD))/1000)));
+    192              )
+    193              //For 12MHz, the ideal CLK_PERIOD is 256.  Tune the frequency down until
+    194              //the period is <= 256, which says the frequency is as close to 12MHz as
+    195              //possible (without going over 12MHz)
+    196              //Start at the fastest possible frequency (-16) and increase to the slowest
+    197              //possible (15).  When CLK_PERIOD is <=256 or we run out of tune values,
+    198              //we're done.
+    199              for(;newTune<16;newTune++) {
+    200                //decrease frequency by one step (by increasing tune value)
+    201                OSCHF_TUNE = newTune;
+   \                     ??halInternalCalibrateFastRc_0:
+   \   0000000C   2C60               STR      R4,[R5, #+0]
+    202                //wait for the PERIOD register to properly update
+    203                halCommonDelayMicroseconds(FASTRC_PERIOD_SETTLE_TIME);
+   \   0000000E   8020               MOVS     R0,#+128
+   \   00000010   ........           BL       halCommonDelayMicroseconds
+    204                //kickout if we're tuned
+    205                if(CLK_PERIOD>=256) {
+   \   00000014   E868               LDR      R0,[R5, #+12]
+   \   00000016   FF28               CMP      R0,#+255
+   \   00000018   02D8               BHI.N    ??halInternalCalibrateFastRc_1
+    206                  break;
+    207                }
+    208              }
+   \   0000001A   641C               ADDS     R4,R4,#+1
+   \   0000001C   102C               CMP      R4,#+16
+   \   0000001E   F5DB               BLT.N    ??halInternalCalibrateFastRc_0
+    209              CALDBG(
+    210                //Measure the current CLK_PERIOD to show the final result
+    211                stSerialPrintf(ST_ASSERT_SERIAL_PORT,
+    212                "period: %u, ", CLK_PERIOD);
+    213                stSerialPrintf(ST_ASSERT_SERIAL_PORT, "%u kHz\r\n", 
+    214                                 ((int16u)((((int32u)3072000000)/((int32u)CLK_PERIOD))/1000)));
+    215              )
+    216              
+    217              //The analog section should now be producing an output of 11.5MHz - 12.0MHz
+    218          }
+   \                     ??halInternalCalibrateFastRc_1:
+   \   00000020   31BD               POP      {R0,R4,R5,PC}    ;; return
+    219          
+    220          
+    221          
+    222          
+    223          
+    224          
+    225          
+    226          
+    227          
+    228          
+    229          
+    230          
+    231          
+    232          
+    233          
+    234          
+    235          
+    236          
+    237          
+    238          
+    239          
+    240          
+    241          
+    242          
+    243          
+    244          
+    245          
+    246          
+    247          
+    248          
+    249          
+    250          
+    251          
+    252          
+    253          
+    254          
+    255          
+    256          
+    257          
+    258          
+    259          
+    260          
+    261          #define OSC24M_BIASTRIM_OFFSET  (0x2)
+    262          #define OSC24M_BIASTRIM_MIN     (0+OSC24M_BIASTRIM_OFFSET)
+    263          #define OSC24M_BIASTRIM_MAX     OSC24M_BIASTRIM_OSC24M_BIAS_TRIM_MASK
+    264          #define OSC24M_BIASTRIM_MSB     (1 << (OSC24M_BIASTRIM_OSC24M_BIAS_TRIM_BITS-1))
+    265          #define OSC24M_BIASTRIM_UNINIT  (0xFFFF)
+
+   \                                 In section .data, align 2
+    266          tokTypeMfgOsc24mBiasTrim biasTrim=OSC24M_BIASTRIM_UNINIT;
+   \                     biasTrim:
+   \   00000000   FFFF               DC16 65535
+    267          
+    268          
+    269          
+    270          
+    271          
+    272          
+    273          
+    274          
+    275          
+    276          
+    277          
+    278          
+    279          
+    280          
+    281          
+    282          
+    283          
+    284          
+    285          
+    286          
+    287          
+    288          
+    289          
+    290          
+    291          
+    292          
+    293          
+    294          
+    295          
+    296          
+    297          
+    298          
+    299          
+    300          
+    301          //This function is intended to be called periodically, from the stack and
+    302          //application, to check the XTAL bias trim is within appropriate levels
+    303          //and adjust if not.  This function is *not* designed to be used before
+    304          //halInternalSwitchToXtal has been called.
+
+   \                                 In section .text, align 2, keep-with-next
+    305          void halCommonCheckXtalBiasTrim(void)
+    306          {
+    307            //HI is set indicating the trim value is too high.  Decrement the trim.
+    308            if((OSC24M_COMP & OSC24M_HI) == OSC24M_HI) {
+   \                     halCommonCheckXtalBiasTrim:
+   \   00000000   ....               LDR.N    R0,??DataTable5_4  ;; 0x40004004
+   \   00000002   8168               LDR      R1,[R0, #+8]
+   \   00000004   ....               LDR.N    R2,??DataTable5_5
+   \   00000006   1388               LDRH     R3,[R2, #+0]
+   \   00000008   8907               LSLS     R1,R1,#+30
+   \   0000000A   48BF               IT       MI 
+   \   0000000C   5B1E               SUBMI    R3,R3,#+1
+    309              biasTrim--;
+    310            }
+    311            
+    312            //LO is cleared indicating the trim value is too low.  Inrement the trim.
+    313            if((OSC24M_COMP & OSC24M_LO) != OSC24M_LO) {
+   \   0000000E   8168               LDR      R1,[R0, #+8]
+   \   00000010   C907               LSLS     R1,R1,#+31
+   \   00000012   04D4               BMI.N    ??halCommonCheckXtalBiasTrim_0
+    314              biasTrim++;
+   \   00000014   591C               ADDS     R1,R3,#+1
+    315              //Add an offset to the bias trim as a factor of safety.
+    316              if(biasTrim < (OSC24M_BIASTRIM_MAX - OSC24M_BIASTRIM_OFFSET)) {
+   \   00000016   89B2               UXTH     R1,R1
+   \   00000018   0D29               CMP      R1,#+13
+   \   0000001A   08D2               BCS.N    ??halCommonCheckXtalBiasTrim_1
+    317                biasTrim +=  OSC24M_BIASTRIM_OFFSET;
+   \   0000001C   8B1C               ADDS     R3,R1,#+2
+    318              } else {
+    319                biasTrim = OSC24M_BIASTRIM_MAX;
+    320              }
+    321            }
+    322            
+    323            //Don't allow bias trim to dip below the offset regardless of LO.
+    324            if(biasTrim<OSC24M_BIASTRIM_OFFSET) {
+   \                     ??halCommonCheckXtalBiasTrim_0:
+   \   0000001E   9BB2               UXTH     R3,R3
+   \   00000020   022B               CMP      R3,#+2
+   \   00000022   38BF               IT       CC 
+   \   00000024   0223               MOVCC    R3,#+2
+    325              biasTrim = OSC24M_BIASTRIM_OFFSET;
+   \                     ??halCommonCheckXtalBiasTrim_2:
+   \   00000026   1380               STRH     R3,[R2, #+0]
+    326            }
+    327            
+    328            OSC24M_BIASTRIM = biasTrim;
+   \   00000028   1188               LDRH     R1,[R2, #+0]
+   \   0000002A   0160               STR      R1,[R0, #+0]
+    329          }
+   \   0000002C   7047               BX       LR               ;; return
+   \                     ??halCommonCheckXtalBiasTrim_1:
+   \   0000002E   0F23               MOVS     R3,#+15
+   \   00000030   F9E7               B.N      ??halCommonCheckXtalBiasTrim_2
+    330          
+
+   \                                 In section .text, align 2, keep-with-next
+    331          static boolean setBiasCheckLow(void)
+    332          {
+   \                     setBiasCheckLow:
+   \   00000000   10B5               PUSH     {R4,LR}
+    333            OSC24M_BIASTRIM = biasTrim;
+   \   00000002   ....               LDR.N    R4,??DataTable5_4  ;; 0x40004004
+   \   00000004   ....               LDR.N    R0,??DataTable5_5
+   \   00000006   0088               LDRH     R0,[R0, #+0]
+   \   00000008   2060               STR      R0,[R4, #+0]
+    334            halCommonDelayMicroseconds(1500);
+   \   0000000A   40F2DC50           MOVW     R0,#+1500
+   \   0000000E   ........           BL       halCommonDelayMicroseconds
+    335            return ((OSC24M_COMP & OSC24M_LO) == OSC24M_LO);
+   \   00000012   A068               LDR      R0,[R4, #+8]
+   \   00000014   00F00100           AND      R0,R0,#0x1
+   \   00000018   10BD               POP      {R4,PC}          ;; return
+    336          }
+    337          
+
+   \                                 In section .text, align 2, keep-with-next
+    338          void halInternalSearchForBiasTrim(void)
+    339          {
+   \                     halInternalSearchForBiasTrim:
+   \   00000000   70B5               PUSH     {R4-R6,LR}
+    340            int8u bit;
+    341            
+    342            //Enable the XTAL so we can search for the proper bias trim (NOTE: This
+    343            //will also forcefully ensure we're on the OSCHF so that we don't
+    344            //accidentally trip the NMI while searching.)
+    345            OSC24M_CTRL = OSC24M_CTRL_OSC24M_EN;
+   \   00000002   ....               LDR.N    R4,??DataTable5_6  ;; 0x4000400c
+   \   00000004   0220               MOVS     R0,#+2
+   \   00000006   2061               STR      R0,[R4, #+16]
+    346            
+    347            //Do a binary search of the 4-bit bias trim values to find
+    348            //smallest bias trim value for which LO = 1.
+    349            biasTrim = 0;
+   \   00000008   ....               LDR.N    R5,??DataTable5_5
+   \   0000000A   0020               MOVS     R0,#+0
+   \   0000000C   2880               STRH     R0,[R5, #+0]
+    350            bit = (OSC24M_BIASTRIM_MSB << 1);
+   \   0000000E   1026               MOVS     R6,#+16
+    351            do {
+    352              bit >>= 1;
+   \                     ??halInternalSearchForBiasTrim_0:
+   \   00000010   F605               LSLS     R6,R6,#+23
+   \   00000012   360E               LSRS     R6,R6,#+24
+    353              biasTrim += bit;
+   \   00000014   2888               LDRH     R0,[R5, #+0]
+   \   00000016   3018               ADDS     R0,R6,R0
+   \   00000018   2880               STRH     R0,[R5, #+0]
+    354              //Set trim and wait for 1.5ms to allow the oscillator to stabilize.
+    355              if(setBiasCheckLow()) {
+   \   0000001A   ........           BL       setBiasCheckLow
+   \   0000001E   10B1               CBZ.N    R0,??halInternalSearchForBiasTrim_1
+    356                biasTrim -= bit;
+   \   00000020   2888               LDRH     R0,[R5, #+0]
+   \   00000022   801B               SUBS     R0,R0,R6
+   \   00000024   2880               STRH     R0,[R5, #+0]
+    357              }
+    358            } while(bit);
+   \                     ??halInternalSearchForBiasTrim_1:
+   \   00000026   002E               CMP      R6,#+0
+   \   00000028   F2D1               BNE.N    ??halInternalSearchForBiasTrim_0
+    359            
+    360            //If the last bias value went too low, increment it.
+    361            if((OSC24M_COMP & OSC24M_LO) != OSC24M_LO) {
+   \   0000002A   2068               LDR      R0,[R4, #+0]
+   \   0000002C   C007               LSLS     R0,R0,#+31
+   \   0000002E   02D4               BMI.N    ??halInternalSearchForBiasTrim_2
+    362              biasTrim++;
+   \   00000030   2888               LDRH     R0,[R5, #+0]
+   \   00000032   401C               ADDS     R0,R0,#+1
+   \   00000034   2880               STRH     R0,[R5, #+0]
+    363            }
+    364            
+    365            //Add an offset to the bias trim as a factor of safety.
+    366            if(biasTrim < (OSC24M_BIASTRIM_MAX - OSC24M_BIASTRIM_OFFSET)) {
+   \                     ??halInternalSearchForBiasTrim_2:
+   \   00000036   2888               LDRH     R0,[R5, #+0]
+   \   00000038   0D28               CMP      R0,#+13
+   \   0000003A   34BF               ITE      CC 
+   \   0000003C   801C               ADDCC    R0,R0,#+2
+   \   0000003E   0F20               MOVCS    R0,#+15
+    367              biasTrim +=  OSC24M_BIASTRIM_OFFSET;
+    368            } else {
+    369              biasTrim = OSC24M_BIASTRIM_MAX;
+   \   00000040   2880               STRH     R0,[R5, #+0]
+    370            }
+    371            
+    372            //Using the shadow variable, the clock switch logic will take over from here,
+    373            //enabling, verifying, and tweaking as needed.
+    374          }
+   \   00000042   70BD               POP      {R4-R6,PC}       ;; return
+    375          
+    376          
+    377          //This function configures the flash access controller for optimal
+    378          //current consumption when FCLK is operating at 24MHz.  By providing
+    379          //this function the calling code does not have to be aware of the
+    380          //details of setting FLASH_ACCESS.
+    381          static void halInternalConfigXtal24MhzFlashAccess(void)
+    382          {
+    383            ATOMIC(
+    384              BYPASS_MPU( 
+    385                #if defined(CORTEXM3_STM32W108) 
+    386                  FLASH_ACCESS = (FLASH_ACCESS_PREFETCH_EN          |
+    387                                  (1<<FLASH_ACCESS_CODE_LATENCY_BIT));
+    388                #endif
+    389              )
+    390            )
+    391          } 
+    392          
+    393          //NOTE:  The global "shadow" variable biasTrim will be set by either:
+    394          // A) TOKEN_MFG_OSC24M_BIAS_TRIM when booting fresh
+    395          // B) searchForBiasTrim() when booting fresh and the token is not valid 
+    396          // C) halInternalSwitchToXtal() if halInternalSwitchToXtal() already ran
+
+   \                                 In section .text, align 2, keep-with-next
+    397          void halInternalSwitchToXtal(void)
+    398          {
+   \                     halInternalSwitchToXtal:
+   \   00000000   70B5               PUSH     {R4-R6,LR}
+    399            boolean loSet;
+    400            boolean hiSet;
+    401            boolean setTrimOneLastTime = FALSE;
+   \   00000002   0024               MOVS     R4,#+0
+    402            
+    403            //If it hasn't yet been initialized, 
+    404            //preload our biasTrim shadow variable from the token.  If the token is
+    405            //not set, then run a search to find an initial value.  The bias trim
+    406            //algorithm/clock switch logic will always use the biasTrim shadow
+    407            //variable as the starting point for finding the bias, and then
+    408            //save that new bias to the shadow variable.
+    409            if(biasTrim == OSC24M_BIASTRIM_UNINIT) {
+   \   00000004   4FF6FF76           MOVW     R6,#+65535
+   \   00000008   ....               LDR.N    R5,??DataTable5_5
+   \   0000000A   2888               LDRH     R0,[R5, #+0]
+   \   0000000C   B042               CMP      R0,R6
+   \   0000000E   0BD1               BNE.N    ??halInternalSwitchToXtal_0
+    410              halCommonGetMfgToken(&biasTrim, TOKEN_MFG_OSC24M_BIAS_TRIM);
+   \   00000010   0223               MOVS     R3,#+2
+   \   00000012   7F22               MOVS     R2,#+127
+   \   00000014   ....               LDR.N    R0,??DataTable5_7
+   \   00000016   0188               LDRH     R1,[R0, #+0]
+   \   00000018   2846               MOV      R0,R5
+   \   0000001A   ........           BL       halInternalGetMfgTokenData
+    411              if(biasTrim == 0xFFFF) {
+   \   0000001E   2888               LDRH     R0,[R5, #+0]
+   \   00000020   B042               CMP      R0,R6
+   \   00000022   08BF               IT       EQ 
+   \   00000024   ........           BLEQ     halInternalSearchForBiasTrim
+    412                halInternalSearchForBiasTrim();
+    413              }
+    414            }
+    415          
+    416            //Ensure the XTAL is enabled (with the side effect of ensuring we're
+    417            //still on OSCHF).
+    418            OSC24M_CTRL = OSC24M_CTRL_OSC24M_EN;
+   \                     ??halInternalSwitchToXtal_0:
+   \   00000028   ....               LDR.N    R6,??DataTable5_6  ;; 0x4000400c
+   \   0000002A   0220               MOVS     R0,#+2
+   \   0000002C   3061               STR      R0,[R6, #+16]
+    419            
+    420            do {
+    421              //Set trim to our shadow variable and wait for 1.5ms to allow the
+    422              //oscillator to stabilize.
+    423              loSet = setBiasCheckLow();
+   \                     ??halInternalSwitchToXtal_1:
+   \   0000002E   ........           BL       setBiasCheckLow
+    424              hiSet = (OSC24M_COMP & OSC24M_HI) == OSC24M_HI;
+   \   00000032   3168               LDR      R1,[R6, #+0]
+   \   00000034   4908               LSRS     R1,R1,#+1
+   \   00000036   01F00101           AND      R1,R1,#0x1
+    425              
+    426              //The bias is too low, so we need to increment the bias trim.
+    427              if(!loSet) {
+   \   0000003A   2A88               LDRH     R2,[R5, #+0]
+   \   0000003C   00B9               CBNZ.N   R0,??halInternalSwitchToXtal_2
+    428                biasTrim++;
+   \   0000003E   521C               ADDS     R2,R2,#+1
+    429              }
+    430              
+    431              //The bias is too high, so we need to decrement the bias trim.
+    432              if(hiSet) {
+   \                     ??halInternalSwitchToXtal_2:
+   \   00000040   21B1               CBZ.N    R1,??halInternalSwitchToXtal_3
+    433                //but don't trim below our min value
+    434                if(biasTrim>OSC24M_BIASTRIM_MIN) {
+   \   00000042   92B2               UXTH     R2,R2
+   \   00000044   032A               CMP      R2,#+3
+   \   00000046   24BF               ITT      CS 
+   \   00000048   521E               SUBCS    R2,R2,#+1
+   \   0000004A   0124               MOVCS    R4,#+1
+    435                  biasTrim--;
+    436                  setTrimOneLastTime = TRUE;
+   \                     ??halInternalSwitchToXtal_3:
+   \   0000004C   2A80               STRH     R2,[R5, #+0]
+    437                }
+    438              }
+    439              
+    440              //Kickout when HI=0 and LO=1 or we've hit the MAX or the MIN
+    441            } while( (hiSet || !loSet)              &&
+    442                     (biasTrim<OSC24M_BIASTRIM_MAX) &&
+    443                     (biasTrim>OSC24M_BIASTRIM_MIN) );
+   \   0000004E   2A88               LDRH     R2,[R5, #+0]
+   \   00000050   01B9               CBNZ.N   R1,??halInternalSwitchToXtal_4
+   \   00000052   18B9               CBNZ.N   R0,??halInternalSwitchToXtal_5
+   \                     ??halInternalSwitchToXtal_4:
+   \   00000054   D11E               SUBS     R1,R2,#+3
+   \   00000056   89B2               UXTH     R1,R1
+   \   00000058   0C29               CMP      R1,#+12
+   \   0000005A   E8D3               BCC.N    ??halInternalSwitchToXtal_1
+    444            
+    445            //The LO bit being cleared means we've corrected up from the bottom and
+    446            //therefore need to apply the offset.  Additionally, if our trim value
+    447            //is below the offset, we still need to apply the offset.  And, when
+    448            //applying the offset respect the max possible value of the trim.
+    449            if(!loSet || (biasTrim<OSC24M_BIASTRIM_OFFSET)){  
+   \                     ??halInternalSwitchToXtal_5:
+   \   0000005C   08B1               CBZ.N    R0,??halInternalSwitchToXtal_6
+   \   0000005E   022A               CMP      R2,#+2
+   \   00000060   06D2               BCS.N    ??halInternalSwitchToXtal_7
+    450              if(biasTrim < (OSC24M_BIASTRIM_MAX - OSC24M_BIASTRIM_OFFSET)) {
+   \                     ??halInternalSwitchToXtal_6:
+   \   00000062   0D2A               CMP      R2,#+13
+   \   00000064   02D2               BCS.N    ??halInternalSwitchToXtal_8
+    451                biasTrim +=  OSC24M_BIASTRIM_OFFSET;
+   \   00000066   901C               ADDS     R0,R2,#+2
+   \                     ??halInternalSwitchToXtal_9:
+   \   00000068   2880               STRH     R0,[R5, #+0]
+   \   0000006A   02E0               B.N      ??halInternalSwitchToXtal_10
+    452              } else {
+    453                biasTrim = OSC24M_BIASTRIM_MAX;
+   \                     ??halInternalSwitchToXtal_8:
+   \   0000006C   0F20               MOVS     R0,#+15
+   \   0000006E   FBE7               B.N      ??halInternalSwitchToXtal_9
+    454              }
+    455              setTrimOneLastTime = TRUE;
+    456            }
+    457            
+    458            if(setTrimOneLastTime) {
+   \                     ??halInternalSwitchToXtal_7:
+   \   00000070   0CB1               CBZ.N    R4,??halInternalSwitchToXtal_11
+    459              setBiasCheckLow();
+   \                     ??halInternalSwitchToXtal_10:
+   \   00000072   ........           BL       setBiasCheckLow
+    460            }
+    461            
+    462            //We've found a valid trim value and we've waited for the oscillator
+    463            //to stabalize, it's now safe to select the XTAL
+    464            OSC24M_CTRL |= OSC24M_CTRL_OSC24M_SEL;
+   \                     ??halInternalSwitchToXtal_11:
+   \   00000076   3069               LDR      R0,[R6, #+16]
+   \   00000078   40F00100           ORR      R0,R0,#0x1
+   \   0000007C   3061               STR      R0,[R6, #+16]
+    465            
+    466            //If the XTAL switch failed, the NMI ISR will trigger, creeping the bias
+    467            //trim up higher, and if max bias is reached the ISR will trigger a reset.
+    468            
+    469            //Our standard mode of operation is 24MHz (CPU/FCLK is sourced from SYSCLK)
+    470            CPU_CLKSEL = CPU_CLKSEL_FIELD;
+   \   0000007E   0120               MOVS     R0,#+1
+   \   00000080   7061               STR      R0,[R6, #+20]
+    471            //Configure flash access for optimal current consumption at 24MHz
+    472            halInternalConfigXtal24MhzFlashAccess();
+   \   00000082   ........           BL       _disableBasePri
+   \   00000086   ....               LDR.N    R1,??DataTable5_8  ;; 0x40008000
+   \   00000088   1122               MOVS     R2,#+17
+   \   0000008A   0A60               STR      R2,[R1, #+0]
+   \   0000008C   BDE87040           POP      {R4-R6,LR}
+   \   00000090   ........           B.W      _writeBasePri
+    473          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5:
+   \   00000000   10400040           DC32     0x40004010
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_1:
+   \   00000000   0C000040           DC32     0x4000000c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_2:
+   \   00000000   0060E316           DC32     0x16e36000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_3:
+   \   00000000   08400040           DC32     0x40004008
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_4:
+   \   00000000   04400040           DC32     0x40004004
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_5:
+   \   00000000   ........           DC32     biasTrim
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_6:
+   \   00000000   0C400040           DC32     0x4000400c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_7:
+   \   00000000   ........           DC32     TOKEN_MFG_OSC24M_BIAS_TRIM
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable5_8:
+   \   00000000   00800040           DC32     0x40008000
+
+   Maximum stack usage in bytes:
+
+     Function                     .cstack
+     --------                     -------
+     halCommonCheckXtalBiasTrim        0
+     halInternalCalibrateFastRc       16
+     halInternalCalibrateSlowRc       24
+     halInternalSearchForBiasTrim     16
+     halInternalSwitchToXtal          16
+     setBiasCheckLow                   8
+
+
+   Section sizes:
+
+     Function/Label               Bytes
+     --------------               -----
+     halInternalCalibrateSlowRc     94
+     halInternalCalibrateFastRc     34
+     biasTrim                        2
+     halCommonCheckXtalBiasTrim     50
+     setBiasCheckLow                26
+     halInternalSearchForBiasTrim   68
+     halInternalSwitchToXtal       148
+     ??DataTable5                    4
+     ??DataTable5_1                  4
+     ??DataTable5_2                  4
+     ??DataTable5_3                  4
+     ??DataTable5_4                  4
+     ??DataTable5_5                  4
+     ??DataTable5_6                  4
+     ??DataTable5_7                  4
+     ??DataTable5_8                  4
+
+ 
+   2 bytes in section .data
+ 456 bytes in section .text
+ 
+ 456 bytes of CODE memory
+   2 bytes of DATA memory
+
+Errors: none
+Warnings: none

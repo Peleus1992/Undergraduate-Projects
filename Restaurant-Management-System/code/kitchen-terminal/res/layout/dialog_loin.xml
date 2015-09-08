@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>  
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"  
+    android:orientation="vertical"  
+    android:layout_width="fill_parent"  
+    android:layout_height="fill_parent"  
+    >  
+<TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"  
+    android:text="本地IP："  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+<EditText  
+    android:id="@+id/text_ip"  
+    android:layout_width="fill_parent"  
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"
+    android:scrollHorizontally="true"  
+    android:gravity="fill_horizontal"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+/>
+<TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"  
+    android:text="本地端口："  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+<EditText  
+    android:id="@+id/text_port"  
+    android:layout_width="fill_parent"  
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip" 
+    android:scrollHorizontally="true"  
+    android:gravity="fill_horizontal"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+/>
+<TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"  
+    android:text="服务器IP："  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+<EditText  
+    android:id="@+id/text_caip"  
+    android:layout_width="fill_parent"  
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"
+    android:text="192.168.100.101"
+    android:scrollHorizontally="true"  
+    android:gravity="fill_horizontal"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+/>
+<TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"  
+    android:text="端口号："  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+<EditText  
+    android:id="@+id/text_caport"  
+    android:text="11911"
+    android:layout_width="wrap_content" 
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"
+    android:inputType="number"
+    android:gravity="fill_horizontal" 
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+/>
+<TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"  
+    android:text="等待超时（秒）："  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+<LinearLayout
+        android:id="@+id/slipButton_linearLayout"
+        android:layout_width="fill_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal" 
+        android:layout_marginBottom="10dp" 
+         >
+        
+        <LinearLayout
+        android:id="@+id/slipButton_linearLayout"
+        android:layout_width="250dp"
+        android:layout_height="fill_parent"
+         android:gravity="center">
+        <com.example.boteli.SlipButton2   
+            android:id="@+id/timeslipButton"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="10dp"
+            />
+     </LinearLayout>
+     <EditText  
+    android:id="@+id/text_sec"  
+    android:text="600"
+    android:layout_width="wrap_content" 
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="20dip"  
+    android:layout_marginRight="20dip"
+    android:inputType="number"
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+	/>
+     <TextView      
+    android:layout_width="wrap_content"   
+    android:layout_height="wrap_content"  
+    android:layout_marginLeft="5dip" 
+    android:id="@+id/sectitle"   
+    android:text="秒"  
+    android:gravity="left"  
+    android:textAppearance="?android:attr/textAppearanceMedium"  
+    />  
+     </LinearLayout>
+</LinearLayout> 

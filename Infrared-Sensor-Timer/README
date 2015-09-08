@@ -1,0 +1,11 @@
+Project Name: Implementation of Infrared Sensor Timer
+Date: 02/2013-03/2013
+Team Members: Guo Weidong, Hong Wansheng
+Objective: build a infrared sensor timer to record time for MCU model car competition. When a car run through the gate, red infrared sensor generates an interrupt to timestamp the event.
+Directory:
+./code
+Open source code for timer module and Display module.
+./report
+Final report in Chinese
+./pictures
+Stereographs of the timer.

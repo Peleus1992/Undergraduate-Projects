@@ -1,0 +1,14 @@
+Project Name: Distributed Intelligent Restaurant Management System
+Date: 04/2013-?
+Team Member: Song Lianbo(Leader), Bao Zheng, Guo Weidong, Hong Wansheng
+Objective:
+improve the hotel related industries’ management through development of customer ordering system, service calling system, back-kitchen system and information management system
+Responsibility:  
+responsible for back-kitchen system development for chefs during the whole system 
+
+Directory:
+./code
+The open source code of back-kitchen terminal
+(Other terminal codes are not available because the codes are other team members' property.)
+./report
+Final report in Chinese

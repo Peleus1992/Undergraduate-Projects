@@ -1,0 +1,97 @@
+[SWOTraceHWSettings]
+CpuClock=72000000
+ClockAutoDetect=0
+ClockWanted=2000000
+JtagSpeed=2000000
+Prescaler=36
+TimeStampPrescIndex=0
+TimeStampPrescData=0
+PcSampCYCTAP=1
+PcSampPOSTCNT=15
+DataLogMode=0
+ITMportsEnable=0
+ITMportsTermIO=0
+ITMportsLogFile=0
+ITMlogFile=$PROJ_DIR$\ITM.log
+PcSampIndex=0
+[DebugChecksum]
+Checksum=-83056939
+[DisAssemblyWindow]
+NumStates=_ 1
+State 1=_ 1
+[InstructionProfiling]
+Enabled=_ 0
+[CodeCoverage]
+Enabled=_ 0
+[Profiling]
+Enabled=0
+[StackPlugin]
+Enabled=1
+OverflowWarningsEnabled=1
+WarningThreshold=90
+SpWarningsEnabled=1
+WarnHow=0
+UseTrigger=1
+TriggerName=main
+LimitSize=0
+ByteLimit=50
+[Exceptions]
+StopOnUncaught=_ 0
+StopOnThrow=_ 0
+[CallStackLog]
+Enabled=0
+[DriverProfiling]
+Enabled=0
+Mode=3
+Graph=0
+Symbiont=0
+[TermIOLog]
+LoggingEnabled=_ 0
+LogFile=_ ""
+[DataLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+[InterruptLog]
+LogEnabled=0
+SumEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=1
+SumSortOrder=0
+[PowerLog]
+LogEnabled=0
+GraphEnabled=0
+ShowTimeLog=1
+ShowTimeSum=0
+Title0=Power [mA]
+Setup0=0 1 0 500 2 0 4 1 0
+[Log file]
+LoggingEnabled=_ 0
+LogFile=_ ""
+Category=_ 0
+[SWOTraceWindow]
+PcSampling=0
+InterruptLogs=0
+ForcedTimeStamps=0
+EventCPI=0
+EventEXC=0
+EventFOLD=0
+EventLSU=0
+EventSLEEP=0
+[TraceHelperExtra]
+Enabled=0
+ShowSource=1
+[Disassemble mode]
+mode=0
+[Breakpoints]
+Count=0
+[Aliases]
+A0=_ "C:\Users\doyle\Desktop\STMicroelectronics--final - 副本\ST SimpleMAC-1.0.1\STM32W108\simplemac\demos\sample\solar-system.c" ""
+A1=_ "D:\Program Files\STMicroelectronics\ST SimpleMAC-1.0.1\STM32W108\hal\micro\cortexm3\spmr.s79" ""
+A2=_ "D:\Program Files\STMicroelectronics\ST SimpleMAC-1.0.1\STM32W108\hal\micro\cortexm3\system-timer.c" ""
+A3=_ "E:\学习\创新活动\英辉\FES2440开发板\实验平台刻录光盘\物联网实验平台高级版\相关word文档\第二部分 高级篇\实验3 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\spmr.s79" "E:\开发\物联网新屏光盘\3－实验例程源代码\第二部分 中级篇\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\spmr.s79"
+Count=4
+SuppressDialog=0

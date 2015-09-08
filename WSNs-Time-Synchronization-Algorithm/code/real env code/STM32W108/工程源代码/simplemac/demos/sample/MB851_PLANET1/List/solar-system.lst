@@ -1,0 +1,3607 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     08/Jul/2014  10:29:50 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\solar-system.c    #
+#    Command line =  "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\simplemac\demos\sample\solar-system.c"   #
+#                    -D BOARD_MB851 -D "PLATFORM_HEADER=\"hal/micro/cortexm3/ #
+#                    compiler/iar.h\"" -D "BOARD_HEADER=\"hal/micro/cortexm3/ #
+#                    stm32w108/board.h\"" -D CORTEXM3 -D CORTEXM3_STM32W108   #
+#                    -D PHY_STM32W108XX -D DISABLE_WATCHDOG -D PLANET_ROLE    #
+#                    -D BOARD_MB851 -D "__SOURCEFILE__=\"solar-system.c\""    #
+#                    -lC "E:\实验4 无线传感器节点多点通信实验 - 副本 -        #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\" --diag_suppress Pa050 -o "E:\实验4                   #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \" --debug --endian=little --cpu=Cortex-M3 -e            #
+#                    --fpu=None --dlib_config "D:\study                       #
+#                    soft\IAR6.10\IARsoft\arm\INC\c\DLib_Config_Normal.h" -I  #
+#                    "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\simplemac\demos\sample\" -I "E:\实验4    #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\include\" -I "E:\实验4 无线传感器节点多点通信实验 -    #
+#                    副本 - 副本\工程源代码\simplemac\demos\sample\..\..\..\" #
+#                     -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -        #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\hal\"    #
+#                    -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -         #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\HAL\MICR #
+#                    O\CORTEXM3\STM32W108\" -I "E:\实验4                      #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\" -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -     #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\shared\" #
+#                     -Ohz --use_c++_inline                                   #
+#    List file    =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\solar-system.lst                                       #
+#    Object file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \solar-system.o                                          #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\实验4 无线传感器节点多点通信实验 - 副本 - 副本\工程源代码\simplemac\demos\sample\solar-system.c
+      1          /*******************************************************************************
+      2          * SimpleMAC sample application: solar-system.c
+      3          *
+      4          * It supports sun and planet roles. 
+      5          * Sun role allows user to form a network. 
+      6          * Planet role allows an user to join to a network created by a sun.
+      7          *
+      8          * COPYRIGHT 2010 STMicroelectronics. All rights reserved.                 
+      9          *******************************************************************************/
+     10          /*****************************************************************
+     11          文件名：solar-system.c
+     12          版本号：v1.0
+     13          创建日期：2012-4-1
+     14          作者：大连飞翔科技有限公司,  www.fesxp.com, support@fesxp.com
+     15          硬件描述：STM32W108,FES2440
+     16          主要函数描述：main()函数实现SUN节点和多个PLANET节点通信
+     17          修改日志：2012-4-28 by Cheng Zhu 审核，并删除不必要的部分
+     18                    2012-5-16 by Cheng Zhu 删除main函数中变量lastPeriodicEventsQsTick
+     19                    2012-5-16 by Cheng Zhu 注释JOIN_DENIED_PACKET中的无限循环
+     20          *****************************************************************/
+     21          #include PLATFORM_HEADER
+     22          #include BOARD_HEADER
+     23          #include <stdio.h>
+     24          #include <stdlib.h>
+     25          #include <string.h>
+     26          #include "error.h"
+     27          #include "hal/hal.h"
+     28          #include "include/phy-library.h"
+     29          #include "hal/micro/cortexm3/iap_bootloader.h"
+     30          
+     31          #include "transmit.h"
+     32          
+     33          //RX_DETAILS is a debugging macro for printing receive details.
+     34          //WARNING:  THIS MACRO WILL CAUSE PRINTS FROM ISR CONTEXT!
+     35          #define RX_DETAILS(x)   
+     36          //This macro causes the main loop to print details of the periodic events
+     37          //and sleep events.
+     38          #define MAIN_DETAILS(x) x
+     39          
+     40          //This mask is passed into halSleepForQsWithOptions, indicating that
+     41          //the chip should wake on UART receive activity (GPIO PB2).
+     42          #define UART_ACTIVE_MASK (0x00000400)
+     43          
+     44          //Define the number of quarter seconds between periodic maintenance events.
+     45          //The periodic events do not need to occur very often, so run these
+     46          //events once a minute.
+     47          #define PERIODIC_MAINTENANCE_EVENTS_RATE (1*60*4)
+     48          
+     49          //Define the number of entries in the planet table.
+     50          //#define PLANET_TABLE_SIZE (5)
+     51          #define PLANET_TABLE_SIZE (10)
+     52          
+     53          //Define the number of energy readings that shold be taken on a given
+     54          //channel when forming a network and looking for a channel with the
+     55          //least ammount of activity.
+     56          #define ENERGY_SAMPLES_COUNT (32)
+     57          
+     58          //每套实验箱对应一个PANID值，不同实验箱不应相同，以防干扰
+     59          #define MyPANID 0x101
+     60          
+
+   \                                 In section .data, align 4
+     61          RadioTransmitConfig radioTransmitConfig = {
+   \                     radioTransmitConfig:
+   \   00000000   010104030501       DC8 1, 1, 4, 3, 5, 1, 0, 0
+   \              0000        
+     62            TRUE, //waitForAck
+     63            TRUE, //checkCca
+     64            RADIO_CCA_ATTEMPT_MAX_DEFAULT, //ccaAttemptMax
+     65            RADIO_BACKOFF_EXPONENT_MIN_DEFAULT, //backoffExponentMin
+     66            RADIO_BACKOFF_EXPONENT_MAX_DEFAULT, //backoffExponentMax
+     67            TRUE  //appendCrc
+     68          };
+     69          
+     70          //******************************************************************************
+     71          // Define values used in constructing and decoding packets
+     72          
+     73          //These define the magic values needed when constructing the FCF of the
+     74          //packets.  802.15.4 defines these numbers.
+     75          #define FCF_DATA     (0x01)
+     76          #define FCF_MACCMD   (0x03)
+     77          #define FCF_ACKREQ   (0x20)
+     78          #define FCF_INTRAPAN (0x40)
+     79          #define FCF_NODST    (0x00)
+     80          #define FCF_SHORTDST (0x08)
+     81          #define FCF_LONGDST  (0x0C)
+     82          #define FCF_NOSRC    (0x00)
+     83          #define FCF_SHORTSRC (0x80)
+     84          #define FCF_LONGSRC  (0xC0)
+     85          
+     86          //This app uses only two frame types: MAC Command and Data.
+     87          #define FT_DATA          (FCF_DATA)
+     88          #define FT_MAC_COMMAND   (FCF_MACCMD)
+     89          
+     90          //The following seven payload types are used with FT_DATA and the numerical
+     91          //values are custom to this app.
+     92          #define PT_GENERIC_DATA  (0x00)
+     93          #define PT_SUN_SEARCH    (0x01)
+     94          #define PT_SUN_AVAILABLE (0x02)
+     95          #define PT_JOIN_REQUEST  (0x03)
+     96          #define PT_JOIN_ACCEPTED (0x04)
+     97          #define PT_JOIN_DENIED   (0x05)
+     98          #define PT_LEAVING       (0x06)
+     99          #define PT_TIME_DATA     (0x07)
+    100          #define PT_SLEEPING      (0x08)
+    101          #define PT_LED           (0x09)
+    102          #define PT_TRSEND        (0x0A)
+    103          //This payload type is used with FT_MAC_COMMAND and the numerical value
+    104          //is defined by 802.15.4.
+    105          #define PT_POLLING       (0x04)
+    106          
+    107          //The packet type is identified by its frame type and its payload type.
+    108          //These are stored in different parts of the packet.  Since payload type
+    109          //requires a specific frame type, I roll these two values into definitions
+    110          //that are easier to read when switching on a decoded packet.  Frame type
+    111          //occupies the upper nibble and payload type occupies the lower.
+    112          #define GENERIC_DATA_PACKET  ((FT_DATA       <<4) | (PT_GENERIC_DATA <<0))
+    113          #define CHANGE_TIME_PACKET    ((FT_DATA       <<4) | (PT_TIME_DATA  <<0))
+    114          #define SYN_SLEEPING_WAITTIME ((FT_DATA       <<4) | (PT_SLEEPING   <<0))
+    115          #define SYN_LED_WAITTIME     ((FT_DATA       <<4) | (PT_LED   <<0))   
+    116          #define TRSEND_PACKET        ((FT_DATA       <<4) | (PT_TRSEND   <<0))  
+    117          #define SUN_SEARCH_PACKET    ((FT_DATA       <<4) | (PT_SUN_SEARCH   <<0))
+    118          #define SUN_AVAILABLE_PACKET ((FT_DATA       <<4) | (PT_SUN_AVAILABLE<<0))
+    119          #define JOIN_REQUEST_PACKET  ((FT_DATA       <<4) | (PT_JOIN_REQUEST <<0))
+    120          #define JOIN_ACCEPTED_PACKET ((FT_DATA       <<4) | (PT_JOIN_ACCEPTED<<0))
+    121          #define JOIN_DENIED_PACKET   ((FT_DATA       <<4) | (PT_JOIN_DENIED  <<0))
+    122          #define LEAVING_PACKET       ((FT_DATA       <<4) | (PT_LEAVING      <<0))
+    123          #define POLLING_PACKET       ((FT_MAC_COMMAND<<4) | (PT_POLLING      <<0))
+    124          
+    125          //******************************************************************************
+    126          // Define data structures
+    127          typedef struct {
+    128            boolean packetBeingProcessed;
+    129            u8 packet[128];
+    130            boolean ackFramePendingSet;
+    131            u32 time;
+    132            u16 errors;
+    133            s8 rssi;
+    134            u8 lqi;
+    135          } RadioReceiveType;
+
+   \                                 In section .bss, align 4
+    136          RadioReceiveType rxData = {FALSE,};
+   \                     rxData:
+   \   00000000                      DS8 140
+    137          
+    138          typedef struct {
+    139            boolean active;
+    140            u16 shortAddr;
+    141            u8 longAddr[8];
+    142          } PlanetTableType;
+    143          
+    144          
+    145          //******************************************************************************
+    146          // Define global radio state and convenience macros
+    147          RadioPowerMode radioPowerState = ST_RADIO_POWER_MODE_OFF;
+    148          #define TURN_RADIO_ON()                             \
+    149            do {                                              \
+    150              ST_RadioWake();                               \
+    151              radioPowerState = ST_RADIO_POWER_MODE_RX_ON; \
+    152            } while(0)
+    153          #define TURN_RADIO_OFF()                          \
+    154            do {                                            \
+    155              ST_RadioSleep();                            \
+    156              radioPowerState = ST_RADIO_POWER_MODE_OFF; \
+    157            } while(0)
+    158          //Derek: 函数申明
+    159          void replySync();
+    160          //Derek: Sync消息所用全局变量
+    161          u32 T1=-1, T2=-1, T3=-1, T4=-1, T5=-1;
+    162          u32 back=-1;
+    163          u32 diff=0;
+
+   \                                 In section .bss, align 8
+    164          double timeoffset;
+   \                     timeoffset:
+   \   00000000                      DS8 8
+    165          void replySyncback();
+    166          //******************************************************************************
+    167          // Define global network state; initialized when forming/joining/leaving
+    168          boolean activeInNetwork = FALSE;
+    169          boolean availableSunFound = FALSE;
+    170          boolean networkJoinedStopSearching = FALSE;
+    171          u8 shortAddrCounter = 0;
+    172          u8 currSeqNum = 0;
+    173          u8 autoSendRate = 0;
+
+   \                                 In section .bss, align 2
+    174          u16 autoSendRateDstShortAddr = 0x0000;
+   \                     autoSendRateDstShortAddr:
+   \   00000000                      DS8 2
+
+   \                                 In section .bss, align 2
+    175          u16 autoSendLastQsTick;
+   \                     autoSendLastQsTick:
+   \   00000000                      DS8 2
+
+   \                                 In section .data, align 4
+   \                     radioPowerState:
+   \   00000000   01                 DC8 1
+   \                     activeInNetwork:
+   \   00000001   00                 DC8 0
+   \                     availableSunFound:
+   \   00000002   00                 DC8 0
+   \                     networkJoinedStopSearching:
+   \   00000003   00                 DC8 0
+   \                     shortAddrCounter:
+   \   00000004   00                 DC8 0
+   \                     currSeqNum:
+   \   00000005   00                 DC8 0
+   \                     autoSendRate:
+   \   00000006   00                 DC8 0
+    176          u8 autoPollRate = 0;
+   \                     autoPollRate:
+   \   00000007   00                 DC8 0
+   \                     T2:
+   \   00000008   FFFFFFFF           DC32 4294967295
+   \                     T3:
+   \   0000000C   FFFFFFFF           DC32 4294967295
+   \                     T5:
+   \   00000010   FFFFFFFF           DC32 4294967295
+   \                     diff:
+   \   00000014   00000000           DC32 0
+
+   \                                 In section .data, align 4
+   \                     T1:
+   \   00000000   FFFFFFFF           DC32 4294967295
+
+   \                                 In section .data, align 4
+   \                     T4:
+   \   00000000   FFFFFFFF           DC32 4294967295
+
+   \                                 In section .data, align 4
+   \                     back:
+   \   00000000   FFFFFFFF           DC32 4294967295
+
+   \                                 In section .bss, align 2
+    177          u16 autoPollLastQsTick;
+   \                     autoPollLastQsTick:
+   \   00000000                      DS8 2
+
+   \                                 In section .bss, align 4
+    178          PlanetTableType planetTable[PLANET_TABLE_SIZE];
+   \                     planetTable:
+   \   00000000                      DS8 120
+    179          //static u8 currnum=0;
+    180          //u16 shortaddr[PLANET_TABLE_SIZE];
+    181          
+    182          #ifdef PLANET_ROLE
+
+   \                                 In section .bss, align 1
+    183          u8 planet_join_by_button = 0;
+   \                     planet_join_by_button:
+   \   00000000                      DS8 1
+    184          #endif
+    185          
+    186          void sendVddDataPacket(u16 vddMillivolts,u16 dstShortAddr,boolean sendDirectly);
+    187          
+
+   \                                 In section .text, align 2, keep-with-next
+    188          void initNetworkState(void)
+    189          {
+   \                     initNetworkState:
+   \   00000000   38B5               PUSH     {R3-R5,LR}
+    190            u8 i;
+    191            
+    192            activeInNetwork = FALSE;
+   \   00000002   ........           LDR.W    R4,??DataTable55_1
+   \   00000006   0020               MOVS     R0,#+0
+   \   00000008   6070               STRB     R0,[R4, #+1]
+    193            networkJoinedStopSearching = FALSE;
+   \   0000000A   E070               STRB     R0,[R4, #+3]
+    194            shortAddrCounter = 0;
+   \   0000000C   2071               STRB     R0,[R4, #+4]
+    195            currSeqNum = halCommonGetRandom()&0xFF; //802.15.4 says to start with a random seq num
+   \   0000000E   ........           BL       halCommonGetRandom
+   \   00000012   6071               STRB     R0,[R4, #+5]
+    196            autoSendRate = 0;
+   \   00000014   0020               MOVS     R0,#+0
+   \   00000016   A071               STRB     R0,[R4, #+6]
+    197            autoPollRate = 0;
+   \   00000018   E071               STRB     R0,[R4, #+7]
+    198            txPacketInFlight = FALSE;
+   \   0000001A   ........           LDR.W    R0,??DataTable55_2
+   \   0000001E   0021               MOVS     R1,#+0
+   \   00000020   0170               STRB     R1,[R0, #+0]
+    199            framePendingPktEnroute = FALSE;
+   \   00000022   ........           LDR.W    R0,??DataTable55_3
+   \   00000026   0170               STRB     R1,[R0, #+0]
+    200            for(i=0;i<PLANET_TABLE_SIZE;i++) {
+   \   00000028   0024               MOVS     R4,#+0
+   \   0000002A   ........           LDR.W    R5,??DataTable55_4
+    201              planetTable[i].active = FALSE;
+   \                     ??initNetworkState_0:
+   \   0000002E   0C20               MOVS     R0,#+12
+   \   00000030   6043               MULS     R0,R0,R4
+   \   00000032   0021               MOVS     R1,#+0
+   \   00000034   4155               STRB     R1,[R0, R5]
+    202              planetTable[i].shortAddr = 0x0000;
+   \   00000036   4019               ADDS     R0,R0,R5
+   \   00000038   4180               STRH     R1,[R0, #+2]
+    203              memset(planetTable[i].longAddr, 0, sizeof(planetTable[i].longAddr));
+   \   0000003A   0821               MOVS     R1,#+8
+   \   0000003C   001D               ADDS     R0,R0,#+4
+   \   0000003E   ........           BL       __aeabi_memclr
+    204            }
+   \   00000042   641C               ADDS     R4,R4,#+1
+   \   00000044   0A2C               CMP      R4,#+10
+   \   00000046   F2DB               BLT.N    ??initNetworkState_0
+    205            ST_RadioSetPanId(0xFFFF);  //return to broadcast PAN ID
+   \   00000048   4FF6FF70           MOVW     R0,#+65535
+   \   0000004C   ........           BL       ST_RadioSetPanId
+    206            ST_RadioSetNodeId(0xFFFE); //return to long addressing node ID
+   \   00000050   4FF6FE70           MOVW     R0,#+65534
+   \   00000054   ........           BL       ST_RadioSetNodeId
+    207            clearDirectQueue();
+   \   00000058   ........           BL       clearDirectQueue
+    208            clearIndirectQueue();
+   \   0000005C   BDE83140           POP      {R0,R4,R5,LR}
+   \   00000060   ........           B.W      clearIndirectQueue
+    209          }
+    210          
+    211          
+    212          //******************************************************************************
+    213          // LQI calculation.
+
+   \                                 In section .text, align 2, keep-with-next
+    214          u8 calculateLqi(u16 chipErrors, u8 packetLength)
+    215          {
+    216            //The chipErrors parameter is the 10 bit chip error count from the radio.
+    217            //The packetLength parameter is the byte size of the packet, including
+    218            //  the length byte at the start and the 2 crc bytes at the end.
+    219            u32 lqi;
+    220            
+    221            //To obtain the LQI, convert the total chip errors in a packet (err/packet)
+    222            //to the chip errors per byte (err/byte).  Scale up the chipErrors value
+    223            //to maintain reasonable precision during the division.  We don't
+    224            //care about packets that have more than 4 chip errors per byte (6.25% chip
+    225            //error rate), so we scale up by a factor of 64.
+    226            lqi = chipErrors << 6;
+    227            lqi /= packetLength;
+   \                     calculateLqi:
+   \   00000000   8001               LSLS     R0,R0,#+6
+   \   00000002   B0FBF1F0           UDIV     R0,R0,R1
+    228            
+    229            //802.15.4 says that an LQI should represent the best link quality as 0xFF
+    230            //and the worst LQI as 0x00.
+    231            return (0xFF - (u8)((lqi > 0xFF) ? (0xFF) : (lqi)));
+   \   00000006   FF28               CMP      R0,#+255
+   \   00000008   88BF               IT       HI 
+   \   0000000A   FF20               MOVHI    R0,#+255
+   \   0000000C   C0F1FF00           RSB      R0,R0,#+255
+   \   00000010   C0B2               UXTB     R0,R0
+   \   00000012   7047               BX       LR               ;; return
+    232          }
+    233          
+    234          
+    235          //******************************************************************************
+    236          // Packet reception processing
+    237          
+    238          //ST_RadioReceiveIsrCallback executes in ISR context and copies the
+    239          //incoming packet into the rxData structure so it can be processed
+    240          //outside of ISR context by processRxPacket.
+
+   \                                 In section .text, align 2, keep-with-next
+    241          void ST_RadioReceiveIsrCallback(u8 *packet,
+    242                                            boolean ackFramePendingSet,
+    243                                            u32 time,
+    244                                            u16 errors,
+    245                                            s8 rssi)
+    246          {
+   \                     ST_RadioReceiveIsrCallback:
+   \   00000000   F0B5               PUSH     {R4-R7,LR}
+   \   00000002   9DF91440           LDRSB    R4,[SP, #+20]
+    247            u8 i;
+    248            RX_DETAILS(printf("#");)
+    249            if(activeInNetwork) {
+   \   00000006   ........           LDR.W    R5,??DataTable55_1
+   \   0000000A   6D78               LDRB     R5,[R5, #+1]
+   \   0000000C   C5B1               CBZ.N    R5,??ST_RadioReceiveIsrCallback_0
+    250              //If there isn't already one being processed, save the
+    251              //incoming packet into the app's buffer for processing
+    252              //outside of ISR context.
+    253              if(!rxData.packetBeingProcessed) {
+   \   0000000E   ........           LDR.W    R5,??DataTable55_5
+   \   00000012   2E78               LDRB     R6,[R5, #+0]
+   \   00000014   A6B9               CBNZ.N   R6,??ST_RadioReceiveIsrCallback_0
+    254                for(i=0;i<=packet[0];i++) {
+   \   00000016   06E0               B.N      ??ST_RadioReceiveIsrCallback_1
+    255                  rxData.packet[i] = packet[i];
+   \                     ??ST_RadioReceiveIsrCallback_2:
+   \   00000018   7719               ADDS     R7,R6,R5
+   \   0000001A   16F800C0           LDRB     R12,[R6, R0]
+   \   0000001E   87F801C0           STRB     R12,[R7, #+1]
+    256                }
+   \   00000022   761C               ADDS     R6,R6,#+1
+   \   00000024   F6B2               UXTB     R6,R6
+   \                     ??ST_RadioReceiveIsrCallback_1:
+   \   00000026   0778               LDRB     R7,[R0, #+0]
+   \   00000028   B742               CMP      R7,R6
+   \   0000002A   F5DA               BGE.N    ??ST_RadioReceiveIsrCallback_2
+    257                rxData.ackFramePendingSet = ackFramePendingSet;
+   \   0000002C   85F88110           STRB     R1,[R5, #+129]
+    258                rxData.time = time;
+   \   00000030   C5F88420           STR      R2,[R5, #+132]
+    259                rxData.errors = errors;
+   \   00000034   A5F88830           STRH     R3,[R5, #+136]
+    260                rxData.rssi = rssi;
+   \   00000038   85F88A40           STRB     R4,[R5, #+138]
+    261                rxData.packetBeingProcessed = TRUE;
+   \   0000003C   0120               MOVS     R0,#+1
+   \   0000003E   2870               STRB     R0,[R5, #+0]
+    262                //processRxPacket() in the main loop handles the rest
+    263              }
+    264            }
+    265          }
+   \                     ??ST_RadioReceiveIsrCallback_0:
+   \   00000040   F0BD               POP      {R4-R7,PC}       ;; return
+    266          
+    267          //processRxPacket handles decoding all received packets and taking action
+    268          //in response to received packets.  This function executes outside of
+    269          //ISR context and operates on the rxData structure.  The rxData structure
+    270          //is populated by ST_RadioReceiveIsrCallback.
+
+   \                                 In section .text, align 2, keep-with-next
+    271          void processRxPacket(void)
+    272          {
+   \                     processRxPacket:
+   \   00000000   2DE9F04F           PUSH     {R4-R11,LR}
+   \   00000004   A7B0               SUB      SP,SP,#+156
+    273            boolean pktHasSrcPanId = FALSE;
+   \   00000006   0024               MOVS     R4,#+0
+    274            u8 srcAddrOffset = 0;
+   \   00000008   A046               MOV      R8,R4
+   \   0000000A   4FF6FF79           MOVW     R9,#+65535
+    275            u16 srcPanId=0xFFFF;
+    276            u16 shortSrcAddr=0;
+                       ^
+Warning[Pe550]: variable "shortSrcAddr" was set but never used
+    277            u8 longSrcAddr[8]={0,};
+   \   0000000E   05A8               ADD      R0,SP,#+20
+   \   00000010   0021               MOVS     R1,#+0
+   \   00000012   0A46               MOV      R2,R1
+   \   00000014   06C0               STM      R0!,{R1,R2}
+    278            u8 payloadStart;
+    279            u8 packetType;
+    280            u8 packet[128];
+    281           
+    282            if(!rxData.packetBeingProcessed) {
+   \   00000016   ........           LDR.W    R7,??DataTable55_5
+   \   0000001A   3878               LDRB     R0,[R7, #+0]
+   \   0000001C   0028               CMP      R0,#+0
+   \   0000001E   00F0B781           BEQ.W    ??processRxPacket_0
+    283              return;
+    284            }
+    285          #ifdef PLANET_ROLE
+    286          /*
+    287            if((rxData.packet[13]=='s')&&(rxData.packet[14]=='y')&&(rxData.packet[15]=='n')&&(rxData.packet[16]=='c'))
+    288            { //LGZ:b1
+    289              T2=halCommonGetInt32uMillisecondTick();
+    290              replySync();
+    291            }*/
+    292            if((rxData.packet[13]=='L')&&(rxData.packet[14]=='G')&&(rxData.packet[15]=='Z')&&(rxData.packet[16]=='0'))
+   \   00000022   B87B               LDRB     R0,[R7, #+14]
+   \   00000024   ........           LDR.W    R5,??DataTable55_1
+   \   00000028   4C28               CMP      R0,#+76
+   \   0000002A   40F0C880           BNE.W    ??processRxPacket_1
+   \   0000002E   F87B               LDRB     R0,[R7, #+15]
+   \   00000030   4728               CMP      R0,#+71
+   \   00000032   04D1               BNE.N    ??processRxPacket_2
+   \   00000034   387C               LDRB     R0,[R7, #+16]
+   \   00000036   5A28               CMP      R0,#+90
+   \   00000038   01D1               BNE.N    ??processRxPacket_2
+   \   0000003A   787C               LDRB     R0,[R7, #+17]
+   \   0000003C   3028               CMP      R0,#+48
+   \                     ??processRxPacket_2:
+   \   0000003E   40F0D080           BNE.W    ??processRxPacket_3
+    293              { 
+    294              printf("p11 already\r\n");
+   \   00000042   ........           ADR.W    R0,`?<Constant "p11 already\\r\\n">`
+   \   00000046   ........           BL       printf
+    295              T2=0;
+    296              T2=((((((T2|rxData.packet[20])<<8)|rxData.packet[19])<<8)|rxData.packet[18])<<8)|rxData.packet[17];
+   \   0000004A   787D               LDRB     R0,[R7, #+21]
+   \   0000004C   397D               LDRB     R1,[R7, #+20]
+   \   0000004E   41EA0020           ORR      R0,R1,R0, LSL #+8
+   \   00000052   F97C               LDRB     R1,[R7, #+19]
+   \   00000054   41EA0020           ORR      R0,R1,R0, LSL #+8
+   \   00000058   B97C               LDRB     R1,[R7, #+18]
+   \   0000005A   41EA0020           ORR      R0,R1,R0, LSL #+8
+   \   0000005E   A860               STR      R0,[R5, #+8]
+    297              
+    298              diff=T2-T5-diff;
+   \   00000060   2969               LDR      R1,[R5, #+16]
+   \   00000062   411A               SUBS     R1,R0,R1
+   \   00000064   6A69               LDR      R2,[R5, #+20]
+   \   00000066   891A               SUBS     R1,R1,R2
+   \   00000068   6961               STR      R1,[R5, #+20]
+    299              u16 ww1,ww2,ww3,ww4,ww5,ww6,ww7,ww8;
+    300              u32 mm;
+    301              mm=T2;
+   \   0000006A   0090               STR      R0,[SP, #+0]
+   \   0000006C   0098               LDR      R0,[SP, #+0]
+   \   0000006E   ........           BL       ?Subroutine3
+   \                     ??CrossCallReturnLabel_5:
+   \   00000072   0190               STR      R0,[SP, #+4]
+    302              ww1=mm/10000000;
+    303              ww2=(mm-ww1*10000000)/1000000;
+   \   00000074   0098               LDR      R0,[SP, #+0]
+   \   00000076   0199               LDR      R1,[SP, #+4]
+   \   00000078   ........           BL       ?Subroutine2
+   \                     ??CrossCallReturnLabel_3:
+   \   0000007C   0291               STR      R1,[SP, #+8]
+    304              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+   \   0000007E   ........           BL       ?Subroutine5
+   \                     ??CrossCallReturnLabel_12:
+   \   00000082   0391               STR      R1,[SP, #+12]
+    305              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+   \   00000084   ........           BL       ?Subroutine6
+   \                     ??CrossCallReturnLabel_14:
+   \   00000088   ........           BL       ?Subroutine9
+    306              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+   \                     ??CrossCallReturnLabel_21:
+   \   0000008C   4FF47A71           MOV      R1,#+1000
+   \   00000090   ........           BL       ?Subroutine7
+    307              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+   \                     ??CrossCallReturnLabel_17:
+   \   00000094   6421               MOVS     R1,#+100
+   \   00000096   B0FBF1FB           UDIV     R11,R0,R1
+   \   0000009A   1FFA8BFB           UXTH     R11,R11
+   \   0000009E   01FB1B00           MLS      R0,R1,R11,R0
+   \   000000A2   0A21               MOVS     R1,#+10
+   \   000000A4   B0FBF1F0           UDIV     R0,R0,R1
+   \   000000A8   80B2               UXTH     R0,R0
+   \   000000AA   0490               STR      R0,[SP, #+16]
+    308              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    309              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    310              printf("T2: %d",ww1); 
+   \   000000AC   0199               LDR      R1,[SP, #+4]
+   \   000000AE   ........           ADR.W    R0,`?<Constant "T2: %d">`
+   \   000000B2   ........           BL       printf
+   \   000000B6   0299               LDR      R1,[SP, #+8]
+   \   000000B8   ........           BL       ??Subroutine10_0
+    311              printf("%d",ww2); 
+    312              printf("%d",ww3);
+   \                     ??CrossCallReturnLabel_32:
+   \   000000BC   0399               LDR      R1,[SP, #+12]
+   \   000000BE   ........           BL       ??Subroutine10_0
+    313              printf("%d",ww4); 
+   \                     ??CrossCallReturnLabel_31:
+   \   000000C2   ........           BL       ?Subroutine10
+    314              printf("%d",ww5);
+   \                     ??CrossCallReturnLabel_34:
+   \   000000C6   5146               MOV      R1,R10
+   \   000000C8   ........           BL       ??Subroutine10_0
+    315              printf("%d",ww6); 
+   \                     ??CrossCallReturnLabel_30:
+   \   000000CC   5946               MOV      R1,R11
+   \   000000CE   ........           BL       ??Subroutine10_0
+    316              printf("%d",ww7);
+   \                     ??CrossCallReturnLabel_29:
+   \   000000D2   04A8               ADD      R0,SP,#+16
+   \   000000D4   0188               LDRH     R1,[R0, #+0]
+   \   000000D6   ........           BL       ??Subroutine10_0
+   \                     ??CrossCallReturnLabel_28:
+   \   000000DA   0098               LDR      R0,[SP, #+0]
+   \   000000DC   0199               LDR      R1,[SP, #+4]
+   \   000000DE   49F28062           MOVW     R2,#+38528
+   \   000000E2   02FB1100           MLS      R0,R2,R1,R0
+   \   000000E6   0299               LDR      R1,[SP, #+8]
+   \   000000E8   44F24022           MOVW     R2,#+16960
+   \   000000EC   02FB1100           MLS      R0,R2,R1,R0
+   \   000000F0   0399               LDR      R1,[SP, #+12]
+   \   000000F2   48F2A062           MOVW     R2,#+34464
+   \   000000F6   ........           BL       ??Subroutine6_0
+   \                     ??CrossCallReturnLabel_15:
+   \   000000FA   01FB1600           MLS      R0,R1,R6,R0
+   \   000000FE   4FF47A71           MOV      R1,#+1000
+   \   00000102   01FB1A00           MLS      R0,R1,R10,R0
+   \   00000106   6421               MOVS     R1,#+100
+   \   00000108   01FB1B00           MLS      R0,R1,R11,R0
+   \   0000010C   0499               LDR      R1,[SP, #+16]
+   \   0000010E   0A22               MOVS     R2,#+10
+   \   00000110   02FB1101           MLS      R1,R2,R1,R0
+   \   00000114   ........           BL       ?Subroutine8
+    317              printf("%d\r\n",ww8); 
+    318              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    319              
+    320              mm=diff;
+   \                     ??CrossCallReturnLabel_20:
+   \   00000118   6869               LDR      R0,[R5, #+20]
+   \   0000011A   0390               STR      R0,[SP, #+12]
+    321              ww1=mm/10000000;
+   \   0000011C   ........           BL       ?Subroutine3
+   \                     ??CrossCallReturnLabel_6:
+   \   00000120   0290               STR      R0,[SP, #+8]
+    322              ww2=(mm-ww1*10000000)/1000000;
+   \   00000122   0398               LDR      R0,[SP, #+12]
+   \   00000124   0299               LDR      R1,[SP, #+8]
+   \   00000126   ........           BL       ?Subroutine2
+   \                     ??CrossCallReturnLabel_4:
+   \   0000012A   0191               STR      R1,[SP, #+4]
+    323              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+   \   0000012C   ........           BL       ?Subroutine5
+   \                     ??CrossCallReturnLabel_13:
+   \   00000130   0091               STR      R1,[SP, #+0]
+    324              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+   \   00000132   ........           BL       ?Subroutine6
+   \                     ??CrossCallReturnLabel_16:
+   \   00000136   B0FBF1F1           UDIV     R1,R0,R1
+   \   0000013A   89B2               UXTH     R1,R1
+   \   0000013C   0491               STR      R1,[SP, #+16]
+    325              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+   \   0000013E   ........           BL       ?Subroutine13
+   \                     ??CrossCallReturnLabel_49:
+   \   00000142   ........           BL       ?Subroutine9
+    326              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+   \                     ??CrossCallReturnLabel_22:
+   \   00000146   6421               MOVS     R1,#+100
+   \   00000148   ........           BL       ?Subroutine7
+    327              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+   \                     ??CrossCallReturnLabel_18:
+   \   0000014C   0A21               MOVS     R1,#+10
+   \   0000014E   B0FBF1FB           UDIV     R11,R0,R1
+   \   00000152   1FFA8BFB           UXTH     R11,R11
+    328              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    329              printf("T2-T5-diff: %d",ww1); 
+   \   00000156   0299               LDR      R1,[SP, #+8]
+   \   00000158   ........           ADR.W    R0,`?<Constant "T2-T5-diff: %d">`
+   \   0000015C   ........           BL       printf
+    330              printf("%d",ww2); 
+   \   00000160   0199               LDR      R1,[SP, #+4]
+   \   00000162   ........           BL       ??Subroutine10_0
+    331              printf("%d",ww3);
+   \                     ??CrossCallReturnLabel_27:
+   \   00000166   0099               LDR      R1,[SP, #+0]
+   \   00000168   ........           BL       ??Subroutine10_0
+    332              printf("%d",ww4); 
+   \                     ??CrossCallReturnLabel_26:
+   \   0000016C   0499               LDR      R1,[SP, #+16]
+   \   0000016E   ........           BL       ??Subroutine10_0
+    333              printf("%d",ww5);
+   \                     ??CrossCallReturnLabel_25:
+   \   00000172   ........           BL       ?Subroutine10
+    334              printf("%d",ww6); 
+   \                     ??CrossCallReturnLabel_33:
+   \   00000176   5146               MOV      R1,R10
+   \   00000178   ........           BL       ??Subroutine10_0
+    335              printf("%d",ww7);
+   \                     ??CrossCallReturnLabel_24:
+   \   0000017C   5946               MOV      R1,R11
+   \   0000017E   ........           BL       ??Subroutine10_0
+    336              printf("%d\r\n",ww8); 
+   \                     ??CrossCallReturnLabel_23:
+   \   00000182   0398               LDR      R0,[SP, #+12]
+   \   00000184   0299               LDR      R1,[SP, #+8]
+   \   00000186   49F28062           MOVW     R2,#+38528
+   \   0000018A   02FB1100           MLS      R0,R2,R1,R0
+   \   0000018E   0199               LDR      R1,[SP, #+4]
+   \   00000190   44F24022           MOVW     R2,#+16960
+   \   00000194   02FB1100           MLS      R0,R2,R1,R0
+   \   00000198   0099               LDR      R1,[SP, #+0]
+   \   0000019A   48F2A062           MOVW     R2,#+34464
+   \   0000019E   02FB1100           MLS      R0,R2,R1,R0
+   \   000001A2   0499               LDR      R1,[SP, #+16]
+   \   000001A4   ........           BL       ?Subroutine13
+   \                     ??CrossCallReturnLabel_50:
+   \   000001A8   01FB1600           MLS      R0,R1,R6,R0
+   \   000001AC   6421               MOVS     R1,#+100
+   \   000001AE   01FB1A00           MLS      R0,R1,R10,R0
+   \   000001B2   0A21               MOVS     R1,#+10
+   \   000001B4   01FB1B01           MLS      R1,R1,R11,R0
+   \   000001B8   ........           BL       ?Subroutine8
+    337              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+   \                     ??CrossCallReturnLabel_19:
+   \   000001BC   11E0               B.N      ??processRxPacket_3
+    338              }
+    339           else if((rxData.packet[13]=='s')&&(rxData.packet[14]=='y')&&(rxData.packet[15]=='n')&&(rxData.packet[16]=='c'))
+   \                     ??processRxPacket_1:
+   \   000001BE   7328               CMP      R0,#+115
+   \   000001C0   0FD1               BNE.N    ??processRxPacket_3
+   \   000001C2   F87B               LDRB     R0,[R7, #+15]
+   \   000001C4   7928               CMP      R0,#+121
+   \   000001C6   0CD1               BNE.N    ??processRxPacket_3
+   \   000001C8   387C               LDRB     R0,[R7, #+16]
+   \   000001CA   6E28               CMP      R0,#+110
+   \   000001CC   09D1               BNE.N    ??processRxPacket_3
+   \   000001CE   787C               LDRB     R0,[R7, #+17]
+   \   000001D0   6328               CMP      R0,#+99
+   \   000001D2   06D1               BNE.N    ??processRxPacket_3
+    340            { //LGZ:p11
+    341              T5=halCommonGetInt32uMillisecondTick();
+   \   000001D4   ........           BL       halCommonGetInt32uMillisecondTick
+   \   000001D8   2861               STR      R0,[R5, #+16]
+    342              printf("T5 has start;\r\n");
+   \   000001DA   ........           ADR.W    R0,`?<Constant "T5 has start;\\r\\n">`
+   \   000001DE   ........           BL       printf
+    343            } 
+    344          #endif
+    345           
+    346          #ifdef SUN_ROLE
+    347           //LGZ
+    348            if((rxData.packet[13]=='r')&&(rxData.packet[14]=='p')&&(rxData.packet[15]=='0')&&(rxData.packet[16]=='y'))
+    349            { 
+    350             
+    351              T4=halCommonGetInt32uMillisecondTick();
+    352              T2=0;
+    353              T2=((((((T2|rxData.packet[20])<<8)|rxData.packet[19])<<8)|rxData.packet[18])<<8)|rxData.packet[17];
+    354              back=T2;
+    355              
+    356              replySyncback();//LGZ:立刻回复p11
+    357              
+    358              T3=0;
+    359              T3=((((((T3|rxData.packet[24])<<8)|rxData.packet[23])<<8)|rxData.packet[22])<<8)|rxData.packet[21];
+    360              timeoffset=((T2-T1)+(T3-T4))/2.0;
+    361              //timeoffset=timeoffset*100;
+    362              u16 ww1,ww2,ww3,ww4,ww5,ww6,ww7,ww8;
+    363              u32 mm;
+    364             printf("PLANET0:\r\n");
+    365              mm=T1;
+    366              ww1=mm/10000000;
+    367              ww2=(mm-ww1*10000000)/1000000;
+    368              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    369              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    370              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    371              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    372              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    373              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    374              printf("T1: %d",ww1); 
+    375              printf("%d",ww2); 
+    376              printf("%d",ww3);
+    377              printf("%d",ww4); 
+    378              printf("%d",ww5);
+    379              printf("%d",ww6); 
+    380              printf("%d",ww7);
+    381              printf("%d\r\n",ww8); 
+    382              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    383              
+    384              mm=T2;
+    385              ww1=mm/10000000;
+    386              ww2=(mm-ww1*10000000)/1000000;
+    387              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    388              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    389              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    390              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    391              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    392              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    393              printf("T2: %d",ww1); 
+    394              printf("%d",ww2); 
+    395              printf("%d",ww3);
+    396              printf("%d",ww4); 
+    397              printf("%d",ww5);
+    398              printf("%d",ww6); 
+    399              printf("%d",ww7);
+    400              printf("%d\r\n",ww8); 
+    401              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    402              
+    403              mm=T3;
+    404              ww1=mm/10000000;
+    405              ww2=(mm-ww1*10000000)/1000000;
+    406              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    407              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    408              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    409              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    410              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    411              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    412              printf("T3: %d",ww1); 
+    413              printf("%d",ww2); 
+    414              printf("%d",ww3);
+    415              printf("%d",ww4); 
+    416              printf("%d",ww5);
+    417              printf("%d",ww6); 
+    418              printf("%d",ww7);
+    419              printf("%d\r\n",ww8); 
+    420              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    421              
+    422              mm=T4;
+    423              ww1=mm/10000000;
+    424              ww2=(mm-ww1*10000000)/1000000;
+    425              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    426              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    427              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    428              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    429              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    430              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    431              printf("T4: %d",ww1); 
+    432              printf("%d",ww2); 
+    433              printf("%d",ww3);
+    434              printf("%d",ww4); 
+    435              printf("%d",ww5);
+    436              printf("%d",ww6); 
+    437              printf("%d",ww7);
+    438              printf("%d\r\n",ww8); 
+    439              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    440            } 
+    441           /*
+    442            if((rxData.packet[13]=='r')&&(rxData.packet[14]=='p')&&(rxData.packet[15]=='1')&&(rxData.packet[16]=='y'))
+    443            { 
+    444              T4=halCommonGetInt32uMillisecondTick();
+    445              T2=0;
+    446              T2=((((((T2|rxData.packet[20])<<8)|rxData.packet[19])<<8)|rxData.packet[18])<<8)|rxData.packet[17];
+    447              T3=0;
+    448              T3=((((((T3|rxData.packet[24])<<8)|rxData.packet[23])<<8)|rxData.packet[22])<<8)|rxData.packet[21];
+    449              timeoffset=((T2-T1)+(T3-T4))/2.0;
+    450              //timeoffset=timeoffset*100;
+    451              u16 ww1,ww2,ww3,ww4,ww5,ww6,ww7,ww8;
+    452              u32 mm;
+    453              printf("four T:\r\n");
+    454              mm=T1;
+    455              ww1=mm/10000000;
+    456              ww2=(mm-ww1*10000000)/1000000;
+    457              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    458              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    459              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    460              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    461              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    462              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    463              printf("T1: %d",ww1); 
+    464              printf("%d",ww2); 
+    465              printf("%d",ww3);
+    466              printf("%d",ww4); 
+    467              printf("%d",ww5);
+    468              printf("%d",ww6); 
+    469              printf("%d",ww7);
+    470              printf("%d\r\n",ww8); 
+    471              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    472              
+    473              mm=T2;
+    474              ww1=mm/10000000;
+    475              ww2=(mm-ww1*10000000)/1000000;
+    476              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    477              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    478              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    479              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    480              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    481              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    482              printf("T2: %d",ww1); 
+    483              printf("%d",ww2); 
+    484              printf("%d",ww3);
+    485              printf("%d",ww4); 
+    486              printf("%d",ww5);
+    487              printf("%d",ww6); 
+    488              printf("%d",ww7);
+    489              printf("%d\r\n",ww8); 
+    490              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    491              
+    492              mm=T3;
+    493              ww1=mm/10000000;
+    494              ww2=(mm-ww1*10000000)/1000000;
+    495              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    496              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    497              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    498              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    499              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    500              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    501              printf("T3: %d",ww1); 
+    502              printf("%d",ww2); 
+    503              printf("%d",ww3);
+    504              printf("%d",ww4); 
+    505              printf("%d",ww5);
+    506              printf("%d",ww6); 
+    507              printf("%d",ww7);
+    508              printf("%d\r\n",ww8); 
+    509              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    510              
+    511              mm=T4;
+    512              ww1=mm/10000000;
+    513              ww2=(mm-ww1*10000000)/1000000;
+    514              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    515              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    516              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    517              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    518              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    519              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    520              printf("T4: %d",ww1); 
+    521              printf("%d",ww2); 
+    522              printf("%d",ww3);
+    523              printf("%d",ww4); 
+    524              printf("%d",ww5);
+    525              printf("%d",ww6); 
+    526              printf("%d",ww7);
+    527              printf("%d\r\n",ww8); 
+    528              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    529            } 
+    530            if((rxData.packet[13]=='r')&&(rxData.packet[14]=='p')&&(rxData.packet[15]=='2')&&(rxData.packet[16]=='y'))
+    531            { 
+    532              T4=halCommonGetInt32uMillisecondTick();
+    533              T2=0;
+    534              T2=((((((T2|rxData.packet[20])<<8)|rxData.packet[19])<<8)|rxData.packet[18])<<8)|rxData.packet[17];
+    535              T3=0;
+    536              T3=((((((T3|rxData.packet[24])<<8)|rxData.packet[23])<<8)|rxData.packet[22])<<8)|rxData.packet[21];
+    537              timeoffset=((T2-T1)+(T3-T4))/2.0;
+    538              //timeoffset=timeoffset*100;
+    539              u16 ww1,ww2,ww3,ww4,ww5,ww6,ww7,ww8;
+    540              u32 mm;
+    541             printf("PLANET2:\r\n");
+    542              mm=T1;
+    543              ww1=mm/10000000;
+    544              ww2=(mm-ww1*10000000)/1000000;
+    545              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    546              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    547              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    548              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    549              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    550              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    551              printf("T1: %d",ww1); 
+    552              printf("%d",ww2); 
+    553              printf("%d",ww3);
+    554              printf("%d",ww4); 
+    555              printf("%d",ww5);
+    556              printf("%d",ww6); 
+    557              printf("%d",ww7);
+    558              printf("%d\r\n",ww8); 
+    559              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    560              
+    561              mm=T2;
+    562              ww1=mm/10000000;
+    563              ww2=(mm-ww1*10000000)/1000000;
+    564              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    565              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    566              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    567              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    568              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    569              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    570              printf("T2: %d",ww1); 
+    571              printf("%d",ww2); 
+    572              printf("%d",ww3);
+    573              printf("%d",ww4); 
+    574              printf("%d",ww5);
+    575              printf("%d",ww6); 
+    576              printf("%d",ww7);
+    577              printf("%d\r\n",ww8); 
+    578              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    579              
+    580              mm=T3;
+    581              ww1=mm/10000000;
+    582              ww2=(mm-ww1*10000000)/1000000;
+    583              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    584              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    585              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    586              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    587              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    588              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    589              printf("T3: %d",ww1); 
+    590              printf("%d",ww2); 
+    591              printf("%d",ww3);
+    592              printf("%d",ww4); 
+    593              printf("%d",ww5);
+    594              printf("%d",ww6); 
+    595              printf("%d",ww7);
+    596              printf("%d\r\n",ww8); 
+    597              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    598              
+    599              mm=T4;
+    600              ww1=mm/10000000;
+    601              ww2=(mm-ww1*10000000)/1000000;
+    602              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    603              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    604              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    605              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    606              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    607              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    608              printf("T4: %d",ww1); 
+    609              printf("%d",ww2); 
+    610              printf("%d",ww3);
+    611              printf("%d",ww4); 
+    612              printf("%d",ww5);
+    613              printf("%d",ww6); 
+    614              printf("%d",ww7);
+    615              printf("%d\r\n",ww8); 
+    616              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    617            } 
+    618            if((rxData.packet[13]=='r')&&(rxData.packet[14]=='p')&&(rxData.packet[15]=='3')&&(rxData.packet[16]=='y'))
+    619            { 
+    620              T4=halCommonGetInt32uMillisecondTick();
+    621              T2=0;
+    622              T2=((((((T2|rxData.packet[20])<<8)|rxData.packet[19])<<8)|rxData.packet[18])<<8)|rxData.packet[17];
+    623              T3=0;
+    624              T3=((((((T3|rxData.packet[24])<<8)|rxData.packet[23])<<8)|rxData.packet[22])<<8)|rxData.packet[21];
+    625              timeoffset=((T2-T1)+(T3-T4))/2.0;
+    626              //timeoffset=timeoffset*100;
+    627              u16 ww1,ww2,ww3,ww4,ww5,ww6,ww7,ww8;
+    628              u32 mm;
+    629            printf("PLANET3:\r\n");
+    630              mm=T1;
+    631              ww1=mm/10000000;
+    632              ww2=(mm-ww1*10000000)/1000000;
+    633              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    634              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    635              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    636              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    637              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    638              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    639              printf("T1: %d",ww1); 
+    640              printf("%d",ww2); 
+    641              printf("%d",ww3);
+    642              printf("%d",ww4); 
+    643              printf("%d",ww5);
+    644              printf("%d",ww6); 
+    645              printf("%d",ww7);
+    646              printf("%d\r\n",ww8); 
+    647              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    648              
+    649              mm=T2;
+    650              ww1=mm/10000000;
+    651              ww2=(mm-ww1*10000000)/1000000;
+    652              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    653              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    654              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    655              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    656              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    657              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    658              printf("T2: %d",ww1); 
+    659              printf("%d",ww2); 
+    660              printf("%d",ww3);
+    661              printf("%d",ww4); 
+    662              printf("%d",ww5);
+    663              printf("%d",ww6); 
+    664              printf("%d",ww7);
+    665              printf("%d\r\n",ww8); 
+    666              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    667              
+    668              mm=T3;
+    669              ww1=mm/10000000;
+    670              ww2=(mm-ww1*10000000)/1000000;
+    671              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    672              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    673              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    674              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    675              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    676              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    677              printf("T3: %d",ww1); 
+    678              printf("%d",ww2); 
+    679              printf("%d",ww3);
+    680              printf("%d",ww4); 
+    681              printf("%d",ww5);
+    682              printf("%d",ww6); 
+    683              printf("%d",ww7);
+    684              printf("%d\r\n",ww8); 
+    685              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    686              
+    687              mm=T4;
+    688              ww1=mm/10000000;
+    689              ww2=(mm-ww1*10000000)/1000000;
+    690              ww3=((mm-ww1*10000000)-ww2*1000000)/100000;
+    691              ww4=(((mm-ww1*10000000)-ww2*1000000)-ww3*100000)/10000;
+    692              ww5=((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)/1000;
+    693              ww6=(((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)/100;
+    694              ww7=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)/10;
+    695              ww8=((((((mm-ww1*10000000)-ww2*1000000)-ww3*100000)-ww4*10000)-ww5*1000)-ww6*100)-ww7*10;
+    696              printf("T4: %d",ww1); 
+    697              printf("%d",ww2); 
+    698              printf("%d",ww3);
+    699              printf("%d",ww4); 
+    700              printf("%d",ww5);
+    701              printf("%d",ww6); 
+    702              printf("%d",ww7);
+    703              printf("%d\r\n",ww8); 
+    704              ww1=0;ww2=0;ww3=0;ww4=0;ww5=0;ww6=0;ww7=0;ww8=0;
+    705              
+    706            } */
+    707          #endif
+    708           
+    709            
+    710           /* RX_DETAILS(
+    711              printf("\r\n");
+    712              printf("RX:");
+    713              for(i=0;i<=rxData.packet[0];i++) {
+    714                printf(" %02X", rxData.packet[i]);
+    715              }
+    716              printf("\r\n");
+    717              printf("ackFramePendingSet = %d\r\n", rxData.ackFramePendingSet);
+    718              printf("time = 0x%05X\r\n", rxData.time);
+    719              printf("errors = %d\r\n", rxData.errors);
+    720              printf("rssi = %d\r\n", rxData.rssi);
+    721            );*/
+    722            //Derek 检测Sync消息
+    723          
+    724            //At a minimum there must be a dst PAN, a short dst addr, a short src
+    725            //addr, and a payload/command type.  That's a minimum of 10 bytes.
+    726            if(rxData.packet[0]<10) {
+   \                     ??processRxPacket_3:
+   \   000001E2   7878               LDRB     R0,[R7, #+1]
+   \   000001E4   0A28               CMP      R0,#+10
+   \   000001E6   06D3               BCC.N    ??processRxPacket_4
+    727              RX_DETAILS(printf("Length byte too short\r\n");)
+    728              goto stopProcessing;
+    729            }
+    730            
+    731            //Determine the frame type.
+    732            switch(rxData.packet[1]&0x7) {
+   \   000001E8   B878               LDRB     R0,[R7, #+2]
+   \   000001EA   00F00701           AND      R1,R0,#0x7
+   \   000001EE   0129               CMP      R1,#+1
+   \   000001F0   02D0               BEQ.N    ??processRxPacket_5
+   \   000001F2   0329               CMP      R1,#+3
+   \   000001F4   02D0               BEQ.N    ??processRxPacket_6
+   \                     ??processRxPacket_4:
+   \   000001F6   C9E0               B.N      ??processRxPacket_7
+    733              case FT_DATA:
+    734                RX_DETAILS(printf("FT_DATA\r\n");)
+    735                packetType = (FT_DATA<<4);
+   \                     ??processRxPacket_5:
+   \   000001F8   1026               MOVS     R6,#+16
+    736                break;
+   \   000001FA   00E0               B.N      ??processRxPacket_8
+    737              case FT_MAC_COMMAND:
+    738                RX_DETAILS(printf("FT_MAC_COMMAND\r\n");)
+    739                packetType = (FT_MAC_COMMAND<<4);
+   \                     ??processRxPacket_6:
+   \   000001FC   3026               MOVS     R6,#+48
+    740                break;
+    741              default:
+    742                RX_DETAILS(printf("Unknown frame type\r\n");)
+    743                goto stopProcessing;
+    744            };
+    745            
+    746            //Is there a source PAN ID in the packet?
+    747            if((rxData.packet[1]&0x40)!=0x40) {
+   \                     ??processRxPacket_8:
+   \   000001FE   4006               LSLS     R0,R0,#+25
+   \   00000200   5CBF               ITT      PL 
+   \   00000202   0124               MOVPL    R4,#+1
+   \   00000204   4FF00208           MOVPL    R8,#+2
+    748              pktHasSrcPanId=TRUE;
+    749              srcAddrOffset = 2;
+    750            }
+    751            
+    752            //There are 4 possible addressing modes in our application:
+    753            switch(rxData.packet[2]) {
+   \   00000208   08F1100A           ADD      R10,R8,#+16
+   \   0000020C   08EB0700           ADD      R0,R8,R7
+   \   00000210   F978               LDRB     R1,[R7, #+3]
+   \   00000212   8829               CMP      R1,#+136
+   \   00000214   06D0               BEQ.N    ??processRxPacket_9
+   \   00000216   8C29               CMP      R1,#+140
+   \   00000218   15D0               BEQ.N    ??processRxPacket_10
+   \   0000021A   C829               CMP      R1,#+200
+   \   0000021C   0AD0               BEQ.N    ??processRxPacket_11
+   \   0000021E   CC29               CMP      R1,#+204
+   \   00000220   15D0               BEQ.N    ??processRxPacket_12
+   \   00000222   B3E0               B.N      ??processRxPacket_7
+    754              case FCF_SHORTDST + FCF_SHORTSRC:
+    755                RX_DETAILS(printf("short dst, short src\r\n");)
+    756                shortSrcAddr = (rxData.packet[8+srcAddrOffset+1]<<8)|
+    757                               (rxData.packet[8+srcAddrOffset+0]<<0);
+    758                payloadStart = 10+srcAddrOffset;
+   \                     ??processRxPacket_9:
+   \   00000224   08F10A0A           ADD      R10,R8,#+10
+    759                if(pktHasSrcPanId) {
+   \   00000228   DCB1               CBZ.N    R4,??processRxPacket_13
+    760                  srcPanId = (rxData.packet[9]<<8)|(rxData.packet[8]<<0);
+   \                     ??processRxPacket_14:
+   \   0000022A   B87A               LDRB     R0,[R7, #+10]
+   \   0000022C   797A               LDRB     R1,[R7, #+9]
+   \                     ??processRxPacket_15:
+   \   0000022E   41EA0029           ORR      R9,R1,R0, LSL #+8
+   \   00000232   16E0               B.N      ??processRxPacket_13
+    761                }
+    762                break;
+    763              case FCF_SHORTDST + FCF_LONGSRC:
+    764                RX_DETAILS(printf("short dst, long src\r\n");)
+    765                memcpy(longSrcAddr, (rxData.packet+8+srcAddrOffset), 8);
+   \                     ??processRxPacket_11:
+   \   00000234   0822               MOVS     R2,#+8
+   \   00000236   00F10901           ADD      R1,R0,#+9
+   \   0000023A   05A8               ADD      R0,SP,#+20
+   \   0000023C   ........           BL       __aeabi_memcpy
+    766                payloadStart = 16+srcAddrOffset;
+    767                if(pktHasSrcPanId) {
+   \   00000240   002C               CMP      R4,#+0
+   \   00000242   F2D1               BNE.N    ??processRxPacket_14
+   \   00000244   0DE0               B.N      ??processRxPacket_13
+    768                  srcPanId = (rxData.packet[9]<<8)|(rxData.packet[8]<<0);
+    769                }
+    770                break;
+    771              case FCF_LONGDST + FCF_SHORTSRC:
+    772                RX_DETAILS(printf("long dst, short src\r\n");)
+    773                shortSrcAddr = (rxData.packet[14+srcAddrOffset+1]<<8)|
+    774                               (rxData.packet[14+srcAddrOffset+0]<<0);
+    775                payloadStart = 16+srcAddrOffset;
+    776                if(pktHasSrcPanId) {
+   \                     ??processRxPacket_10:
+   \   00000246   64B1               CBZ.N    R4,??processRxPacket_13
+    777                  srcPanId = (rxData.packet[15]<<8)|(rxData.packet[14]<<0);
+   \                     ??processRxPacket_16:
+   \   00000248   387C               LDRB     R0,[R7, #+16]
+   \   0000024A   F97B               LDRB     R1,[R7, #+15]
+   \   0000024C   EFE7               B.N      ??processRxPacket_15
+    778                }
+    779                break;
+    780              case FCF_LONGDST + FCF_LONGSRC:
+    781                RX_DETAILS(printf("long dst, long src\r\n");)
+    782                memcpy(longSrcAddr, (rxData.packet+14+srcAddrOffset), 8);
+   \                     ??processRxPacket_12:
+   \   0000024E   0822               MOVS     R2,#+8
+   \   00000250   00F10F01           ADD      R1,R0,#+15
+   \   00000254   05A8               ADD      R0,SP,#+20
+   \   00000256   ........           BL       __aeabi_memcpy
+    783                payloadStart = 22+srcAddrOffset;
+   \   0000025A   08F1160A           ADD      R10,R8,#+22
+    784                if(pktHasSrcPanId) {
+   \   0000025E   002C               CMP      R4,#+0
+   \   00000260   F2D1               BNE.N    ??processRxPacket_16
+    785                  srcPanId = (rxData.packet[15]<<8)|(rxData.packet[14]<<0);
+    786                }
+    787                break;
+    788              default:
+    789                RX_DETAILS(printf("Unknown addressing mode\r\n");)
+    790                goto stopProcessing;
+    791            }
+    792            
+    793            RX_DETAILS(
+    794              if(pktHasSrcPanId) {
+    795                printf("src pan = 0x%04X\r\n", srcPanId);
+    796              }
+    797            )
+    798            
+    799            //Make sure the packet is long enough to obtain a payload type
+    800            if(rxData.packet[0]<payloadStart) {
+   \                     ??processRxPacket_13:
+   \   00000262   7878               LDRB     R0,[R7, #+1]
+   \   00000264   5FFA8AF1           UXTB     R1,R10
+   \   00000268   8842               CMP      R0,R1
+   \   0000026A   11D3               BCC.N    ??processRxPacket_17
+    801              RX_DETAILS(printf("Length byte too short\r\n");)
+    802              goto stopProcessing;
+    803            }
+    804            
+    805            //Finish deriving the packet type by obtaining the payload type.
+    806            packetType |= (rxData.packet[payloadStart]<<0);
+    807            RX_DETAILS(printf("packet type = 0x%02X\r\n", packetType);)
+    808            
+    809            switch(packetType) {
+   \   0000026C   C819               ADDS     R0,R1,R7
+   \   0000026E   4178               LDRB     R1,[R0, #+1]
+   \   00000270   3143               ORRS     R1,R1,R6
+   \   00000272   1029               CMP      R1,#+16
+   \   00000274   0DD0               BEQ.N    ??processRxPacket_18
+   \   00000276   1229               CMP      R1,#+18
+   \   00000278   4BD0               BEQ.N    ??processRxPacket_19
+   \   0000027A   1429               CMP      R1,#+20
+   \   0000027C   79D0               BEQ.N    ??processRxPacket_20
+   \   0000027E   1529               CMP      R1,#+21
+   \   00000280   00F08080           BEQ.W    ??processRxPacket_21
+   \   00000284   1829               CMP      R1,#+24
+   \   00000286   14D0               BEQ.N    ??processRxPacket_22
+   \   00000288   1929               CMP      R1,#+25
+   \   0000028A   1FD0               BEQ.N    ??processRxPacket_23
+   \   0000028C   1A29               CMP      R1,#+26
+   \   0000028E   36D0               BEQ.N    ??processRxPacket_24
+   \                     ??processRxPacket_17:
+   \   00000290   7CE0               B.N      ??processRxPacket_7
+    810              case (GENERIC_DATA_PACKET): //executes on SUN and PLANET
+    811                RX_DETAILS(printf("GENERIC_DATA_PACKET\r\n");)
+    812          #ifdef SUN_ROLE
+    813              halToggleLed(LED_D1);
+    814              halCommonDelayMilliseconds(500);
+    815              halClearLed(LED_D1);
+    816          #endif
+    817          #ifdef PLANET_ROLE
+    818              halToggleLed(LED_D3);
+   \                     ??processRxPacket_18:
+   \   00000292   ........           BL       ?Subroutine12
+    819              halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_48:
+   \   00000296   ........           BL       ?Subroutine11
+    820              halClearLed(LED_D3);    
+   \                     ??CrossCallReturnLabel_41:
+   \   0000029A   ........           BL       ?Subroutine14
+    821          #endif
+    822              //The LQI calculation wants the entire packet length.  The length
+    823              //byte in the received packet does not include the length byte
+    824              //itself or the two CRC bytes.
+    825              rxData.lqi = calculateLqi(rxData.errors, (rxData.packet[0]+3));
+   \                     ??CrossCallReturnLabel_54:
+   \   0000029E   7878               LDRB     R0,[R7, #+1]
+   \   000002A0   C11C               ADDS     R1,R0,#+3
+   \   000002A2   C9B2               UXTB     R1,R1
+   \   000002A4   B7F88800           LDRH     R0,[R7, #+136]
+   \   000002A8   ........           BL       calculateLqi
+   \   000002AC   87F88B00           STRB     R0,[R7, #+139]
+    826              /*printf("RX: Addr=0x%04X, VDD=%dmV, RxSFD=0x%05X, ",
+    827                       shortSrcAddr,
+    828                       ((rxData.packet[payloadStart+1]<<0)|
+    829                        (rxData.packet[payloadStart+2]<<8)),
+    830                       rxData.time);
+    831              if(rxData.packet[payloadStart+5]&0x80) {
+    832                  //Only show the TX SFD if the transmitter was capable of getting
+    833                  //the SFD into the packet in time.
+    834                  rxData.packet[payloadStart+5] &= ~0x80;
+    835                  printf("TxSFD=0x%05X, ",
+    836                         ((rxData.packet[payloadStart+3]<< 0)|
+    837                          (rxData.packet[payloadStart+4]<< 8)|
+    838                          (rxData.packet[payloadStart+5]<<16)));
+    839                } else {
+    840                  printf("TxSFD=-------, ");
+    841                }
+    842                
+    843                printf("RSSI=%ddBm, LQI=0x%02X\r\n",
+    844                       rxData.rssi,
+    845                       rxData.lqi);*/
+    846                break;
+   \   000002B0   6CE0               B.N      ??processRxPacket_7
+    847          #ifdef PLANET_ROLE
+    848              case (SYN_SLEEPING_WAITTIME):
+    849                  printf("SYN_SLEEPING_WAITTIME\r\n");
+   \                     ??processRxPacket_22:
+   \   000002B2   ........           ADR.W    R0,`?<Constant "SYN_SLEEPING_WAITTIME\\r\\n">`
+   \   000002B6   ........           BL       printf
+    850          	halToggleLed(LED_D3);    
+   \   000002BA   ........           BL       ?Subroutine12
+    851          	halCommonDelayMilliseconds(1000);
+   \                     ??CrossCallReturnLabel_47:
+   \   000002BE   4FF47A70           MOV      R0,#+1000
+   \                     ??processRxPacket_25:
+   \   000002C2   ........           BL       halCommonDelayMilliseconds
+    852                  halClearLed(LED_D3);                
+   \   000002C6   ........           BL       ?Subroutine14
+    853                  break;
+   \                     ??CrossCallReturnLabel_53:
+   \   000002CA   5FE0               B.N      ??processRxPacket_7
+    854              case (SYN_LED_WAITTIME):
+    855                  printf("SYN_LED_WAITTIME\r\n");
+   \                     ??processRxPacket_23:
+   \   000002CC   ........           ADR.W    R0,`?<Constant "SYN_LED_WAITTIME\\r\\n">`
+   \   000002D0   ........           BL       printf
+    856          	halToggleLed(LED_D3);    //连续3次
+   \   000002D4   ........           BL       ?Subroutine12
+    857          	halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_46:
+   \   000002D8   ........           BL       ?Subroutine11
+    858                  halClearLed(LED_D3); 
+   \                     ??CrossCallReturnLabel_40:
+   \   000002DC   ........           BL       ?Subroutine14
+    859                  halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_52:
+   \   000002E0   ........           BL       ?Subroutine11
+    860                  halToggleLed(LED_D3);    
+   \                     ??CrossCallReturnLabel_39:
+   \   000002E4   ........           BL       ?Subroutine12
+    861          	halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_45:
+   \   000002E8   ........           BL       ?Subroutine11
+    862                  halClearLed(LED_D3); 
+   \                     ??CrossCallReturnLabel_38:
+   \   000002EC   ........           BL       ?Subroutine14
+    863                  halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_51:
+   \   000002F0   ........           BL       ?Subroutine11
+    864                  halToggleLed(LED_D3);    
+   \                     ??CrossCallReturnLabel_37:
+   \   000002F4   ........           BL       ?Subroutine12
+    865          	halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_44:
+   \   000002F8   4FF4FA70           MOV      R0,#+500
+   \   000002FC   E1E7               B.N      ??processRxPacket_25
+    866                  halClearLed(LED_D3); 
+    867                  break;
+    868          #endif
+    869              case (TRSEND_PACKET):
+    870                  sendVddDataPacket(0x0000,0x0001,TRUE);
+   \                     ??processRxPacket_24:
+   \   000002FE   0122               MOVS     R2,#+1
+   \   00000300   0121               MOVS     R1,#+1
+   \   00000302   0020               MOVS     R0,#+0
+   \   00000304   ........           BL       sendVddDataPacket
+    871                  printf("trsend success\r\n");
+   \   00000308   ........           ADR.W    R0,`?<Constant "trsend success\\r\\n">`
+   \   0000030C   ........           BL       printf
+    872                  break;
+   \   00000310   3CE0               B.N      ??processRxPacket_7
+    873          #ifdef SUN_ROLE
+    874              case (SUN_SEARCH_PACKET): //executes on SUN
+    875                RX_DETAILS(printf("SUN_SEARCH_PACKET\r\n");)
+    876                //As a sun, if I have room in my planet table I transmit that
+    877                //I am available.  Otherwise, I don't transmit anything.
+    878                for(int i=0;i<PLANET_TABLE_SIZE;i++) {
+    879                  if(!planetTable[i].active) {
+    880                    //Length
+    881                    packet[0] = (24+2);
+    882                    packet[1] = FCF_DATA;
+    883                    packet[2] = FCF_LONGDST + FCF_LONGSRC;
+    884                    //New sequence number
+    885                    currSeqNum++;
+    886                    packet[3]=currSeqNum;
+    887                    //dst PAN ID
+    888                    packet[4] = (0xFFFF>>0)&0xFF;
+    889                    packet[5] = (0xFFFF>>8)&0xFF;
+    890                    //long dst addr
+    891                    memcpy((packet+6), longSrcAddr, 8);
+    892                    //src PAN ID
+    893                    packet[14] = (ST_RadioGetPanId()>>0)&0xFF;
+    894                    packet[15] = (ST_RadioGetPanId()>>8)&0xFF;
+    895                    //Long src addr
+    896                    memcpy((packet+16), ST_RadioGetEui64(), 8);
+    897                    //payload type
+    898                    packet[24] = PT_SUN_AVAILABLE;
+    899                    //Broadcast response
+    900                    enqueueTxPacket(TRUE, 0xFFFF, packet, 0);
+    901                    break;
+    902                  }
+    903                }
+    904                break;
+    905          #endif
+    906          #ifdef PLANET_ROLE
+    907              case (SUN_AVAILABLE_PACKET): //executes on PLANET
+    908                RX_DETAILS(printf("SUN_AVAILABLE_PACKET\r\n");)
+    909                //If I already found a sun, ignore any subsequent available messages
+    910                if(availableSunFound) {
+   \                     ??processRxPacket_19:
+   \   00000312   A878               LDRB     R0,[R5, #+2]
+   \   00000314   0028               CMP      R0,#+0
+   \   00000316   3BD1               BNE.N    ??processRxPacket_0
+    911                  return;
+    912                }
+    913                if(srcPanId!=MyPANID)
+   \   00000318   40F20110           MOVW     R0,#+257
+   \   0000031C   8145               CMP      R9,R0
+   \   0000031E   35D1               BNE.N    ??processRxPacket_7
+    914                {
+    915                   goto stopProcessing;
+    916                }
+    917                availableSunFound=TRUE;
+   \   00000320   0121               MOVS     R1,#+1
+   \   00000322   A970               STRB     R1,[R5, #+2]
+    918                //As a planet, send a unicast join request to the sun.  But first,
+    919                //switch to the sun's PAN in anticipation of completing the join.
+    920                ST_RadioSetPanId(srcPanId);
+   \   00000324   ........           BL       ST_RadioSetPanId
+    921                //Length
+    922                packet[0] = (22+2);
+   \   00000328   1820               MOVS     R0,#+24
+   \   0000032A   8DF81C00           STRB     R0,[SP, #+28]
+    923                packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   \   0000032E   07AC               ADD      R4,SP,#+28
+   \   00000330   6120               MOVS     R0,#+97
+   \   00000332   6070               STRB     R0,[R4, #+1]
+    924                packet[2] = FCF_LONGDST + FCF_LONGSRC;
+   \   00000334   CC20               MOVS     R0,#+204
+   \   00000336   A070               STRB     R0,[R4, #+2]
+    925                //New sequence number
+    926                currSeqNum++;
+   \   00000338   ........           BL       ?Subroutine17
+    927                packet[3]=currSeqNum;
+    928                //dst PAN ID
+    929                packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_64:
+   \   0000033C   8DF82000           STRB     R0,[SP, #+32]
+    930                packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \   00000340   ........           BL       ST_RadioGetPanId
+   \   00000344   000A               LSRS     R0,R0,#+8
+   \   00000346   6071               STRB     R0,[R4, #+5]
+    931                //long dst addr
+    932                memcpy((packet+6), longSrcAddr, 8);
+   \   00000348   0822               MOVS     R2,#+8
+   \   0000034A   05A9               ADD      R1,SP,#+20
+   \   0000034C   0DF12200           ADD      R0,SP,#+34
+   \   00000350   ........           BL       __aeabi_memcpy
+    933                //long src addr
+    934                memcpy((packet+14), ST_RadioGetEui64(), 8);
+   \   00000354   ........           BL       ST_RadioGetEui64
+   \   00000358   0146               MOV      R1,R0
+   \   0000035A   0822               MOVS     R2,#+8
+   \   0000035C   0DF12A00           ADD      R0,SP,#+42
+   \   00000360   ........           BL       __aeabi_memcpy
+    935                //payload type
+    936                packet[22] = PT_JOIN_REQUEST;
+   \   00000364   0320               MOVS     R0,#+3
+   \   00000366   A075               STRB     R0,[R4, #+22]
+    937                //Unicast join request
+    938                enqueueTxPacket(TRUE, 0xFFFF, packet, 0);
+   \   00000368   0023               MOVS     R3,#+0
+   \   0000036A   07AA               ADD      R2,SP,#+28
+   \   0000036C   ........           BL       ?Subroutine18
+    939                break;
+   \                     ??CrossCallReturnLabel_66:
+   \   00000370   0CE0               B.N      ??processRxPacket_7
+    940          #endif
+    941          #ifdef SUN_ROLE
+    942                case (JOIN_REQUEST_PACKET): //executes on SUN   // 收到请求加网的包
+    943                RX_DETAILS(printf("JOIN_REQUEST_PACKET\r\n");)  //串口终端显示
+    944                {
+    945                  u8 flag=0;
+    946                  u8 pt = PT_JOIN_DENIED;
+    947                  u8 assignedShortId[2] = {0xFE, 0xFF};
+    948                  //sun responds with unicast packet to long ID, acceptance, and the
+    949                  //assigned short ID as payload.  denied packets have a short ID 0xFFFE
+    950                  //Length
+    951                  packet[0] = (24+2);
+    952                  packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+    953                  packet[2] = FCF_LONGDST + FCF_LONGSRC;
+    954                  //New sequence number
+    955                  currSeqNum++;
+    956                  packet[3]=currSeqNum;
+    957                  //dst PAN ID
+    958                  packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+    959                  packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+    960                  //long dst addr
+    961                  memcpy((packet+6), longSrcAddr, 8);
+    962                  //long src addr
+    963                  memcpy((packet+14), ST_RadioGetEui64(), 8);
+    964                  
+    965                  //sun looks for a free spot in the planet table
+    966                  //if none, sun sends a unicast join denied, then idles
+    967                  //if one, sun allocates the planet a short ID and sends a unicast
+    968                  //  join accepted to long id with short id in payload, then idles
+    969                  for(int i=0;i<PLANET_TABLE_SIZE;i++) {
+    970                    u8 k=0;                                            //搜寻表中是否存在与加网节点相同的64位长地址，如果有则覆盖，若没有则继续遍历表
+    971                    while(k<8)
+    972                    { if(planetTable[i].longAddr[k]!=rxData.packet[14+k])
+    973                        break;
+    974                      k++;
+    975                    }
+    976                    if(k==8)
+    977                    {
+    978                      planetTable[i].active = TRUE;
+    979                      shortAddrCounter++;
+    980                      planetTable[i].shortAddr = shortAddrCounter;
+    981                      //memcpy(planetTable[i].longAddr, longSrcAddr, 8);
+    982                      pt = PT_JOIN_ACCEPTED;
+    983                      assignedShortId[0] = (shortAddrCounter>>0)&0xFF;
+    984                      assignedShortId[1] = (shortAddrCounter>>8)&0xFF;
+    985                      printf("Join: Planet 0x%04X (index %d) has joined the network\r\n", shortAddrCounter, i);
+    986                      flag=1;
+    987                      break;
+    988                    }
+    989                  }
+    990          
+    991                  if(flag==0) //如果没有找到相同长地址，则查找空缺位置加进去
+    992                  {
+    993                 
+    994                    for(int i=0;i<PLANET_TABLE_SIZE;i++)
+    995                    {            
+    996                      if(!planetTable[i].active) 
+    997                      { 
+    998                        planetTable[i].active = TRUE;
+    999                        shortAddrCounter++;
+   1000                        planetTable[i].shortAddr = shortAddrCounter;
+   1001                        memcpy(planetTable[i].longAddr, longSrcAddr, 8);
+   1002                        pt = PT_JOIN_ACCEPTED;
+   1003                        assignedShortId[0] = (shortAddrCounter>>0)&0xFF;
+   1004                        assignedShortId[1] = (shortAddrCounter>>8)&0xFF;
+   1005                        printf("Join: Planet 0x%04X (index %d) has joined the network\r\n", shortAddrCounter, i);
+   1006                        break;
+   1007                      }
+   1008                    }
+   1009                  }
+   1010                  //payload type
+   1011                  packet[22] = pt;
+   1012                  packet[23] = assignedShortId[0];
+   1013                  packet[24] = assignedShortId[1];
+   1014                  //Unicast join request response
+   1015                  enqueueTxPacket(TRUE, 0xFFFF, packet, 0);
+   1016                }
+   1017                break;	
+   1018          #endif
+   1019          #ifdef PLANET_ROLE
+   1020              case (JOIN_ACCEPTED_PACKET): //executes on PLANET
+   1021                RX_DETAILS(printf("JOIN_ACCEPTED_PACKET\r\n");)
+   1022                //pan ID is already set during PT_SUN_AVAILABLE
+   1023                //set my short ID to the one assigned to me via the payload
+   1024                ST_RadioSetNodeId((rxData.packet[payloadStart+1]<<0)|(rxData.packet[payloadStart+2]<<8));
+   \                     ??processRxPacket_20:
+   \   00000372   8178               LDRB     R1,[R0, #+2]
+   \   00000374   C078               LDRB     R0,[R0, #+3]
+   \   00000376   41EA0020           ORR      R0,R1,R0, LSL #+8
+   \   0000037A   ........           BL       ST_RadioSetNodeId
+   1025                //join complete, halt the search
+   1026                networkJoinedStopSearching = TRUE;
+   \   0000037E   0120               MOVS     R0,#+1
+   \   00000380   E870               STRB     R0,[R5, #+3]
+   1027                break;
+   \   00000382   03E0               B.N      ??processRxPacket_7
+   1028              case (JOIN_DENIED_PACKET): //executes on PLANET
+   1029                RX_DETAILS(printf("JOIN_DENIED_PACKET\r\n");)
+   1030                //return to broadcast PAN ID and try other suns/channels
+   1031                ST_RadioSetPanId(0xFFFF);
+   \                     ??processRxPacket_21:
+   \   00000384   4FF6FF70           MOVW     R0,#+65535
+   \   00000388   ........           BL       ST_RadioSetPanId
+   1032                break;
+   1033          #endif
+   1034          #ifdef SUN_ROLE
+   1035              case (POLLING_PACKET): //executes on SUN
+   1036                RX_DETAILS(printf("POLLING_PACKET\r\n");)
+   1037                //Remember: ST_RadioDataPendingShortIdIsrCallback already did
+   1038                //the hard work of determining is the polling node has data.  If
+   1039                //ackFramePendingSet is true then we definitely have data from
+   1040                //the polling device.  Send the packet now.
+   1041                if(rxData.ackFramePendingSet) {
+   1042                  //When transmitting a packet in response to receiving a packet,
+   1043                  //we must wait 1ms to ensure our new transmission does not disrupt
+   1044                  //the ACK automatically sent in response to the reception.
+   1045                  halCommonDelayMilliseconds(1);
+   1046                  transmitIndirectPacketNow();
+   1047                }
+   1048                break;
+   1049                
+   1050              case (LEAVING_PACKET): //executes on SUN
+   1051                RX_DETAILS(printf("LEAVING_PACKET\r\n");)
+   1052                //Try to remove the child from the table (but don't worry about it
+   1053                //if we can't).
+   1054                for(int i=0;i<PLANET_TABLE_SIZE;i++) {
+   1055                  if(planetTable[i].active && (planetTable[i].shortAddr==shortSrcAddr)) {
+   1056                    printf("Leave: Planet 0x%04X (index %d) has left the network\r\n", shortSrcAddr, i);
+   1057                    planetTable[i].active = FALSE;
+   1058                    planetTable[i].shortAddr=0x0000;
+   1059                    memcpy(planetTable[i].longAddr, 0x0000000000000000, 8);
+   1060                    break;
+   1061                  }
+   1062                }
+   1063                break;
+   1064          #endif     
+   1065              default:
+   1066                RX_DETAILS(printf("Unknown payload type\r\n");)
+   1067                goto stopProcessing;
+   1068            }
+   1069            
+   1070          stopProcessing:
+   1071            rxData.packetBeingProcessed = FALSE;
+   \                     ??processRxPacket_7:
+   \   0000038C   0020               MOVS     R0,#+0
+   \   0000038E   3870               STRB     R0,[R7, #+0]
+   1072          }
+   \                     ??processRxPacket_0:
+   \   00000390   27B0               ADD      SP,SP,#+156
+   \   00000392   BDE8F08F           POP      {R4-R11,PC}      ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine14:
+   \   00000000   0E20               MOVS     R0,#+14
+   \   00000002   ........           B.W      halClearLed
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine13:
+   \   00000000   42F21072           MOVW     R2,#+10000
+   \   00000004   02FB1100           MLS      R0,R2,R1,R0
+   \   00000008   4FF47A71           MOV      R1,#+1000
+   \   0000000C   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine10:
+   \   00000000   3146               MOV      R1,R6
+   \                     ??Subroutine10_0:
+   \   00000002   ....               ADR.N    R0,??DataTable51  ;; 0x25, 0x64, 0x00, 0x00
+   \   00000004   ........           B.W      printf
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine9:
+   \   00000000   B0FBF1F6           UDIV     R6,R0,R1
+   \   00000004   B6B2               UXTH     R6,R6
+   \   00000006   01FB1600           MLS      R0,R1,R6,R0
+   \   0000000A   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine8:
+   \   00000000   89B2               UXTH     R1,R1
+   \   00000002   ........           ADR.W    R0,`?<Constant "%d\\r\\n">`
+   \   00000006   ........           B.W      printf
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine7:
+   \   00000000   B0FBF1FA           UDIV     R10,R0,R1
+   \   00000004   1FFA8AFA           UXTH     R10,R10
+   \   00000008   01FB1A00           MLS      R0,R1,R10,R0
+   \   0000000C   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine6:
+   \   00000000   ........           LDR.W    R2,??DataTable55_6  ;; 0x186a0
+   \                     ??Subroutine6_0:
+   \   00000004   02FB1100           MLS      R0,R2,R1,R0
+   \   00000008   42F21071           MOVW     R1,#+10000
+   \   0000000C   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine5:
+   \   00000000   ........           LDR.W    R2,??DataTable55_7  ;; 0xf4240
+   \   00000004   02FB1100           MLS      R0,R2,R1,R0
+   \   00000008   ........           LDR.W    R1,??DataTable55_6  ;; 0x186a0
+   \   0000000C   B0FBF1F1           UDIV     R1,R0,R1
+   \   00000010   89B2               UXTH     R1,R1
+   \   00000012   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine3:
+   \   00000000   ........           LDR.W    R1,??DataTable55_8  ;; 0x989680
+   \   00000004   B0FBF1F0           UDIV     R0,R0,R1
+   \   00000008   80B2               UXTH     R0,R0
+   \   0000000A   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine2:
+   \   00000000   ........           LDR.W    R2,??DataTable55_8  ;; 0x989680
+   \   00000004   02FB1100           MLS      R0,R2,R1,R0
+   \   00000008   ........           LDR.W    R1,??DataTable55_7  ;; 0xf4240
+   \   0000000C   B0FBF1F1           UDIV     R1,R0,R1
+   \   00000010   89B2               UXTH     R1,R1
+   \   00000012   7047               BX       LR
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine18:
+   \   00000000   4FF6FF71           MOVW     R1,#+65535
+   \   00000004   0120               MOVS     R0,#+1
+   \   00000006   ........           B.W      enqueueTxPacket
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine17:
+   \   00000000   6879               LDRB     R0,[R5, #+5]
+   \   00000002   401C               ADDS     R0,R0,#+1
+   \   00000004   6871               STRB     R0,[R5, #+5]
+   \   00000006   E070               STRB     R0,[R4, #+3]
+   \   00000008   ........           B.W      ST_RadioGetPanId
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine12:
+   \   00000000   0E20               MOVS     R0,#+14
+   \   00000002   ........           B.W      halToggleLed
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine11:
+   \   00000000   4FF4FA70           MOV      R0,#+500
+   \   00000004   ........           B.W      halCommonDelayMilliseconds
+   1073          
+   1074          //This callback must be defined.  This callback is enabled using the function
+   1075          //ST_RadioEnableOverflowNotification but should never be called by the phy
+   1076          //library.  If it is called, something went wront with receive.  Probably
+   1077          //long latency.
+
+   \                                 In section .text, align 2, keep-with-next
+   1078          void ST_RadioOverflowIsrCallback(void)
+   1079          {
+   \                     ST_RadioOverflowIsrCallback:
+   \   00000000   80B5               PUSH     {R7,LR}
+   1080            assert(FALSE);
+   \   00000002   4FF48762           MOV      R2,#+1080
+   \   00000006   ........           ADR.W    R1,`?<Constant "E:\\\\\\312\\265\\321\\3514 \\316\\336\\317`
+   \   0000000A   ........           ADR.W    R0,`?<Constant "FALSE">`
+   \   0000000E   ........           BL       __aeabi_assert
+   \   00000012   BDE80140           POP      {R0,LR}
+   \   00000016   ........           B.W      __iar_EmptyStepPoint
+   1081          }
+   1082          
+   1083          //Command invoked with 'f'.  Form a network and become a sun.
+
+   \                                 In section .text, align 2, keep-with-next
+   1084          void formCmd(void)
+   1085          {
+   \                     formCmd:
+   \   00000000   2DE9F84F           PUSH     {R3-R11,LR}
+   1086            u8 i;
+   1087            u8 searchChannel;
+   1088            s8 searchEnergy;
+   1089            u8 minEnergyChannel = ST_MIN_802_15_4_CHANNEL_NUMBER;
+   \   00000004   0B24               MOVS     R4,#+11
+   1090            s8 minEnergy = 127;
+   \   00000006   4FF07F0B           MOV      R11,#+127
+   1091            StStatus status = ST_SUCCESS;
+   1092          
+   1093            printf("\r\n");
+   \   0000000A   ....               ADR.N    R0,??DataTable51_1  ;; 0x0D, 0x0A, 0x00, 0x00
+   \   0000000C   ........           BL       printf
+   1094            if(activeInNetwork) {
+   \   00000010   ........           LDR.W    R6,??DataTable55_1
+   \   00000014   7078               LDRB     R0,[R6, #+1]
+   \   00000016   20B1               CBZ.N    R0,??formCmd_0
+   1095              printf("Already in network\r\n");
+   \   00000018   ........           ADR.W    R0,`?<Constant "Already in network\\r\\n">`
+   \   0000001C   ........           BL       printf
+   1096              return;
+   \   00000020   4AE0               B.N      ??formCmd_1
+   1097            }
+   1098            printf("Inactive node forming network and becoming the sun\r\n");
+   \                     ??formCmd_0:
+   \   00000022   ........           ADR.W    R0,`?<Constant "Inactive node forming...">`
+   \   00000026   ........           BL       printf
+   1099            
+   1100            initNetworkState();
+   \   0000002A   ........           BL       initNetworkState
+   1101            
+   1102            TURN_RADIO_ON();
+   \   0000002E   ........           BL       ST_RadioWake
+   \   00000032   0020               MOVS     R0,#+0
+   \   00000034   3070               STRB     R0,[R6, #+0]
+   1103            
+   1104            //Loop across all channels
+   1105            for(searchChannel=ST_MIN_802_15_4_CHANNEL_NUMBER;
+   \   00000036   ........           BL       ?Subroutine19
+   1106                searchChannel<=ST_MAX_802_15_4_CHANNEL_NUMBER;
+   1107                searchChannel++) {
+   1108              s8 maxEnergy=-128;
+   \                     ??CrossCallReturnLabel_67:
+   \   0000003A   6FF07F0A           MVN      R10,#+127
+   1109              status = ST_RadioSetChannel(searchChannel);
+   1110              assert(status==ST_SUCCESS);
+   \   0000003E   3846               MOV      R0,R7
+   \   00000040   ........           BL       ST_RadioSetChannel
+   \   00000044   28B1               CBZ.N    R0,??formCmd_2
+   \   00000046   40F25642           MOVW     R2,#+1110
+   \   0000004A   ........           BL       ?Subroutine21
+   \                     ??CrossCallReturnLabel_75:
+   \   0000004E   ........           BL       __iar_EmptyStepPoint
+   1111              
+   1112              for(i=0;i<ENERGY_SAMPLES_COUNT;i++) {
+   \                     ??formCmd_2:
+   \   00000052   2025               MOVS     R5,#+32
+   1113                //Wait 16 symbol periods for energy readings to settle.
+   1114                halCommonDelayMicroseconds(256);
+   \                     ??formCmd_3:
+   \   00000054   4FF48070           MOV      R0,#+256
+   \   00000058   ........           BL       halCommonDelayMicroseconds
+   1115                //Find the max energy for this channel
+   1116                searchEnergy = ST_RadioEnergyDetection();
+   \   0000005C   ........           BL       ST_RadioEnergyDetection
+   1117                if(searchEnergy > maxEnergy) {
+   \   00000060   8245               CMP      R10,R0
+   \   00000062   B8BF               IT       LT 
+   \   00000064   8246               MOVLT    R10,R0
+   1118                  maxEnergy = searchEnergy;
+   1119                }
+   1120              }
+   \   00000066   6D1E               SUBS     R5,R5,#+1
+   \   00000068   F4D1               BNE.N    ??formCmd_3
+   1121              //Find the channel with the lowest max energy
+   1122              if(maxEnergy < minEnergy) {
+   \   0000006A   DA45               CMP      R10,R11
+   \   0000006C   BCBF               ITT      LT 
+   \   0000006E   D346               MOVLT    R11,R10
+   \   00000070   3C46               MOVLT    R4,R7
+   1123                minEnergy = maxEnergy;
+   1124                minEnergyChannel = searchChannel;
+   1125              }
+   1126            }
+   \   00000072   7F1C               ADDS     R7,R7,#+1
+   \   00000074   1B2F               CMP      R7,#+27
+   \   00000076   E0D3               BCC.N    ??CrossCallReturnLabel_67
+   1127            
+   1128            //Select the channel with the lowest max energy
+   1129            status = ST_RadioSetChannel(minEnergyChannel);
+   1130            assert(status==ST_SUCCESS);
+   \   00000078   E0B2               UXTB     R0,R4
+   \   0000007A   ........           BL       ST_RadioSetChannel
+   \   0000007E   28B1               CBZ.N    R0,??formCmd_4
+   \   00000080   40F26A42           MOVW     R2,#+1130
+   \   00000084   ........           BL       ?Subroutine21
+   \                     ??CrossCallReturnLabel_74:
+   \   00000088   ........           BL       __iar_EmptyStepPoint
+   1131            printf("Selected channel %d with energy %d dBm\r\n",
+   1132                   minEnergyChannel, minEnergy);
+   \                     ??formCmd_4:
+   \   0000008C   5A46               MOV      R2,R11
+   \   0000008E   2146               MOV      R1,R4
+   \   00000090   ........           ADR.W    R0,`?<Constant "Selected channel %d w...">`
+   \   00000094   ........           BL       printf
+   1133            
+   1134            //Give our new network a random PAN ID
+   1135            ST_RadioSetPanId(MyPANID);
+   \   00000098   40F20110           MOVW     R0,#+257
+   \   0000009C   ........           BL       ST_RadioSetPanId
+   1136            printf("Randomly chose PAN ID: 0x%04X\r\n", ST_RadioGetPanId());
+   \   000000A0   ........           BL       ST_RadioGetPanId
+   \   000000A4   0146               MOV      R1,R0
+   \   000000A6   ........           ADR.W    R0,`?<Constant "Randomly chose PAN ID...">`
+   \   000000AA   ........           BL       printf
+   1137            
+   1138            //When forming a network, the sun always assigns itself Node ID 0.
+   1139            //(shortAddrCounter is initialized to 0 by initNetworkState)
+   1140            ST_RadioSetNodeId(shortAddrCounter);
+   \   000000AE   3079               LDRB     R0,[R6, #+4]
+   \   000000B0   ........           BL       ST_RadioSetNodeId
+   1141            
+   1142            //Address filtering was already enabled during  app initialization
+   1143            //Planet table was already cleared out by initNetworkState()
+   1144            
+   1145            //The new network is now formed and ready
+   1146            activeInNetwork = TRUE;
+   \   000000B4   0120               MOVS     R0,#+1
+   \   000000B6   7070               STRB     R0,[R6, #+1]
+   1147          }
+   \                     ??formCmd_1:
+   \   000000B8   BDE8F18F           POP      {R0,R4-R11,PC}   ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine21:
+   \   00000000   4946               MOV      R1,R9
+   \   00000002   4046               MOV      R0,R8
+   \   00000004   ........           B.W      __aeabi_assert
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine19:
+   \   00000000   0B27               MOVS     R7,#+11
+   \   00000002   ........           ADR.W    R8,`?<Constant "status==ST_SUCCESS">`
+   \   00000006   ........           ADR.W    R9,`?<Constant "E:\\\\\\312\\265\\321\\3514 \\316\\336\\317`
+   \   0000000A   7047               BX       LR
+   1148          
+   1149          
+   1150          //Command invoked with 'j'.  Join a network and become a planet.  After
+   1151          //the first packet is transmitted here, the rest of the join process
+   1152          //is handled by processRxPacket.
+
+   \                                 In section .text, align 2, keep-with-next
+   1153          void joinCmd(void)
+   1154          {
+   \                     joinCmd:
+   \   00000000   2DE9F04F           PUSH     {R4-R11,LR}
+   \   00000004   A1B0               SUB      SP,SP,#+132
+   1155            u8 packet[128];
+   1156            u8 searchChannel;
+   1157            u32 lastTime;
+   1158            StStatus status = ST_SUCCESS;
+   1159          
+   1160            printf("\r\n");
+   \   00000006   ........           BL       ?Subroutine4
+   1161            if(activeInNetwork) {
+   \                     ??CrossCallReturnLabel_11:
+   \   0000000A   ........           LDR.W    R5,??DataTable55_1
+   \   0000000E   6878               LDRB     R0,[R5, #+1]
+   \   00000010   20B1               CBZ.N    R0,??joinCmd_0
+   1162              printf("Already in network\r\n");
+   \   00000012   ........           ADR.W    R0,`?<Constant "Already in network\\r\\n">`
+   \   00000016   ........           BL       printf
+   1163              return;
+   \   0000001A   7EE0               B.N      ??joinCmd_1
+   1164            }
+   1165            printf("Inactive node joining network and becoming a planet\r\n");
+   \                     ??joinCmd_0:
+   \   0000001C   ........           ADR.W    R0,`?<Constant "Inactive node joining...">`
+   \   00000020   ........           BL       printf
+   1166            
+   1167            initNetworkState();
+   \   00000024   ........           BL       initNetworkState
+   1168            
+   1169            TURN_RADIO_ON();
+   \   00000028   ........           BL       ST_RadioWake
+   \   0000002C   0020               MOVS     R0,#+0
+   \   0000002E   2870               STRB     R0,[R5, #+0]
+   1170            //While we're not joined to a network yet, the receive ISR needs to be able
+   1171            //to process packets.  This state will either stay TRUE if the join
+   1172            //succeeds or return to FALSE if it doesn't.
+   1173            activeInNetwork = TRUE;
+   \   00000030   0120               MOVS     R0,#+1
+   \   00000032   6870               STRB     R0,[R5, #+1]
+   1174            
+   1175            //Length
+   1176            packet[0] = (18+2);
+   \   00000034   1420               MOVS     R0,#+20
+   \   00000036   8DF80000           STRB     R0,[SP, #+0]
+   1177            packet[1] = FCF_DATA;
+   \   0000003A   00AE               ADD      R6,SP,#+0
+   \   0000003C   0120               MOVS     R0,#+1
+   \   0000003E   7070               STRB     R0,[R6, #+1]
+   1178            packet[2] = FCF_SHORTDST + FCF_LONGSRC;
+   \   00000040   C820               MOVS     R0,#+200
+   \   00000042   B070               STRB     R0,[R6, #+2]
+   1179            //packet[3] - New sequence number is handled immediately before transmission
+   1180            //dst PAN ID
+   1181            packet[4] = (0xFFFF>>0)&0xFF;
+   \   00000044   FF20               MOVS     R0,#+255
+   \   00000046   8DF80400           STRB     R0,[SP, #+4]
+   1182            packet[5] = (0xFFFF>>8)&0xFF;
+   \   0000004A   7071               STRB     R0,[R6, #+5]
+   1183            //Short dst addr
+   1184            packet[6] = (0xFFFF>>0)&0xFF;
+   \   0000004C   B071               STRB     R0,[R6, #+6]
+   1185            packet[7] = (0xFFFF>>8)&0xFF;
+   \   0000004E   8DF80700           STRB     R0,[SP, #+7]
+   1186            //src PAN ID
+   1187            packet[8] = (0xFFFF>>0)&0xFF;
+   \   00000052   3072               STRB     R0,[R6, #+8]
+   1188            packet[9] = (0xFFFF>>8)&0xFF;
+   \   00000054   8DF80900           STRB     R0,[SP, #+9]
+   1189            //Long src addr
+   1190            memcpy((packet+10), ST_RadioGetEui64(), 8);
+   \   00000058   ........           BL       ST_RadioGetEui64
+   \   0000005C   0822               MOVS     R2,#+8
+   \   0000005E   0146               MOV      R1,R0
+   \   00000060   0DF10A00           ADD      R0,SP,#+10
+   \   00000064   ........           BL       __aeabi_memcpy
+   1191            //payload type
+   1192            packet[18] = PT_SUN_SEARCH;
+   \   00000068   0120               MOVS     R0,#+1
+   \   0000006A   8DF81200           STRB     R0,[SP, #+18]
+   1193            
+   1194            printf("Trying channel");
+   \   0000006E   ........           ADR.W    R0,`?<Constant "Trying channel">`
+   \   00000072   ........           BL       printf
+   1195            //Loop across all channels
+   1196            for(searchChannel=ST_MIN_802_15_4_CHANNEL_NUMBER;
+   \   00000076   ........           BL       ?Subroutine19
+   \                     ??CrossCallReturnLabel_68:
+   \   0000007A   ........           ADR.W    R10,??DataTable54  ;; " %d"
+   1197                searchChannel<=ST_MAX_802_15_4_CHANNEL_NUMBER;
+   1198                searchChannel++) {
+   1199              //Since we wait 200ms per channel while trying to join, the watchdog
+   1200              //must be reset to prevent it from triggering.
+   1201              halResetWatchdog();
+   \                     ??joinCmd_2:
+   \   0000007E   ........           BL       halInternalResetWatchDog
+   1202              
+   1203              printf(" %d", searchChannel);
+   \   00000082   3946               MOV      R1,R7
+   \   00000084   5046               MOV      R0,R10
+   \   00000086   ........           BL       printf
+   1204              status = ST_RadioSetChannel(searchChannel);
+   1205              assert(status==ST_SUCCESS);
+   \   0000008A   3846               MOV      R0,R7
+   \   0000008C   ........           BL       ST_RadioSetChannel
+   \   00000090   28B1               CBZ.N    R0,??joinCmd_3
+   \   00000092   40F2B542           MOVW     R2,#+1205
+   \   00000096   ........           BL       ?Subroutine21
+   \                     ??CrossCallReturnLabel_73:
+   \   0000009A   ........           BL       __iar_EmptyStepPoint
+   1206          
+   1207              //Populate the join packet with a new sequence number
+   1208              currSeqNum++;
+   \                     ??joinCmd_3:
+   \   0000009E   6879               LDRB     R0,[R5, #+5]
+   \   000000A0   401C               ADDS     R0,R0,#+1
+   \   000000A2   6871               STRB     R0,[R5, #+5]
+   1209              packet[3]=currSeqNum;
+   \   000000A4   F070               STRB     R0,[R6, #+3]
+   1210              
+   1211              //Broadcast searching for any suns
+   1212              availableSunFound = FALSE;
+   \   000000A6   0020               MOVS     R0,#+0
+   \   000000A8   A870               STRB     R0,[R5, #+2]
+   1213              enqueueTxPacket(TRUE, 0xFFFF, packet, 0);
+   \   000000AA   0023               MOVS     R3,#+0
+   \   000000AC   00AA               ADD      R2,SP,#+0
+   \   000000AE   ........           BL       ?Subroutine18
+   1214              
+   1215              //Dwell for 200ms trying to complete a join with any sun on this channel
+   1216              lastTime = halCommonGetInt32uMillisecondTick();
+   \                     ??CrossCallReturnLabel_65:
+   \   000000B2   ........           BL       halCommonGetInt32uMillisecondTick
+   \   000000B6   8346               MOV      R11,R0
+   1217              do {
+   1218                processRxPacket();
+   \                     ??joinCmd_4:
+   \   000000B8   ........           BL       processRxPacket
+   1219                txTick();
+   \   000000BC   ........           BL       txTick
+   1220              } while(elapsedTimeInt32u(lastTime, halCommonGetInt32uMillisecondTick())<
+   1221                      200);
+   \   000000C0   ........           BL       halCommonGetInt32uMillisecondTick
+   \   000000C4   A0EB0B00           SUB      R0,R0,R11
+   \   000000C8   C828               CMP      R0,#+200
+   \   000000CA   F5D3               BCC.N    ??joinCmd_4
+   1222              
+   1223              //If our join was accepted and we've successfully transmitted our join
+   1224              //acceptence acknowledgment, we can exit the join channel search.
+   1225              if(networkJoinedStopSearching) {
+   \   000000CC   E878               LDRB     R0,[R5, #+3]
+   \   000000CE   C0B1               CBZ.N    R0,??joinCmd_5
+   1226                printf("\r\n");
+   \   000000D0   ........           BL       ??Subroutine4_0
+   1227                printf("Joined on channel %d with PAN ID 0x%04X.  My ID is now 0x%04X.\r\n",
+   1228                       ST_RadioGetChannel(),
+   1229                       ST_RadioGetPanId(),
+   1230                       ST_RadioGetNodeId());
+   \                     ??CrossCallReturnLabel_9:
+   \   000000D4   ........           BL       ST_RadioGetNodeId
+   \   000000D8   0446               MOV      R4,R0
+   \   000000DA   ........           BL       ST_RadioGetPanId
+   \   000000DE   0646               MOV      R6,R0
+   \   000000E0   ........           BL       ST_RadioGetChannel
+   \   000000E4   0146               MOV      R1,R0
+   \   000000E6   2346               MOV      R3,R4
+   \   000000E8   3246               MOV      R2,R6
+   \   000000EA   ........           ADR.W    R0,`?<Constant "Joined on channel %d ...">`
+   \   000000EE   ........           BL       printf
+   1231                activeInNetwork = TRUE;
+   \   000000F2   0120               MOVS     R0,#+1
+   \   000000F4   6870               STRB     R0,[R5, #+1]
+   1232                //shortaddr[currnum++]=ST_RadioGetNodeId();//!!!!!!!!!!11.22 20:41
+   1233          #ifdef PLANET_ROLE
+   1234                autoSendRate = 60;
+   \   000000F6   3C20               MOVS     R0,#+60
+   \   000000F8   A871               STRB     R0,[R5, #+6]
+   1235                halSetLed(LED_D4);
+   \   000000FA   0D20               MOVS     R0,#+13
+   \   000000FC   ........           BL       halSetLed
+   1236               // shortaddr[currnum++]=ST_RadioGetNodeId();//!!!!!!!!!!11.22 20:41
+   1237          #endif
+   1238                return;
+   \   00000100   0BE0               B.N      ??joinCmd_1
+   1239              }
+   1240            }
+   \                     ??joinCmd_5:
+   \   00000102   7F1C               ADDS     R7,R7,#+1
+   \   00000104   FFB2               UXTB     R7,R7
+   \   00000106   1B2F               CMP      R7,#+27
+   \   00000108   B9D3               BCC.N    ??joinCmd_2
+   1241            
+   1242            printf("\r\n");
+   \   0000010A   ........           BL       ??Subroutine4_0
+   1243            printf("Did not join.  Returning to inactive state.\r\n");
+   \                     ??CrossCallReturnLabel_8:
+   \   0000010E   ........           ADR.W    R0,`?<Constant "Did not join.  Return...">`
+   \   00000112   ........           BL       printf
+   1244            //Getting here means we did not successful join a network.
+   1245            activeInNetwork = FALSE;
+   \   00000116   0020               MOVS     R0,#+0
+   \   00000118   6870               STRB     R0,[R5, #+1]
+   1246          }
+   \                     ??joinCmd_1:
+   \   0000011A   21B0               ADD      SP,SP,#+132
+   \   0000011C   BDE8F08F           POP      {R4-R11,PC}      ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine4:
+   \   00000000   ....               ADR.N    R4,??DataTable55  ;; 0x0D, 0x0A, 0x00, 0x00
+   \                     ??Subroutine4_0:
+   \   00000002   2046               MOV      R0,R4
+   \   00000004   ........           B.W      printf
+   1247          /**************************************************************************
+   1248          Derek
+   1249          *************************************************************************/
+   1250          #ifdef SUN_ROLE  
+   1251          void sendSync()
+   1252          {
+   1253            u16 dstShortAddr=0xffff;//将此处的地址改为0xffff，即广播地址
+   1254            u16 vddMillivolts = 0x0000;
+   1255            boolean sendDirectly = TRUE;
+   1256            u8 not[4];
+   1257            not[0]='s';not[1]='y';not[2]='n';not[3]='c';
+   1258            
+   1259            u8 packet[128];
+   1260            
+   1261            //Length
+   1262            packet[0] = (19+2);
+   1263            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1264            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1265            //New sequence number
+   1266            currSeqNum++;
+   1267            packet[3] = currSeqNum;
+   1268            //dst PAN ID
+   1269            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   1270            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   1271            //Short dst addr
+   1272            packet[6] = (dstShortAddr>>0)&0xFF;
+   1273            packet[7] = (dstShortAddr>>8)&0xFF;
+   1274            //Short src addr
+   1275            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   1276            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   1277            //payload type
+   1278            packet[10] = PT_GENERIC_DATA;
+   1279            //my VDD_PADS
+   1280            packet[11] = (vddMillivolts>>0)&0xFF;
+   1281            packet[12] = (vddMillivolts>>8)&0xFF;
+   1282            //Derek: Sync 消息的标识
+   1283            for(int i=0; i < 4; i++)
+   1284              packet[13+i]=not[i];
+   1285            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1286            packet[17] = 0;
+   1287            packet[18] = 0;
+   1288            packet[19] = 0;
+   1289            T1=halCommonGetInt32uMillisecondTick();
+   1290            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 17);
+   1291            printf("send Sync already!\r\n");
+   1292          }
+   1293          void replySyncback()
+   1294          {
+   1295            u16 vddMillivolts=0xffff;
+   1296            u16 dstShortAddr = 0x0000;
+   1297            boolean sendDirectly = TRUE;
+   1298            //
+   1299            u8 not[4];
+   1300            not[0]='L';
+   1301            not[1]='G';
+   1302            not[2]='Z';
+   1303            not[3]='0';
+   1304            u8 packet[128];
+   1305            
+   1306            //Length
+   1307            packet[0] = (27+2);
+   1308            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1309            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1310            //New sequence number
+   1311            currSeqNum++;
+   1312            packet[3] = currSeqNum;
+   1313            //dst PAN ID
+   1314            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   1315            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   1316            //Short dst addr
+   1317            packet[6] = (dstShortAddr>>0)&0xFF;
+   1318            packet[7] = (dstShortAddr>>8)&0xFF;
+   1319            //Short src addr
+   1320            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   1321            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   1322            //payload type
+   1323            packet[10] = PT_TRSEND;
+   1324            //my VDD_PADS
+   1325            packet[11] = (vddMillivolts>>0)&0xFF;
+   1326            packet[12] = (vddMillivolts>>8)&0xFF;
+   1327            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1328            
+   1329            for(int i=0; i < 4; i++)
+   1330              packet[13+i]=not[i];
+   1331            
+   1332            packet[17]=(back>>0)&0xff;
+   1333            packet[18]=(back>>8)&0xff;
+   1334            packet[19]=(back>>16)&0xff;
+   1335            packet[20]=(back>>24)&0xff;
+   1336            back=-1;
+   1337            
+   1338            packet[21] = 0;
+   1339            packet[22] = 0;
+   1340            packet[23] = 0;
+   1341            
+   1342            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 21);
+   1343            printf("send LGZ back !\r\n");
+   1344          }
+   1345          #endif
+   1346          #ifdef PLANET_ROLE
+   1347          //reply
+
+   \                                 In section .text, align 2, keep-with-next
+   1348          void replySync()
+   1349          {
+   \                     replySync:
+   \   00000000   30B5               PUSH     {R4,R5,LR}
+   \   00000002   A1B0               SUB      SP,SP,#+132
+   1350            u16 vddMillivolts=0xffff;
+   1351            u16 dstShortAddr = 0x0000;
+   1352            boolean sendDirectly = TRUE;
+   1353            //
+   1354            u8 not[4];
+   1355            not[0]='r';
+   \   00000004   7220               MOVS     R0,#+114
+   \   00000006   8DF80000           STRB     R0,[SP, #+0]
+   1356            not[1]='p';
+   \   0000000A   00A8               ADD      R0,SP,#+0
+   \   0000000C   7021               MOVS     R1,#+112
+   \   0000000E   4170               STRB     R1,[R0, #+1]
+   1357            not[2]='0';//LGZ：0对应planet0，1对应planet1，2对应planet2，3对应planet3
+   \   00000010   3021               MOVS     R1,#+48
+   \   00000012   8170               STRB     R1,[R0, #+2]
+   1358            not[3]='y';
+   \   00000014   7921               MOVS     R1,#+121
+   \   00000016   C170               STRB     R1,[R0, #+3]
+   1359            u8 packet[128];
+   1360            
+   1361            //Length
+   1362            packet[0] = (27+2);
+   \   00000018   1D20               MOVS     R0,#+29
+   \   0000001A   8DF80400           STRB     R0,[SP, #+4]
+   1363            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   \   0000001E   01AC               ADD      R4,SP,#+4
+   \   00000020   6120               MOVS     R0,#+97
+   \   00000022   6070               STRB     R0,[R4, #+1]
+   1364            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   \   00000024   8820               MOVS     R0,#+136
+   \   00000026   A070               STRB     R0,[R4, #+2]
+   1365            //New sequence number
+   1366            currSeqNum++;
+   \   00000028   ....               LDR.N    R5,??DataTable55_1
+   \   0000002A   ........           BL       ?Subroutine17
+   1367            packet[3] = currSeqNum;
+   1368            //dst PAN ID
+   1369            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_63:
+   \   0000002E   2071               STRB     R0,[R4, #+4]
+   1370            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \   00000030   ........           BL       ST_RadioGetPanId
+   \   00000034   000A               LSRS     R0,R0,#+8
+   \   00000036   6071               STRB     R0,[R4, #+5]
+   1371            //Short dst addr
+   1372            packet[6] = (dstShortAddr>>0)&0xFF;
+   \   00000038   0020               MOVS     R0,#+0
+   \   0000003A   ADF80A00           STRH     R0,[SP, #+10]
+   1373            packet[7] = (dstShortAddr>>8)&0xFF;
+   1374            //Short src addr
+   1375            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   \   0000003E   ........           BL       ST_RadioGetNodeId
+   \   00000042   2072               STRB     R0,[R4, #+8]
+   1376            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   \   00000044   ........           BL       ST_RadioGetNodeId
+   \   00000048   000A               LSRS     R0,R0,#+8
+   \   0000004A   8DF80D00           STRB     R0,[SP, #+13]
+   1377            //payload type
+   1378            packet[10] = PT_TRSEND;
+   \   0000004E   0A20               MOVS     R0,#+10
+   \   00000050   A072               STRB     R0,[R4, #+10]
+   1379            //my VDD_PADS
+   1380            packet[11] = (vddMillivolts>>0)&0xFF;
+   \   00000052   FF20               MOVS     R0,#+255
+   \   00000054   8DF80F00           STRB     R0,[SP, #+15]
+   1381            packet[12] = (vddMillivolts>>8)&0xFF;
+   \   00000058   2073               STRB     R0,[R4, #+12]
+   1382            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1383            
+   1384            for(int i=0; i < 4; i++)
+   1385              packet[13+i]=not[i];
+   \   0000005A   0422               MOVS     R2,#+4
+   \   0000005C   00A9               ADD      R1,SP,#+0
+   \   0000005E   0DF11100           ADD      R0,SP,#+17
+   \   00000062   ........           BL       __aeabi_memcpy
+   1386            
+   1387            packet[17]=(T2>>0)&0xff;
+   \   00000066   A868               LDR      R0,[R5, #+8]
+   \   00000068   8DF81500           STRB     R0,[SP, #+21]
+   1388            packet[18]=(T2>>8)&0xff;
+   \   0000006C   010A               LSRS     R1,R0,#+8
+   \   0000006E   8DF81610           STRB     R1,[SP, #+22]
+   1389            packet[19]=(T2>>16)&0xff;
+   \   00000072   010C               LSRS     R1,R0,#+16
+   \   00000074   8DF81710           STRB     R1,[SP, #+23]
+   1390            packet[20]=(T2>>24)&0xff;
+   \   00000078   000E               LSRS     R0,R0,#+24
+   \   0000007A   8DF81800           STRB     R0,[SP, #+24]
+   1391            T3=halCommonGetInt32uMillisecondTick();
+   \   0000007E   ........           BL       halCommonGetInt32uMillisecondTick
+   \   00000082   E860               STR      R0,[R5, #+12]
+   1392            packet[21]=(T3>>0)&0xff;
+   \   00000084   8DF81900           STRB     R0,[SP, #+25]
+   1393            packet[22]=(T3>>8)&0xff;
+   \   00000088   010A               LSRS     R1,R0,#+8
+   \   0000008A   8DF81A10           STRB     R1,[SP, #+26]
+   1394            packet[23]=(T3>>16)&0xff;
+   \   0000008E   010C               LSRS     R1,R0,#+16
+   \   00000090   8DF81B10           STRB     R1,[SP, #+27]
+   1395            packet[24]=(T3>>24)&0xff;
+   \   00000094   000E               LSRS     R0,R0,#+24
+   \   00000096   2076               STRB     R0,[R4, #+24]
+   1396            
+   1397            packet[25] = 0;
+   \   00000098   0020               MOVS     R0,#+0
+   \   0000009A   6076               STRB     R0,[R4, #+25]
+   1398            packet[26] = 0;
+   \   0000009C   ADF81E00           STRH     R0,[SP, #+30]
+   1399            packet[27] = 0;
+   1400            //halCommonDelayMilliseconds(200);//单位ms//LGZ：0ms对应planet0，30ms对应planet1，60ms对应planet2，90ms对应planet3
+   1401            
+   1402            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 25);
+   \   000000A0   1923               MOVS     R3,#+25
+   \   000000A2   01AA               ADD      R2,SP,#+4
+   \   000000A4   0021               MOVS     R1,#+0
+   \   000000A6   0120               MOVS     R0,#+1
+   \   000000A8   ........           BL       enqueueTxPacket
+   1403            printf("send Reply already!\r\n");
+   \   000000AC   ........           ADR.W    R0,`?<Constant "send Reply already!\\r\\n">`
+   \   000000B0   ........           BL       printf
+   1404          }
+   \   000000B4   21B0               ADD      SP,SP,#+132
+   \   000000B6   30BD               POP      {R4,R5,PC}       ;; return
+   1405          
+   1406          #endif
+   1407          /**************************************************************************
+   1408          功能描述：向参数中传入的地址发送类型负载类型为PT_GENERIC_DATA，类型为GENERIC_DATA_PACKET的数据包
+   1409          输入参数：vddMillivolts为发送的16位数据，dstShortAddr为目的地址，sendDirectly为调用不同发送函数的表示符。
+   1410          输出参数：无
+   1411          *************************************************************************/
+   1412          
+   1413          //This function is indirectly invoked by the command 's' to send a data packet.
+
+   \                                 In section .text, align 2, keep-with-next
+   1414          void sendVddDataPacket(u16 vddMillivolts,
+   1415                                 u16 dstShortAddr,
+   1416                                 boolean sendDirectly)
+   1417          {
+   \                     sendVddDataPacket:
+   \   00000000   F0B5               PUSH     {R4-R7,LR}
+   \   00000002   A1B0               SUB      SP,SP,#+132
+   \   00000004   ........           BL       ?Subroutine15
+   1418            u8 packet[128];
+   1419            
+   1420            //Length
+   1421            packet[0] = (15+2);
+   1422            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1423            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1424            //New sequence number
+   1425            currSeqNum++;
+   1426            packet[3] = currSeqNum;
+   1427            //dst PAN ID
+   1428            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_58:
+   \   00000008   ........           BL       ?Subroutine20
+   1429            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_72:
+   \   0000000C   ........           BL       ?Subroutine16
+   1430            //Short dst addr
+   1431            packet[6] = (dstShortAddr>>0)&0xFF;
+   1432            packet[7] = (dstShortAddr>>8)&0xFF;
+   1433            //Short src addr
+   1434            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_62:
+   \   00000010   ........           BL       ?Subroutine22
+   1435            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_79:
+   \   00000014   000A               LSRS     R0,R0,#+8
+   \   00000016   8DF80900           STRB     R0,[SP, #+9]
+   1436            //payload type
+   1437            packet[10] = PT_GENERIC_DATA;
+   \   0000001A   0020               MOVS     R0,#+0
+   \   0000001C   ........           BL       ?Subroutine1
+   1438            //my VDD_PADS
+   1439            packet[11] = (vddMillivolts>>0)&0xFF;
+   1440            packet[12] = (vddMillivolts>>8)&0xFF;
+   1441            //Derek
+   1442            
+   1443            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1444            packet[13] = 0;
+   1445            packet[14] = 0;
+   1446            packet[15] = 0;
+   1447            
+   1448            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 13);
+   1449            printf("send already!\r\n");
+   \                     ??CrossCallReturnLabel_2:
+   \   00000020   ........           ADR.W    R0,`?<Constant "send already!\\r\\n">`
+   \   00000024   ....               B.N      ?Subroutine0
+   1450          }
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   ........           BL       printf
+   \   00000004   21B0               ADD      SP,SP,#+132
+   \   00000006   F0BD               POP      {R4-R7,PC}       ;; return
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine1:
+   \   00000000   8DF80A00           STRB     R0,[SP, #+10]
+   \   00000004   8DF80B40           STRB     R4,[SP, #+11]
+   \   00000008   200A               LSRS     R0,R4,#+8
+   \   0000000A   8DF80C00           STRB     R0,[SP, #+12]
+   \   0000000E   0020               MOVS     R0,#+0
+   \   00000010   7873               STRB     R0,[R7, #+13]
+   \   00000012   ADF80E00           STRH     R0,[SP, #+14]
+   \   00000016   0D23               MOVS     R3,#+13
+   \   00000018   00AA               ADD      R2,SP,#+0
+   \   0000001A   2946               MOV      R1,R5
+   \   0000001C   3046               MOV      R0,R6
+   \   0000001E   ........           B.W      enqueueTxPacket
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine22:
+   \   00000000   3872               STRB     R0,[R7, #+8]
+   \   00000002   ........           B.W      ST_RadioGetNodeId
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine20:
+   \   00000000   8DF80400           STRB     R0,[SP, #+4]
+   \   00000004   ........           B.W      ST_RadioGetPanId
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine16:
+   \   00000000   000A               LSRS     R0,R0,#+8
+   \   00000002   7871               STRB     R0,[R7, #+5]
+   \   00000004   8DF80650           STRB     R5,[SP, #+6]
+   \   00000008   280A               LSRS     R0,R5,#+8
+   \   0000000A   8DF80700           STRB     R0,[SP, #+7]
+   \   0000000E   ........           B.W      ST_RadioGetNodeId
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine15:
+   \   00000000   0446               MOV      R4,R0
+   \   00000002   0D46               MOV      R5,R1
+   \   00000004   1646               MOV      R6,R2
+   \   00000006   1120               MOVS     R0,#+17
+   \   00000008   8DF80000           STRB     R0,[SP, #+0]
+   \   0000000C   00AF               ADD      R7,SP,#+0
+   \   0000000E   6120               MOVS     R0,#+97
+   \   00000010   7870               STRB     R0,[R7, #+1]
+   \   00000012   8820               MOVS     R0,#+136
+   \   00000014   8DF80200           STRB     R0,[SP, #+2]
+   \   00000018   ....               LDR.N    R0,??DataTable55_1
+   \   0000001A   4179               LDRB     R1,[R0, #+5]
+   \   0000001C   491C               ADDS     R1,R1,#+1
+   \   0000001E   4171               STRB     R1,[R0, #+5]
+   \   00000020   8DF80310           STRB     R1,[SP, #+3]
+   \   00000024   ........           B.W      ST_RadioGetPanId
+   1451          
+   1452          /**************************************************************************
+   1453          功能描述：向参数中传入的地址发送类型负载类型为PT_SLEEPING，类型为SYN_SLEEPING_WAITTIME的数据包
+   1454          输入参数：vddMillivolts为发送的16位数据，dstShortAddr为目的地址，sendDirectly为调用不同发送函数的表示符。
+   1455          输出参数：无
+   1456          *************************************************************************/
+
+   \                                 In section .text, align 2, keep-with-next
+   1457          void sendVddDataPacket1(u16 vddMillivolts,u16 dstShortAddr,boolean sendDirectly)
+   1458          {
+   \                     sendVddDataPacket1:
+   \   00000000   F0B5               PUSH     {R4-R7,LR}
+   \   00000002   A1B0               SUB      SP,SP,#+132
+   \   00000004   ........           BL       ?Subroutine15
+   1459            u8 packet[128];
+   1460            
+   1461            //Length
+   1462            packet[0] = (15+2);
+   1463            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1464            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1465            //New sequence number
+   1466            currSeqNum++;
+   1467            packet[3] = currSeqNum;
+   1468            //dst PAN ID
+   1469            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_57:
+   \   00000008   ........           BL       ?Subroutine20
+   1470            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_71:
+   \   0000000C   ........           BL       ?Subroutine16
+   1471            //Short dst addr
+   1472            packet[6] = (dstShortAddr>>0)&0xFF;
+   1473            packet[7] = (dstShortAddr>>8)&0xFF;
+   1474            //Short src addr
+   1475            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_61:
+   \   00000010   ........           BL       ?Subroutine22
+   1476            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_78:
+   \   00000014   000A               LSRS     R0,R0,#+8
+   \   00000016   8DF80900           STRB     R0,[SP, #+9]
+   1477            //payload type
+   1478            packet[10] = PT_SLEEPING;
+   \   0000001A   0820               MOVS     R0,#+8
+   \   0000001C   ........           BL       ?Subroutine1
+   1479            //my VDD_PADS
+   1480            packet[11] = (vddMillivolts>>0)&0xFF;
+   1481            packet[12] = (vddMillivolts>>8)&0xFF;
+   1482            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1483            packet[13] = 0;
+   1484            packet[14] = 0;
+   1485            packet[15] = 0;
+   1486            
+   1487            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 13);
+   1488          #ifdef SUN_ROLE  
+   1489            halToggleLed(LED_D2);
+   1490            halCommonDelayMilliseconds(500);
+   1491            halClearLed(LED_D2);
+   1492          #endif
+   1493            printf("send sleeping packet to every planet!\r\n");
+   \                     ??CrossCallReturnLabel_1:
+   \   00000020   ........           ADR.W    R0,`?<Constant "send sleeping packet ...">`
+   \   00000024                      REQUIRE ?Subroutine0
+   \   00000024                      ;; // Fall through to label ?Subroutine0
+   1494          }
+   1495          
+   1496          /**************************************************************************
+   1497          功能描述：向参数中传入的地址发送类型负载类型为PT_LED，类型为SYN_LED_WAITTIME的数据包
+   1498          输入参数：vddMillivolts为发送的16位数据，dstShortAddr为目的地址，sendDirectly为调用不同发送函数的表示符。
+   1499          输出参数：无
+   1500          *************************************************************************/
+
+   \                                 In section .text, align 2, keep-with-next
+   1501          void sendVddDataPacket2(u16 vddMillivolts,u16 dstShortAddr,boolean sendDirectly)
+   1502          {
+   \                     sendVddDataPacket2:
+   \   00000000   F0B5               PUSH     {R4-R7,LR}
+   \   00000002   A1B0               SUB      SP,SP,#+132
+   \   00000004   ........           BL       ?Subroutine15
+   1503            u8 packet[128];
+   1504            
+   1505            //Length
+   1506            packet[0] = (15+2);
+   1507            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1508            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1509            //New sequence number
+   1510            currSeqNum++;
+   1511            packet[3] = currSeqNum;
+   1512            //dst PAN ID
+   1513            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_56:
+   \   00000008   ........           BL       ?Subroutine20
+   1514            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_70:
+   \   0000000C   ........           BL       ?Subroutine16
+   1515            //Short dst addr
+   1516            packet[6] = (dstShortAddr>>0)&0xFF;
+   1517            packet[7] = (dstShortAddr>>8)&0xFF;
+   1518            //Short src addr
+   1519            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_60:
+   \   00000010   ........           BL       ?Subroutine22
+   1520            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_77:
+   \   00000014   000A               LSRS     R0,R0,#+8
+   \   00000016   7872               STRB     R0,[R7, #+9]
+   1521            //payload type
+   1522            packet[10] = PT_LED;
+   \   00000018   0920               MOVS     R0,#+9
+   \   0000001A   ........           BL       ?Subroutine1
+   1523            //my VDD_PADS
+   1524            packet[11] = (vddMillivolts>>0)&0xFF;
+   1525            packet[12] = (vddMillivolts>>8)&0xFF;
+   1526            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1527            packet[13] = 0;
+   1528            packet[14] = 0;
+   1529            packet[15] = 0;
+   1530            
+   1531            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 13);
+   1532          #ifdef SUN_ROLE
+   1533            halToggleLed(LED_D1);
+   1534            halCommonDelayMilliseconds(500);
+   1535            halClearLed(LED_D1);
+   1536          #endif
+   1537            printf("send message to every planet!\r\n");
+   \                     ??CrossCallReturnLabel_0:
+   \   0000001E   ........           ADR.W    R0,`?<Constant "send message to every...">`
+   \   00000022   ....               B.N      ?Subroutine0
+   1538          }
+   1539          
+   1540          //函数实现向dstShortAddr表示的节点发送数据，数据内容为vddMillivolts
+
+   \                                 In section .text, align 2, keep-with-next
+   1541          void sendVddDataPacket3(u16 vddMillivolts,u16 dstShortAddr,boolean sendDirectly)
+   1542          {
+   \                     sendVddDataPacket3:
+   \   00000000   F0B5               PUSH     {R4-R7,LR}
+   \   00000002   A1B0               SUB      SP,SP,#+132
+   \   00000004   ........           BL       ?Subroutine15
+   1543            u8 packet[128];
+   1544            
+   1545            //Length
+   1546            packet[0] = (15+2);
+   1547            packet[1] = FCF_DATA + FCF_ACKREQ + FCF_INTRAPAN;
+   1548            packet[2] = FCF_SHORTDST + FCF_SHORTSRC;
+   1549            //New sequence number
+   1550            currSeqNum++;
+   1551            packet[3] = currSeqNum;
+   1552            //dst PAN ID
+   1553            packet[4] = (ST_RadioGetPanId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_55:
+   \   00000008   ........           BL       ?Subroutine20
+   1554            packet[5] = (ST_RadioGetPanId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_69:
+   \   0000000C   ........           BL       ?Subroutine16
+   1555            //Short dst addr
+   1556            packet[6] = (dstShortAddr>>0)&0xFF;
+   1557            packet[7] = (dstShortAddr>>8)&0xFF;
+   1558            //Short src addr
+   1559            packet[8] = (ST_RadioGetNodeId()>>0)&0xFF;
+   \                     ??CrossCallReturnLabel_59:
+   \   00000010   ........           BL       ?Subroutine22
+   1560            packet[9] = (ST_RadioGetNodeId()>>8)&0xFF;
+   \                     ??CrossCallReturnLabel_76:
+   \   00000014   000A               LSRS     R0,R0,#+8
+   \   00000016   8DF80900           STRB     R0,[SP, #+9]
+   1561            //payload type
+   1562            packet[10] = PT_TRSEND;
+   \   0000001A   0A20               MOVS     R0,#+10
+   \   0000001C   B872               STRB     R0,[R7, #+10]
+   1563            //my VDD_PADS
+   1564            packet[11] = (vddMillivolts>>0)&0xFF;
+   \   0000001E   8DF80B40           STRB     R4,[SP, #+11]
+   1565            packet[12] = (vddMillivolts>>8)&0xFF;
+   \   00000022   200A               LSRS     R0,R4,#+8
+   \   00000024   8DF80C00           STRB     R0,[SP, #+12]
+   1566            //Zero out the TX SFD payload.  The MSB is used to indicate SFD valid.
+   1567            packet[13] = 0;
+   \   00000028   0020               MOVS     R0,#+0
+   \   0000002A   7873               STRB     R0,[R7, #+13]
+   1568            packet[14] = 0;
+   \   0000002C   F881               STRH     R0,[R7, #+14]
+   1569            packet[15] = 0;
+   1570            
+   1571            enqueueTxPacket(sendDirectly, dstShortAddr, packet, 13);
+   \   0000002E   0D23               MOVS     R3,#+13
+   \   00000030   00AA               ADD      R2,SP,#+0
+   \   00000032   2946               MOV      R1,R5
+   \   00000034   3046               MOV      R0,R6
+   \   00000036   ........           BL       enqueueTxPacket
+   1572            #ifdef PLANET_ROLE
+   1573            halToggleLed(LED_D3);
+   \   0000003A   ........           BL       ?Subroutine12
+   1574            halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_43:
+   \   0000003E   ........           BL       ?Subroutine11
+   1575            halToggleLed(LED_D3);
+   \                     ??CrossCallReturnLabel_36:
+   \   00000042   ........           BL       ?Subroutine12
+   1576            halCommonDelayMilliseconds(500);
+   \                     ??CrossCallReturnLabel_42:
+   \   00000046   ........           BL       ?Subroutine11
+   1577          #endif
+   1578            printf("trsend already!\r\n");
+   \                     ??CrossCallReturnLabel_35:
+   \   0000004A   ........           ADR.W    R0,`?<Constant "trsend already!\\r\\n">`
+   \   0000004E   ....               B.N      ?Subroutine0
+   1579          }
+   1580          
+   1581          //Command invoked with 'p'.  Print the planet table.
+
+   \                                 In section .text, align 2, keep-with-next
+   1582          void planetTableCmd(void)
+   1583          {
+   \                     planetTableCmd:
+   \   00000000   2DE9F84F           PUSH     {R3-R11,LR}
+   1584            u8 i,k;
+   1585            
+   1586            printf("\r\n");
+   \   00000004   ........           BL       ?Subroutine4
+   1587            if(!activeInNetwork) {
+   \                     ??CrossCallReturnLabel_10:
+   \   00000008   ....               LDR.N    R0,??DataTable55_1
+   \   0000000A   4078               LDRB     R0,[R0, #+1]
+   \   0000000C   20B9               CBNZ.N   R0,??planetTableCmd_0
+   1588              printf("Not active in a network\r\n");
+   \   0000000E   ........           ADR.W    R0,`?<Constant "Not active in a netwo...">`
+   \                     ??planetTableCmd_1:
+   \   00000012   ........           BL       printf
+   1589              return;
+   \   00000016   3BE0               B.N      ??planetTableCmd_2
+   1590            }
+   1591            if(ST_RadioGetNodeId() != 0x0000) {
+   \                     ??planetTableCmd_0:
+   \   00000018   ........           BL       ST_RadioGetNodeId
+   \   0000001C   10B1               CBZ.N    R0,??planetTableCmd_3
+   1592              printf("Not a sun\r\n");
+   \   0000001E   ........           ADR.W    R0,`?<Constant "Not a sun\\r\\n">`
+   \   00000022   F6E7               B.N      ??planetTableCmd_1
+   1593              return;
+   1594            }
+   1595            
+   1596            printf("Planet Table\r\n");
+   \                     ??planetTableCmd_3:
+   \   00000024   ........           ADR.W    R0,`?<Constant "Planet Table\\r\\n">`
+   \   00000028   ........           BL       printf
+   1597            printf("Active | DataPending | Short Address |    Long Address\r\n");
+   \   0000002C   ........           ADR.W    R0,`?<Constant "Active | DataPending ...">`
+   \   00000030   ........           BL       printf
+   1598            for(i=0;i<PLANET_TABLE_SIZE;i++) {
+   \   00000034   0025               MOVS     R5,#+0
+   \   00000036   ........           ADR.W    R10,`?<Constant "%02X">`
+   \   0000003A   ........           ADR.W    R11,`?<Constant "      %d     | ">`
+   \   0000003E   ........           ADR.W    R8,`?<Constant "   %d   | ">`
+   \   00000042   ........           LDR.W    R9,??DataTable55_4
+   1599          
+   1600              printf("   %d   | ", planetTable[i].active);
+   \                     ??planetTableCmd_4:
+   \   00000046   0C20               MOVS     R0,#+12
+   \   00000048   00FB05F6           MUL      R6,R0,R5
+   \   0000004C   16F80910           LDRB     R1,[R6, R9]
+   \   00000050   4046               MOV      R0,R8
+   \   00000052   ........           BL       printf
+   1601              printf("      %d     | ", isDataPendingForShortId(planetTable[i].shortAddr));
+   \   00000056   4E44               ADD      R6,R6,R9
+   \   00000058   7088               LDRH     R0,[R6, #+2]
+   \   0000005A   ........           BL       isDataPendingForShortId
+   \   0000005E   0146               MOV      R1,R0
+   \   00000060   5846               MOV      R0,R11
+   \   00000062   ........           BL       printf
+   1602              printf("    0x%04X    | 0x", planetTable[i].shortAddr);
+   \   00000066   7188               LDRH     R1,[R6, #+2]
+   \   00000068   ........           ADR.W    R0,`?<Constant "    0x%04X    | 0x">`
+   \   0000006C   ........           BL       printf
+   1603              k=8;
+   \   00000070   0827               MOVS     R7,#+8
+   \   00000072   05E0               B.N      ??planetTableCmd_5
+   1604              while(k--) {
+   1605                printf("%02X", planetTable[i].longAddr[k]);
+   \                     ??planetTableCmd_6:
+   \   00000074   CFB2               UXTB     R7,R1
+   \   00000076   B819               ADDS     R0,R7,R6
+   \   00000078   0179               LDRB     R1,[R0, #+4]
+   \   0000007A   5046               MOV      R0,R10
+   \   0000007C   ........           BL       printf
+   1606              }
+   \                     ??planetTableCmd_5:
+   \   00000080   791E               SUBS     R1,R7,#+1
+   \   00000082   002F               CMP      R7,#+0
+   \   00000084   F6D1               BNE.N    ??planetTableCmd_6
+   1607              printf("\r\n");
+   \   00000086   ........           BL       ??Subroutine4_0
+   1608            }
+   \                     ??CrossCallReturnLabel_7:
+   \   0000008A   6D1C               ADDS     R5,R5,#+1
+   \   0000008C   0A2D               CMP      R5,#+10
+   \   0000008E   DADB               BLT.N    ??planetTableCmd_4
+   \                     ??planetTableCmd_2:
+   \   00000090   BDE8F18F           POP      {R0,R4-R11,PC}   ;; return
+   1609          }
+   1610          
+   1611          //******************************************************************************
+   1612          // Application main:  Entry point, initialization, command line implementation,
+   1613          // and event control.
+   1614          
+   1615          /**************************************************************************
+   1616          功能描述：实现SUN节点组网，PLANET节点加网。多节点通信。
+   1617          输入参数：无
+   1618          输出参数：无
+   1619          *************************************************************************/
+
+   \                                 In section .text, align 2, keep-with-next
+   1620          int main(void)
+   1621          {
+   \                     main:
+   \   00000000   F8B5               PUSH     {R3-R7,LR}
+   1622              u32 seed;
+   1623              StStatus status = ST_SUCCESS;
+   1624              
+   1625              //Initialize the HAL.
+   1626              halInit();
+   \   00000002   ........           BL       halInit
+   1627            
+   1628              //Initialize the UART.  uartInit will configure PB1=OUT_ALT and PB2=IN.
+   1629              uartInit(115200, 8, PARITY_NONE, 1);
+   \   00000006   0123               MOVS     R3,#+1
+   \   00000008   0022               MOVS     R2,#+0
+   \   0000000A   0821               MOVS     R1,#+8
+   \   0000000C   4FF4E130           MOV      R0,#+115200
+   \   00000010   ........           BL       uartInit
+   1630            
+   1631              //Configure PA4 and PA5 as alternate outputs for Packet Trace.
+   1632              halGpioConfig(PORTA_PIN(4),GPIOCFG_OUT_ALT);
+   \   00000014   0921               MOVS     R1,#+9
+   \   00000016   0420               MOVS     R0,#+4
+   \   00000018   ........           BL       halGpioConfig
+   1633              halGpioConfig(PORTA_PIN(5),GPIOCFG_OUT_ALT);
+   \   0000001C   0921               MOVS     R1,#+9
+   \   0000001E   0520               MOVS     R0,#+5
+   \   00000020   ........           BL       halGpioConfig
+   1634              //No other GPIO initialization is performed for this application.
+   1635            
+   1636              //Connect IRQD to PB2/SC1RXD
+   1637              GPIO_IRQDSEL = PORTB_PIN(2);
+   \   00000024   ....               LDR.N    R0,??DataTable55_9  ;; 0x4000bc18
+   \   00000026   0A21               MOVS     R1,#+10
+   \   00000028   0160               STR      R1,[R0, #+0]
+   1638              //Allow the IRQD flag to set on any IRQD activity.  This does not
+   1639              //enable the top level interrupt since no interrupt is desired; just
+   1640              //an activity flag is needed to know when to avoid deep sleep.
+   1641              GPIO_INTCFGD = (3<<GPIO_INTMOD_BIT);
+   \   0000002A   ....               LDR.N    R4,??DataTable55_10  ;; 0x4000a814
+   \   0000002C   6020               MOVS     R0,#+96
+   \   0000002E   A065               STR      R0,[R4, #+88]
+   1642              INT_GPIOFLAG = INT_IRQDFLAG;
+   \   00000030   0820               MOVS     R0,#+8
+   \   00000032   2060               STR      R0,[R4, #+0]
+   1643              INT_PENDCLR = INT_IRQD;
+   \   00000034   ....               LDR.N    R5,??DataTable55_11  ;; 0xe000e280
+   \   00000036   4FF40046           MOV      R6,#+32768
+   \   0000003A   2E60               STR      R6,[R5, #+0]
+   1644              INTERRUPTS_ON();
+   \   0000003C   ........           BL       _enableBasePri
+   1645          
+   1646          #ifdef PLANET_ROLE
+   1647              halInitLed();   //初始化LED灯
+   \   00000040   ........           BL       halInitLed
+   1648              halInitButton(); //初始化按键
+   \   00000044   ........           BL       halInitButton
+   1649              printf("\r\nSimpleMAC (%s) Sample Application: 'Planet role'!\r\n",SIMPLEMAC_VERSION_STRING);
+   \   00000048   ........           ADR.W    R1,`?<Constant "1.0.1">`
+   \   0000004C   ........           ADR.W    R0,`?<Constant "\\r\\nSimpleMAC (%s) Samp...">`
+   \   00000050   ........           BL       printf
+   1650          #endif
+   1651            
+   1652          
+   1653          #ifdef SUN_ROLE
+   1654              halInitLed();   //初始化LED灯
+   1655              halInitButton(); //初始化按键
+   1656              printf("\r\nSimpleMAC (%s) Sample Application: 'Sun role'!\r\n",SIMPLEMAC_VERSION_STRING);
+   1657          #endif
+   1658            
+   1659              //Initialize random number generation.
+   1660              ST_RadioGetRandomNumbers((u16 *)&seed, 2);
+   \   00000054   0221               MOVS     R1,#+2
+   \   00000056   00A8               ADD      R0,SP,#+0
+   \   00000058   ........           BL       ST_RadioGetRandomNumbers
+   1661              halCommonSeedRandom(seed);
+   \   0000005C   0098               LDR      R0,[SP, #+0]
+   \   0000005E   ........           BL       halCommonSeedRandom
+   1662            
+   1663              //Initialize the radio.
+   1664              ST_RadioEnableOverflowNotification(TRUE);
+   \   00000062   0120               MOVS     R0,#+1
+   \   00000064   ........           BL       ST_RadioEnableOverflowNotification
+   1665              status = ST_RadioInit(radioPowerState);
+   1666              assert(status==ST_SUCCESS);  
+   \   00000068   ....               LDR.N    R7,??DataTable55_1
+   \   0000006A   3878               LDRB     R0,[R7, #+0]
+   \   0000006C   ........           BL       ST_RadioInit
+   \   00000070   48B1               CBZ.N    R0,??main_0
+   \   00000072   40F28262           MOVW     R2,#+1666
+   \   00000076   ........           ADR.W    R1,`?<Constant "E:\\\\\\312\\265\\321\\3514 \\316\\336\\317`
+   \   0000007A   ........           ADR.W    R0,`?<Constant "status==ST_SUCCESS">`
+   \   0000007E   ........           BL       __aeabi_assert
+   \   00000082   ........           BL       __iar_EmptyStepPoint
+   1667              printf("Enter ? for list of commands\r\n");
+   \                     ??main_0:
+   \   00000086   ........           ADR.W    R0,`?<Constant "Enter ? for list of c...">`
+   \   0000008A   ........           BL       printf
+   1668              printf("\r\n> ");
+   \   0000008E   ........           ADR.W    R0,`?<Constant "\\r\\n> ">`
+   \   00000092   ........           BL       printf
+   1669              
+   1670          #ifdef SUN_ROLE
+   1671              u8 ch;
+   1672              formCmd(); //SUN节点首先创建网络
+   1673              while(TRUE)
+   1674              { 
+   1675                  do
+   1676                  {
+   1677                      processRxPacket();//检测收到数据包并处理
+   1678                     
+   1679                      halCommonDelayMilliseconds(10);//延时10毫秒
+   1680                  }while ((!__io_getcharNonBlocking(&ch))); //获取串口发送的命令
+   1681                  
+   1682                  //收到B1的包立刻回复
+   1683                  
+   1684                  if(ch=='x')//Derek:同步开始命令'x'
+   1685                  {
+   1686                      printf("x command is running!\n");
+   1687                      sendSync();
+   1688                  }
+   1689                  else
+   1690                      printf("Unknown Commamd\r\n");
+   1691                  INT_GPIOFLAG = INT_IRQDFLAG;
+   1692                  INT_PENDCLR = INT_IRQD;
+   1693              }
+   1694          #endif
+   1695          
+   1696          #ifdef PLANET_ROLE
+   1697              activeInNetwork = FALSE;
+   \   00000096   0020               MOVS     R0,#+0
+   \   00000098   7870               STRB     R0,[R7, #+1]
+   1698              printf("p11 has start\r\n");
+   \   0000009A   ........           ADR.W    R0,`?<Constant "p11 has start\\r\\n">`
+   \   0000009E   ........           BL       printf
+   1699              do
+   1700              {
+   1701                  joinCmd(); //请求加入网络
+   \                     ??main_1:
+   \   000000A2   ........           BL       joinCmd
+   1702              }while(!activeInNetwork);
+   \   000000A6   7878               LDRB     R0,[R7, #+1]
+   \   000000A8   0028               CMP      R0,#+0
+   \   000000AA   FAD0               BEQ.N    ??main_1
+   1703              while(TRUE)
+   1704              {
+   1705                //LGZ:
+   1706                  processRxPacket();
+   \                     ??main_2:
+   \   000000AC   ........           BL       processRxPacket
+   1707                  halCommonDelayMilliseconds(10);
+   \   000000B0   0A20               MOVS     R0,#+10
+   \   000000B2   ........           BL       halCommonDelayMilliseconds
+   1708                  /*if(halGetButtonStatus(BUTTON_S3) == BUTTON_PRESSED) //如果S3被按下，向Sun节点发送信息
+   1709                  {
+   1710                      sendVddDataPacket3(0x0001, 0x0000, TRUE);
+   1711                      halCommonDelayMilliseconds(400); //延迟400ms
+   1712                  }*/        
+   1713                  INT_GPIOFLAG = INT_IRQDFLAG;
+   \   000000B6   0820               MOVS     R0,#+8
+   \   000000B8   2060               STR      R0,[R4, #+0]
+   1714                  INT_PENDCLR = INT_IRQD;
+   \   000000BA   2E60               STR      R6,[R5, #+0]
+   \   000000BC   F6E7               B.N      ??main_2
+   1715              } 
+   1716          #endif
+   1717          }
+   1718          
+   1719          
+   1720          //******************************************************************************
+   1721          //The MAC Timer compare functionality is not used in this app.
+
+   \                                 In section .text, align 2, keep-with-next
+   1722          void ST_RadioMacTimerCompareIsrCallback(void) {}
+   \                     ST_RadioMacTimerCompareIsrCallback:
+   \   00000000   7047               BX       LR               ;; return
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable51:
+   \   00000000   25640000           DC8      0x25, 0x64, 0x00, 0x00
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable51_1:
+   \   00000000   0D0A0000           DC8      0x0D, 0x0A, 0x00, 0x00
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable54:
+   \   00000000   20256400           DC8      " %d"
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55:
+   \   00000000   0D0A0000           DC8      0x0D, 0x0A, 0x00, 0x00
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_1:
+   \   00000000   ........           DC32     radioPowerState
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_2:
+   \   00000000   ........           DC32     txPacketInFlight
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_3:
+   \   00000000   ........           DC32     framePendingPktEnroute
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_4:
+   \   00000000   ........           DC32     planetTable
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_5:
+   \   00000000   ........           DC32     rxData
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_6:
+   \   00000000   A0860100           DC32     0x186a0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_7:
+   \   00000000   40420F00           DC32     0xf4240
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_8:
+   \   00000000   80969800           DC32     0x989680
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_9:
+   \   00000000   18BC0040           DC32     0x4000bc18
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_10:
+   \   00000000   14A80040           DC32     0x4000a814
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable55_11:
+   \   00000000   80E200E0           DC32     0xe000e280
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant {0}>`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   000000000000       DC8 0, 0, 0, 0, 0, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "p11 already\\r\\n">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   70313120616C       DC8 112, 49, 49, 32, 97, 108, 114, 101, 97, 100
+   \              72656164    
+   \   0000000A   790D0A000000       DC8 121, 13, 10, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "T2: %d">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   54323A202564       DC8 84, 50, 58, 32, 37, 100, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "%d">`:
+   \   00000000                      ; Initializer data, 4 bytes
+   \   00000000   25640000           DC8 37, 100, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "%d\\r\\n">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   25640D0A0000       DC8 37, 100, 13, 10, 0, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "T2-T5-diff: %d">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   54322D54352D       DC8 84, 50, 45, 84, 53, 45, 100, 105, 102, 102
+   \              64696666    
+   \   0000000A   3A2025640000       DC8 58, 32, 37, 100, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "T5 has start;\\r\\n">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   543520686173       DC8 84, 53, 32, 104, 97, 115, 32, 115, 116, 97
+   \              20737461    
+   \   0000000A   72743B0D0A00       DC8 114, 116, 59, 13, 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "SYN_SLEEPING_WAITTIME\\r\\n">`:
+   \   00000000                      ; Initializer data, 24 bytes
+   \   00000000   53594E5F534C       DC8 83, 89, 78, 95, 83, 76, 69, 69, 80, 73
+   \              45455049    
+   \   0000000A   4E475F574149       DC8 78, 71, 95, 87, 65, 73, 84, 84, 73, 77
+   \              5454494D    
+   \   00000014   450D0A00           DC8 69, 13, 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "SYN_LED_WAITTIME\\r\\n">`:
+   \   00000000                      ; Initializer data, 20 bytes
+   \   00000000   53594E5F4C45       DC8 83, 89, 78, 95, 76, 69, 68, 95, 87, 65
+   \              445F5741    
+   \   0000000A   495454494D45       DC8 73, 84, 84, 73, 77, 69, 13, 10, 0, 0
+   \              0D0A0000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "trsend success\\r\\n">`:
+   \   00000000                      ; Initializer data, 20 bytes
+   \   00000000   747273656E64       DC8 116, 114, 115, 101, 110, 100, 32, 115, 117, 99
+   \              20737563    
+   \   0000000A   636573730D0A       DC8 99, 101, 115, 115, 13, 10, 0, 0, 0, 0
+   \              00000000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "FALSE">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   46414C534500       DC8 70, 65, 76, 83, 69, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "E:\\\\\\312\\265\\321\\3514 \\316\\336\\317`:
+   \   00000000                      ; Initializer data, 100 bytes
+   \   00000000   453A5CCAB5D1       DC8 69, 58, 92, 202, 181, 209, 233, 52, 32, 206
+   \              E93420CE    
+   \   0000000A   DECFDFB4ABB8       DC8 222, 207, 223, 180, 171, 184, 208, 198, 247, 189
+   \              D0C6F7BD    
+   \   00000014   DAB5E3B6E0B5       DC8 218, 181, 227, 182, 224, 181, 227, 205, 168, 208
+   \              E3CDA8D0    
+   \   0000001E   C5CAB5D1E920       DC8 197, 202, 181, 209, 233, 32, 45, 32, 184, 177
+   \              2D20B8B1    
+   \   00000028   B1BE202D20B8       DC8 177, 190, 32, 45, 32, 184, 177, 177, 190, 92
+   \              B1B1BE5C    
+   \   00000032   B9A4B3CCD4B4       DC8 185, 164, 179, 204, 212, 180, 180, 250, 194, 235
+   \              B4FAC2EB    
+   \   0000003C   5C73696D706C       DC8 92, 115, 105, 109, 112, 108, 101, 109, 97, 99
+   \              656D6163    
+   \   00000046   5C64656D6F73       DC8 92, 100, 101, 109, 111, 115, 92, 115, 97, 109
+   \              5C73616D    
+   \   00000050   706C655C736F       DC8 112, 108, 101, 92, 115, 111, 108, 97, 114, 45
+   \              6C61722D    
+   \   0000005A   73797374656D       DC8 115, 121, 115, 116, 101, 109, 46, 99, 0, 0
+   \              2E630000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "\\r\\n">`:
+   \   00000000                      ; Initializer data, 4 bytes
+   \   00000000   0D0A0000           DC8 13, 10, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Already in network\\r\\n">`:
+   \   00000000                      ; Initializer data, 24 bytes
+   \   00000000   416C72656164       DC8 65, 108, 114, 101, 97, 100, 121, 32, 105, 110
+   \              7920696E    
+   \   0000000A   206E6574776F       DC8 32, 110, 101, 116, 119, 111, 114, 107, 13, 10
+   \              726B0D0A    
+   \   00000014   00000000           DC8 0, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Inactive node forming...">`:
+   \   00000000                      ; Initializer data, 56 bytes
+   \   00000000   496E61637469       DC8 73, 110, 97, 99, 116, 105, 118, 101, 32, 110
+   \              7665206E    
+   \   0000000A   6F646520666F       DC8 111, 100, 101, 32, 102, 111, 114, 109, 105, 110
+   \              726D696E    
+   \   00000014   67206E657477       DC8 103, 32, 110, 101, 116, 119, 111, 114, 107, 32
+   \              6F726B20    
+   \   0000001E   616E64206265       DC8 97, 110, 100, 32, 98, 101, 99, 111, 109, 105
+   \              636F6D69    
+   \   00000028   6E6720746865       DC8 110, 103, 32, 116, 104, 101, 32, 115, 117, 110
+   \              2073756E    
+   \   00000032   0D0A00000000       DC8 13, 10, 0, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "status==ST_SUCCESS">`:
+   \   00000000                      ; Initializer data, 20 bytes
+   \   00000000   737461747573       DC8 115, 116, 97, 116, 117, 115, 61, 61, 83, 84
+   \              3D3D5354    
+   \   0000000A   5F5355434345       DC8 95, 83, 85, 67, 67, 69, 83, 83, 0, 0
+   \              53530000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Selected channel %d w...">`:
+   \   00000000                      ; Initializer data, 44 bytes
+   \   00000000   53656C656374       DC8 83, 101, 108, 101, 99, 116, 101, 100, 32, 99
+   \              65642063    
+   \   0000000A   68616E6E656C       DC8 104, 97, 110, 110, 101, 108, 32, 37, 100, 32
+   \              20256420    
+   \   00000014   776974682065       DC8 119, 105, 116, 104, 32, 101, 110, 101, 114, 103
+   \              6E657267    
+   \   0000001E   792025642064       DC8 121, 32, 37, 100, 32, 100, 66, 109, 13, 10
+   \              426D0D0A    
+   \   00000028   00000000           DC8 0, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Randomly chose PAN ID...">`:
+   \   00000000                      ; Initializer data, 32 bytes
+   \   00000000   52616E646F6D       DC8 82, 97, 110, 100, 111, 109, 108, 121, 32, 99
+   \              6C792063    
+   \   0000000A   686F73652050       DC8 104, 111, 115, 101, 32, 80, 65, 78, 32, 73
+   \              414E2049    
+   \   00000014   443A20307825       DC8 68, 58, 32, 48, 120, 37, 48, 52, 88, 13
+   \              3034580D    
+   \   0000001E   0A00               DC8 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Inactive node joining...">`:
+   \   00000000                      ; Initializer data, 56 bytes
+   \   00000000   496E61637469       DC8 73, 110, 97, 99, 116, 105, 118, 101, 32, 110
+   \              7665206E    
+   \   0000000A   6F6465206A6F       DC8 111, 100, 101, 32, 106, 111, 105, 110, 105, 110
+   \              696E696E    
+   \   00000014   67206E657477       DC8 103, 32, 110, 101, 116, 119, 111, 114, 107, 32
+   \              6F726B20    
+   \   0000001E   616E64206265       DC8 97, 110, 100, 32, 98, 101, 99, 111, 109, 105
+   \              636F6D69    
+   \   00000028   6E6720612070       DC8 110, 103, 32, 97, 32, 112, 108, 97, 110, 101
+   \              6C616E65    
+   \   00000032   740D0A000000       DC8 116, 13, 10, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Trying channel">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   547279696E67       DC8 84, 114, 121, 105, 110, 103, 32, 99, 104, 97
+   \              20636861    
+   \   0000000A   6E6E656C0000       DC8 110, 110, 101, 108, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant " %d">`:
+   \   00000000                      ; Initializer data, 4 bytes
+   \   00000000   20256400           DC8 32, 37, 100, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Joined on channel %d ...">`:
+   \   00000000                      ; Initializer data, 68 bytes
+   \   00000000   4A6F696E6564       DC8 74, 111, 105, 110, 101, 100, 32, 111, 110, 32
+   \              206F6E20    
+   \   0000000A   6368616E6E65       DC8 99, 104, 97, 110, 110, 101, 108, 32, 37, 100
+   \              6C202564    
+   \   00000014   207769746820       DC8 32, 119, 105, 116, 104, 32, 80, 65, 78, 32
+   \              50414E20    
+   \   0000001E   494420307825       DC8 73, 68, 32, 48, 120, 37, 48, 52, 88, 46
+   \              3034582E    
+   \   00000028   20204D792049       DC8 32, 32, 77, 121, 32, 73, 68, 32, 105, 115
+   \              44206973    
+   \   00000032   206E6F772030       DC8 32, 110, 111, 119, 32, 48, 120, 37, 48, 52
+   \              78253034    
+   \   0000003C   582E0D0A0000       DC8 88, 46, 13, 10, 0, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Did not join.  Return...">`:
+   \   00000000                      ; Initializer data, 48 bytes
+   \   00000000   446964206E6F       DC8 68, 105, 100, 32, 110, 111, 116, 32, 106, 111
+   \              74206A6F    
+   \   0000000A   696E2E202052       DC8 105, 110, 46, 32, 32, 82, 101, 116, 117, 114
+   \              65747572    
+   \   00000014   6E696E672074       DC8 110, 105, 110, 103, 32, 116, 111, 32, 105, 110
+   \              6F20696E    
+   \   0000001E   616374697665       DC8 97, 99, 116, 105, 118, 101, 32, 115, 116, 97
+   \              20737461    
+   \   00000028   74652E0D0A00       DC8 116, 101, 46, 13, 10, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "send Reply already!\\r\\n">`:
+   \   00000000                      ; Initializer data, 24 bytes
+   \   00000000   73656E642052       DC8 115, 101, 110, 100, 32, 82, 101, 112, 108, 121
+   \              65706C79    
+   \   0000000A   20616C726561       DC8 32, 97, 108, 114, 101, 97, 100, 121, 33, 13
+   \              6479210D    
+   \   00000014   0A000000           DC8 10, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "send already!\\r\\n">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   73656E642061       DC8 115, 101, 110, 100, 32, 97, 108, 114, 101, 97
+   \              6C726561    
+   \   0000000A   6479210D0A00       DC8 100, 121, 33, 13, 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "send sleeping packet ...">`:
+   \   00000000                      ; Initializer data, 40 bytes
+   \   00000000   73656E642073       DC8 115, 101, 110, 100, 32, 115, 108, 101, 101, 112
+   \              6C656570    
+   \   0000000A   696E67207061       DC8 105, 110, 103, 32, 112, 97, 99, 107, 101, 116
+   \              636B6574    
+   \   00000014   20746F206576       DC8 32, 116, 111, 32, 101, 118, 101, 114, 121, 32
+   \              65727920    
+   \   0000001E   706C616E6574       DC8 112, 108, 97, 110, 101, 116, 33, 13, 10, 0
+   \              210D0A00    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "send message to every...">`:
+   \   00000000                      ; Initializer data, 32 bytes
+   \   00000000   73656E64206D       DC8 115, 101, 110, 100, 32, 109, 101, 115, 115, 97
+   \              65737361    
+   \   0000000A   676520746F20       DC8 103, 101, 32, 116, 111, 32, 101, 118, 101, 114
+   \              65766572    
+   \   00000014   7920706C616E       DC8 121, 32, 112, 108, 97, 110, 101, 116, 33, 13
+   \              6574210D    
+   \   0000001E   0A00               DC8 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "trsend already!\\r\\n">`:
+   \   00000000                      ; Initializer data, 20 bytes
+   \   00000000   747273656E64       DC8 116, 114, 115, 101, 110, 100, 32, 97, 108, 114
+   \              20616C72    
+   \   0000000A   65616479210D       DC8 101, 97, 100, 121, 33, 13, 10, 0, 0, 0
+   \              0A000000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Not active in a netwo...">`:
+   \   00000000                      ; Initializer data, 28 bytes
+   \   00000000   4E6F74206163       DC8 78, 111, 116, 32, 97, 99, 116, 105, 118, 101
+   \              74697665    
+   \   0000000A   20696E206120       DC8 32, 105, 110, 32, 97, 32, 110, 101, 116, 119
+   \              6E657477    
+   \   00000014   6F726B0D0A00       DC8 111, 114, 107, 13, 10, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Not a sun\\r\\n">`:
+   \   00000000                      ; Initializer data, 12 bytes
+   \   00000000   4E6F74206120       DC8 78, 111, 116, 32, 97, 32, 115, 117, 110, 13
+   \              73756E0D    
+   \   0000000A   0A00               DC8 10, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Planet Table\\r\\n">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   506C616E6574       DC8 80, 108, 97, 110, 101, 116, 32, 84, 97, 98
+   \              20546162    
+   \   0000000A   6C650D0A0000       DC8 108, 101, 13, 10, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Active | DataPending ...">`:
+   \   00000000                      ; Initializer data, 60 bytes
+   \   00000000   416374697665       DC8 65, 99, 116, 105, 118, 101, 32, 124, 32, 68
+   \              207C2044    
+   \   0000000A   61746150656E       DC8 97, 116, 97, 80, 101, 110, 100, 105, 110, 103
+   \              64696E67    
+   \   00000014   207C2053686F       DC8 32, 124, 32, 83, 104, 111, 114, 116, 32, 65
+   \              72742041    
+   \   0000001E   646472657373       DC8 100, 100, 114, 101, 115, 115, 32, 124, 32, 32
+   \              207C2020    
+   \   00000028   20204C6F6E67       DC8 32, 32, 76, 111, 110, 103, 32, 65, 100, 100
+   \              20416464    
+   \   00000032   726573730D0A       DC8 114, 101, 115, 115, 13, 10, 0, 0, 0, 0
+   \              00000000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "   %d   | ">`:
+   \   00000000                      ; Initializer data, 12 bytes
+   \   00000000   202020256420       DC8 32, 32, 32, 37, 100, 32, 32, 32, 124, 32
+   \              20207C20    
+   \   0000000A   0000               DC8 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "      %d     | ">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   202020202020       DC8 32, 32, 32, 32, 32, 32, 37, 100, 32, 32
+   \              25642020    
+   \   0000000A   2020207C2000       DC8 32, 32, 32, 124, 32, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "    0x%04X    | 0x">`:
+   \   00000000                      ; Initializer data, 20 bytes
+   \   00000000   202020203078       DC8 32, 32, 32, 32, 48, 120, 37, 48, 52, 88
+   \              25303458    
+   \   0000000A   202020207C20       DC8 32, 32, 32, 32, 124, 32, 48, 120, 0, 0
+   \              30780000    
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "%02X">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   253032580000       DC8 37, 48, 50, 88, 0, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "\\r\\nSimpleMAC (%s) Samp...">`:
+   \   00000000                      ; Initializer data, 56 bytes
+   \   00000000   0D0A53696D70       DC8 13, 10, 83, 105, 109, 112, 108, 101, 77, 65
+   \              6C654D41    
+   \   0000000A   432028257329       DC8 67, 32, 40, 37, 115, 41, 32, 83, 97, 109
+   \              2053616D    
+   \   00000014   706C65204170       DC8 112, 108, 101, 32, 65, 112, 112, 108, 105, 99
+   \              706C6963    
+   \   0000001E   6174696F6E3A       DC8 97, 116, 105, 111, 110, 58, 32, 39, 80, 108
+   \              2027506C    
+   \   00000028   616E65742072       DC8 97, 110, 101, 116, 32, 114, 111, 108, 101, 39
+   \              6F6C6527    
+   \   00000032   210D0A000000       DC8 33, 13, 10, 0, 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "1.0.1">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   312E302E3100       DC8 49, 46, 48, 46, 49, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "Enter ? for list of c...">`:
+   \   00000000                      ; Initializer data, 32 bytes
+   \   00000000   456E74657220       DC8 69, 110, 116, 101, 114, 32, 63, 32, 102, 111
+   \              3F20666F    
+   \   0000000A   72206C697374       DC8 114, 32, 108, 105, 115, 116, 32, 111, 102, 32
+   \              206F6620    
+   \   00000014   636F6D6D616E       DC8 99, 111, 109, 109, 97, 110, 100, 115, 13, 10
+   \              64730D0A    
+   \   0000001E   0000               DC8 0, 0
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "\\r\\n> ">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   0D0A3E200000       DC8 13, 10, 62, 32, 0, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "p11 has start\\r\\n">`:
+   \   00000000                      ; Initializer data, 16 bytes
+   \   00000000   703131206861       DC8 112, 49, 49, 32, 104, 97, 115, 32, 115, 116
+   \              73207374    
+   \   0000000A   6172740D0A00       DC8 97, 114, 116, 13, 10, 0
+   1723          
+
+   Maximum stack usage in bytes:
+
+     Function                       .cstack
+     --------                       -------
+     ST_RadioMacTimerCompareIsrCallback
+                                         0
+     ST_RadioOverflowIsrCallback         8
+     ST_RadioReceiveIsrCallback         20
+     calculateLqi                        0
+     formCmd                            40
+     initNetworkState                   16
+     joinCmd                           168
+     main                               24
+     planetTableCmd                     40
+     processRxPacket                   192
+     replySync                         144
+     sendVddDataPacket                 152
+     sendVddDataPacket1                152
+     sendVddDataPacket2                152
+     sendVddDataPacket3                152
+
+
+   Section sizes:
+
+     Function/Label                                 Bytes
+     --------------                                 -----
+     radioTransmitConfig                               8
+     rxData                                          140
+     timeoffset                                        8
+     autoSendRateDstShortAddr                          2
+     autoSendLastQsTick                                2
+     radioPowerState                                  24
+     activeInNetwork
+     availableSunFound
+     networkJoinedStopSearching
+     shortAddrCounter
+     currSeqNum
+     autoSendRate
+     autoPollRate
+     T2
+     T3
+     T5
+     diff
+     T1                                                4
+     T4                                                4
+     back                                              4
+     autoPollLastQsTick                                2
+     planetTable                                     120
+     planet_join_by_button                             1
+     initNetworkState                                100
+     calculateLqi                                     20
+     ST_RadioReceiveIsrCallback                       66
+     processRxPacket                                 918
+     ?Subroutine14                                     6
+     ?Subroutine13                                    14
+     ?Subroutine10                                     8
+     ?Subroutine9                                     12
+     ?Subroutine8                                     10
+     ?Subroutine7                                     14
+     ?Subroutine6                                     14
+     ?Subroutine5                                     20
+     ?Subroutine3                                     12
+     ?Subroutine2                                     20
+     ?Subroutine18                                    10
+     ?Subroutine17                                    12
+     ?Subroutine12                                     6
+     ?Subroutine11                                     8
+     ST_RadioOverflowIsrCallback                      26
+     formCmd                                         188
+     ?Subroutine21                                     8
+     ?Subroutine19                                    12
+     joinCmd                                         288
+     ?Subroutine4                                      8
+     replySync                                       184
+     sendVddDataPacket                                38
+     ?Subroutine0                                      8
+     ?Subroutine1                                     34
+     ?Subroutine22                                     6
+     ?Subroutine20                                     8
+     ?Subroutine16                                    18
+     ?Subroutine15                                    40
+     sendVddDataPacket1                               36
+     sendVddDataPacket2                               36
+     sendVddDataPacket3                               80
+     planetTableCmd                                  148
+     main                                            190
+     ST_RadioMacTimerCompareIsrCallback
+                                                       2
+     ??DataTable51                                     4
+     ??DataTable51_1                                   4
+     ??DataTable54                                     4
+     ??DataTable55                                     4
+     ??DataTable55_1                                   4
+     ??DataTable55_2                                   4
+     ??DataTable55_3                                   4
+     ??DataTable55_4                                   4
+     ??DataTable55_5                                   4
+     ??DataTable55_6                                   4
+     ??DataTable55_7                                   4
+     ??DataTable55_8                                   4
+     ??DataTable55_9                                   4
+     ??DataTable55_10                                  4
+     ??DataTable55_11                                  4
+     ?<Constant {0}>                                   8
+     ?<Constant "p11 already\r\n">                    16
+     ?<Constant "T2: %d">                              8
+     ?<Constant "%d">                                  4
+     ?<Constant "%d\r\n">                              8
+     ?<Constant "T2-T5-diff: %d">                     16
+     ?<Constant "T5 has start;\r\n">                  16
+     ?<Constant "SYN_SLEEPING_WAITTIME\r\n">          24
+     ?<Constant "SYN_LED_WAITTIME\r\n">               20
+     ?<Constant "trsend success\r\n">                 20
+     ?<Constant "FALSE">                               8
+     ?<Constant "E:\\\312\265\321\3514 \316\336\317  100
+     ?<Constant "\r\n">                                4
+     ?<Constant "Already in network\r\n">             24
+     ?<Constant "Inactive node forming...">           56
+     ?<Constant "status==ST_SUCCESS">                 20
+     ?<Constant "Selected channel %d w...">           44
+     ?<Constant "Randomly chose PAN ID...">           32
+     ?<Constant "Inactive node joining...">           56
+     ?<Constant "Trying channel">                     16
+     ?<Constant " %d">                                 4
+     ?<Constant "Joined on channel %d ...">           68
+     ?<Constant "Did not join.  Return...">           48
+     ?<Constant "send Reply already!\r\n">            24
+     ?<Constant "send already!\r\n">                  16
+     ?<Constant "send sleeping packet ...">           40
+     ?<Constant "send message to every...">           32
+     ?<Constant "trsend already!\r\n">                20
+     ?<Constant "Not active in a netwo...">           28
+     ?<Constant "Not a sun\r\n">                      12
+     ?<Constant "Planet Table\r\n">                   16
+     ?<Constant "Active | DataPending ...">           60
+     ?<Constant "   %d   | ">                         12
+     ?<Constant "      %d     | ">                    16
+     ?<Constant "    0x%04X    | 0x">                 20
+     ?<Constant "%02X">                                8
+     ?<Constant "\r\nSimpleMAC (%s) Samp...">         56
+     ?<Constant "1.0.1">                               8
+     ?<Constant "Enter ? for list of c...">           32
+     ?<Constant "\r\n> ">                              8
+     ?<Constant "p11 has start\r\n">                  16
+
+ 
+   275 bytes in section .bss
+    44 bytes in section .data
+ 3 732 bytes in section .text
+ 
+ 3 732 bytes of CODE memory
+   319 bytes of DATA memory
+
+Errors: none
+Warnings: 1

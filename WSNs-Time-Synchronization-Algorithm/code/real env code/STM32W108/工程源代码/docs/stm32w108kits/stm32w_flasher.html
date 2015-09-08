@@ -1,0 +1,61 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+<title>stm32w_flasher</title>
+
+</head><body>
+
+<h2>stm32w_flasher utility for STM32W108</h2>
+
+<i>Synopsis: </i>An utility allowing to download a binary file into a STM32W108.
+
+<br>
+<br>
+<b>It supports three downloading interfaces:</b> <br>
+<li>JTAG </i>
+<li>RS232 </i>
+<li>Over the Air (OTA) </i>
+</i>
+<br>
+<br>
+<b>
+Supported commands </b>: 
+<ul>
+	<li><b>--version</b> - show program's version number and exit
+	<li><b>-i INTERFACE </b> - (rs232 | jlink | rf): specify flasher interface 
+                                 (default jlink)
+        <li><b>-p PORT</b> - (COMnn | auto): specify rs232 port or auto mode (only
+                        relevant if interface selected is rs232 or rf)
+        <li><b>-f </b> - program flash
+        <li><b>-a ADDRESS</b> -  0xHHHHHHHH specify baseaddress (only relevat for .bin images)
+        <li><b>-v</b> - verify flash content against file
+        <li><b>-d</b> - print information about the STM32W device
+        <li><b>-r</b> - start application
+        <li><b> -m</b> - erase user flash (masserase)
+
+        <li><b> -b </b>-  device is alreay in bootloader mode (Only relevant for rs232 interface)
+        <li><b> -e EUI64 </b>  - 0xHHHHHHHHHHHHHHHH specify EUI64 (only relevat for rf
+                        interface)
+        <li><b>-h </b> - display this help menu 
+</ul>
+
+
+<b>Notes:</b> 
+
+<ul>
+        <li> When using the -i rf option (OTA upload) the following actions are requested:
+        <ul>
+	<li> Connect a MB851 board to the PC USB port and download the OTA by-pass application main_rfbl.s37 (it is provided in the utility folder)
+        <li> Identify the destination device EUI64 address (the stm32w_flasher -d option returns the EUI64 address)
+	<li> The destination device has already the bootloader downloaded (prebuilt image: iap_bootloader.s37)
+        <li> The destination device is in bootloader mode (for bootloader hardware activation, just press together S1 and RST1 button on the destination MB851 board  and then release RST1. The destination board LED D3 turns on for indicating that the device is in bootloader mode)
+        <li> The application image to be upload over the air supports the OTA bootloader.
+        <li> Launch the stm32w_flasher command on the MB851 board loaded with OTA by-pass application main_rfbl.s37 <br> <br>
+	     Example:  <br>
+                       stm32w_flasher -i rf -e 0x0080E10200000798 -p COM40 -f talk-btl.s37 -r
+              <br> <br> 
+              <b> Note: </b> The talk-btl.s37 is the talk application image supporting the OTA bootloader (it has been built with the IAR project talk.eww, MB851-btl workspace)
+               <br> <br>
+        </ul>
+
+</body>
+</html>

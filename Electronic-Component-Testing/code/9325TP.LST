@@ -1,0 +1,410 @@
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE 9325TP
+OBJECT MODULE PLACED IN 9325TP.OBJ
+COMPILER INVOKED BY: E:\软件\Keil C51 V9.00(推荐使用最新)\C51\BIN\C51.EXE 9325TP.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /*----------------------------------------------------------------
+   2           320x240彩屏液晶驱动程序
+   3          ----------------------------------------------------------------*/
+   4          #include"9325tp.h"
+   5          #include<reg52.h>
+   6          /*----------------------------------------------------------------
+   7                                      全局变量
+   8          ----------------------------------------------------------------*/
+   9          #define WINDOW_XADDR_START      0x0050 // Horizontal Start Address Set
+  10          #define WINDOW_XADDR_END        0x0051 // Horizontal End Address Set
+  11          #define WINDOW_YADDR_START      0x0052 // Vertical Start Address Set
+  12          #define WINDOW_YADDR_END        0x0053 // Vertical End Address Set
+  13          #define GRAM_XADDR                  0x0020 // GRAM Horizontal Address Set
+  14          #define GRAM_YADDR                  0x0021 // GRAM Vertical Address Set
+  15          
+  16          #define DataPort P0                //数据口使用DataPort
+  17          
+  18          /*----------------------------------------------------------------
+  19                                     定义硬件端口
+  20          ----------------------------------------------------------------*/
+  21          sbit CS=P2^2;           //片选
+  22          sbit RES=P2^1;          //复位
+  23          sbit RS=P2^4;           //数据/命令选择
+  24          sbit RW=P2^5;
+  25          /*----------------------------------------------------------------
+  26                                     清屏函数
+  27          输入参数：bColor 清屏所使用的背景色
+  28          ----------------------------------------------------------------*/
+  29          void CLR_Screen(unsigned int bColor)
+  30          {
+  31   1       unsigned int i,j;
+  32   1       LCD_SetPos(0,240,0,320);//320x240
+  33   1       for (i=0;i<320;i++)
+  34   1              {
+  35   2              
+  36   2                 for (j=0;j<240;j++)
+  37   2                     Write_Data_U16(bColor);
+  38   2      
+  39   2              }
+  40   1      }
+  41          /*----------------------------------------------------------------
+  42                                      显示英文字符
+  43          输入参数：x 横坐标
+  44                    y 纵坐标
+  45                            c 需要显示的字符
+  46                            fColor 字符颜色
+  47                            bColor 字符背景颜色
+  48          ----------------------------------------------------------------*/
+  49          #include "8X16.h"
+  50          void LCD_PutChar8x16(unsigned short x, unsigned short y, char c, unsigned int fColor, unsigned int bColor)
+  51          {
+  52   1       unsigned int i,j;
+  53   1       LCD_SetPos(x,x+8-1,y,y+16-1);
+  54   1       for(i=0; i<16;i++) {
+  55   2                      unsigned char m=Font8x16[c*16+i];
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 2   
+
+  56   2                      for(j=0;j<8;j++) {
+  57   3                              if((m&0x80)==0x80) {
+  58   4                                      Write_Data_U16(fColor);
+  59   4                                      }
+  60   3                              else {
+  61   4                                      Write_Data_U16(bColor);
+  62   4                                      }
+  63   3                              m<<=1;
+  64   3                              }
+  65   2                      }
+  66   1      }
+  67          
+  68          
+  69          
+  70          
+  71          /*----------------------------------------------------------------
+  72                                      显示字符串
+  73          可以中英文同时显示
+  74          输入参数：x 横坐标
+  75                    y 纵坐标
+  76                            *s 需要显示的字符串
+  77                            fColor 字符颜色
+  78                            bColor 字符背景颜色
+  79          ----------------------------------------------------------------*/
+  80          void LCD_PutString(unsigned short x, unsigned short y, unsigned char *s, unsigned int fColor, unsigned int
+             - bColor) {
+  81   1               unsigned char l=0;
+  82   1              while(*s) {
+  83   2                      if( *s < 0x80) 
+  84   2                          {
+  85   3                              LCD_PutChar8x16(x+l*8,y,*s,fColor,bColor);
+  86   3                              s++;l++;
+  87   3                              }
+  88   2                       
+  89   2                      }
+  90   1              }
+  91          
+  92          /*----------------------------------------------------------------
+  93                                   写命令、写数据
+  94          输入参数：x 需要输入的命令 16位
+  95                    y 需要输入的数据 16位
+  96          ----------------------------------------------------------------*/
+  97          void  Write_Cmd_Data (unsigned char x,unsigned int y)
+  98          {
+  99   1              unsigned char m,n;
+ 100   1              m=y>>8;
+ 101   1              n=y;
+ 102   1              Write_Cmd(0x00,x);
+ 103   1              Write_Data(m,n);
+ 104   1      
+ 105   1      }
+ 106          
+ 107          /*----------------------------------------------------------------
+ 108                                   写16位数据
+ 109          ----------------------------------------------------------------*/
+ 110          void  Write_Data_U16(unsigned int y)
+ 111          {
+ 112   1              unsigned char m,n;
+ 113   1              m=y>>8;
+ 114   1              n=y;
+ 115   1              Write_Data(m,n);
+ 116   1      
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 3   
+
+ 117   1      }
+ 118          /*----------------------------------------------------------------
+ 119                                     写命令
+ 120          ----------------------------------------------------------------*/
+ 121          
+ 122          void Write_Cmd(unsigned char DH,unsigned char DL)
+ 123          {
+ 124   1              CS=0;
+ 125   1              RS=0;
+ 126   1      
+ 127   1              DataPort=DH;
+ 128   1              RW=0;
+ 129   1              RW=1;
+ 130   1      
+ 131   1              DataPort=DL;
+ 132   1              
+ 133   1              RW=0;
+ 134   1              RW=1;
+ 135   1              CS=1;
+ 136   1      }
+ 137          
+ 138          /*----------------------------------------------------------------
+ 139                                     写数据 双8位
+ 140          ----------------------------------------------------------------*/
+ 141          
+ 142          void Write_Data(unsigned char DH,unsigned char DL)
+ 143          {
+ 144   1              
+ 145   1              CS=0;
+ 146   1              
+ 147   1              RS=1;
+ 148   1              DataPort=DH;
+ 149   1              RW=0;
+ 150   1          RW=1;
+ 151   1      
+ 152   1              DataPort=DL;    
+ 153   1              RW=0;
+ 154   1              RW=1;
+ 155   1              CS=1;
+ 156   1      }
+ 157          /*----------------------------------------------------------------
+ 158                                  延时函数
+ 159          ----------------------------------------------------------------*/
+ 160          void delayms(unsigned int count)
+ 161          {
+ 162   1          int i,j;                                                                                
+ 163   1          for(i=0;i<count;i++)                                                                    
+ 164   1             {
+ 165   2                   for(j=0;j<260;j++);
+ 166   2             }                                                                                     
+ 167   1      }
+ 168          
+ 169          
+ 170          
+ 171          /*----------------------------------------------------------------
+ 172                                      液晶初始化
+ 173          ----------------------------------------------------------------*/
+ 174          void ILI9325_Initial(void)
+ 175          { 
+ 176   1          CS=1;
+ 177   1              delayms(5);
+ 178   1              RES=0;
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 4   
+
+ 179   1              delayms(5);
+ 180   1              RES=1;
+ 181   1       delayms(50);
+ 182   1       Write_Cmd_Data(0x0001,0x0100); 
+ 183   1       Write_Cmd_Data(0x0002,0x0700); 
+ 184   1       Write_Cmd_Data(0x0003,0x1030); 
+ 185   1       Write_Cmd_Data(0x0004,0x0000); 
+ 186   1       Write_Cmd_Data(0x0008,0x0207);  
+ 187   1       Write_Cmd_Data(0x0009,0x0000);
+ 188   1       Write_Cmd_Data(0x000A,0x0000); 
+ 189   1       Write_Cmd_Data(0x000C,0x0000); 
+ 190   1       Write_Cmd_Data(0x000D,0x0000);
+ 191   1       Write_Cmd_Data(0x000F,0x0000);
+ 192   1      //power on sequence VGHVGL
+ 193   1       Write_Cmd_Data(0x0010,0x0000);   
+ 194   1       Write_Cmd_Data(0x0011,0x0007);  
+ 195   1       Write_Cmd_Data(0x0012,0x0000);  
+ 196   1       Write_Cmd_Data(0x0013,0x0000); 
+ 197   1      //vgh 
+ 198   1       Write_Cmd_Data(0x0010,0x1290);   
+ 199   1       Write_Cmd_Data(0x0011,0x0227);
+ 200   1       //delayms(100);
+ 201   1       //vregiout 
+ 202   1       Write_Cmd_Data(0x0012,0x001d); //0x001b
+ 203   1       //delayms(100); 
+ 204   1       //vom amplitude
+ 205   1       Write_Cmd_Data(0x0013,0x1500);
+ 206   1       //delayms(100); 
+ 207   1       //vom H
+ 208   1       Write_Cmd_Data(0x0029,0x0018); 
+ 209   1       Write_Cmd_Data(0x002B,0x000D); 
+ 210   1      
+ 211   1      //gamma
+ 212   1       Write_Cmd_Data(0x0030,0x0004);
+ 213   1       Write_Cmd_Data(0x0031,0x0307);
+ 214   1       Write_Cmd_Data(0x0032,0x0002);// 0006
+ 215   1       Write_Cmd_Data(0x0035,0x0206);
+ 216   1       Write_Cmd_Data(0x0036,0x0408);
+ 217   1       Write_Cmd_Data(0x0037,0x0507); 
+ 218   1       Write_Cmd_Data(0x0038,0x0204);//0200
+ 219   1       Write_Cmd_Data(0x0039,0x0707); 
+ 220   1       Write_Cmd_Data(0x003C,0x0405);// 0504
+ 221   1       Write_Cmd_Data(0x003D,0x0F02); 
+ 222   1       //ram
+ 223   1       Write_Cmd_Data(0x0050,0x0000); 
+ 224   1       Write_Cmd_Data(0x0051,0x00EF);
+ 225   1       Write_Cmd_Data(0x0052,0x0000); 
+ 226   1       Write_Cmd_Data(0x0053,0x013F);  
+ 227   1       Write_Cmd_Data(0x0060,0xA700); 
+ 228   1       Write_Cmd_Data(0x0061,0x0001); 
+ 229   1       Write_Cmd_Data(0x006A,0x0000); 
+ 230   1       //
+ 231   1       Write_Cmd_Data(0x0080,0x0000); 
+ 232   1       Write_Cmd_Data(0x0081,0x0000); 
+ 233   1       Write_Cmd_Data(0x0082,0x0000); 
+ 234   1       Write_Cmd_Data(0x0083,0x0000); 
+ 235   1       Write_Cmd_Data(0x0084,0x0000); 
+ 236   1       Write_Cmd_Data(0x0085,0x0000); 
+ 237   1       //
+ 238   1       Write_Cmd_Data(0x0090,0x0010); 
+ 239   1       Write_Cmd_Data(0x0092,0x0600); 
+ 240   1       Write_Cmd_Data(0x0093,0x0003); 
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 5   
+
+ 241   1       Write_Cmd_Data(0x0095,0x0110); 
+ 242   1       Write_Cmd_Data(0x0097,0x0000); 
+ 243   1       Write_Cmd_Data(0x0098,0x0000);
+ 244   1       Write_Cmd_Data(0x0007,0x0133);
+ 245   1      
+ 246   1              
+ 247   1              
+ 248   1      //      Write_Cmd_Data(0x0022);//               
+ 249   1      }
+ 250          
+ 251          /*----------------------------------------------------------------
+ 252                                      画点
+ 253          输入参数：x，y 需要画点坐标
+ 254                    color 点的颜色
+ 255          ----------------------------------------------------------------*/
+ 256          void Put_pixel(unsigned int x,unsigned int y,unsigned int color)
+ 257          {
+ 258   1              LCD_SetPos(x,x,y,y);
+ 259   1              Write_Data_U16(color);
+ 260   1      }
+ 261          
+ 262          /*----------------------------------------------------------------
+ 263                                   设置坐标
+ 264          ----------------------------------------------------------------*/
+ 265          static void LCD_SetPos(unsigned int x0,unsigned int x1,unsigned int y0,unsigned int y1)
+ 266          {
+ 267   1        Write_Cmd_Data(WINDOW_XADDR_START,x0);
+ 268   1        Write_Cmd_Data(WINDOW_XADDR_END,x1);
+ 269   1        Write_Cmd_Data(WINDOW_YADDR_START,y0);
+ 270   1        Write_Cmd_Data(WINDOW_YADDR_END,y1);
+ 271   1        Write_Cmd_Data(GRAM_XADDR,x0);
+ 272   1        Write_Cmd_Data(GRAM_YADDR,y0);
+ 273   1        Write_Cmd (0x00,0x22);//LCD_WriteCMD(GRAMWR);
+ 274   1      }
+ 275          /*----------------------------------------------------------------
+ 276                                     在屏幕上画线
+ 277          输入参数：  起始坐标X0，Y0，终止坐标X1，Y1
+ 278                                  color 线颜色
+ 279          ----------------------------------------------------------------*/
+ 280          void Line(      unsigned int X0,
+ 281                                  unsigned int Y0,
+ 282                                  unsigned int X1,
+ 283                                  unsigned int Y1,
+ 284                                  unsigned int color)
+ 285          {
+ 286   1      unsigned        int dx = X1 - X0;
+ 287   1      unsigned        int dy = Y1 - Y0;
+ 288   1      unsigned        int P  = 2 * dy - dx;
+ 289   1      unsigned        int dobDy = 2 * dy;
+ 290   1      unsigned        int dobD = 2 * (dy - dx);
+ 291   1      unsigned        int PointX = 0,PointY = 0;
+ 292   1      unsigned        int incx = 0,incy = 0;
+ 293   1      unsigned        int distance = 0,xerr = 0,yerr = 0;
+ 294   1              unsigned int i = 0;
+ 295   1      
+ 296   1              if(dx == 0)             //k=1斜率为1
+ 297   1              {
+ 298   2                      PointX = X0;
+ 299   2                      if(Y0 < Y1)
+ 300   2                      {
+ 301   3                              PointY = Y0;
+ 302   3                      }
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 6   
+
+ 303   2                      else
+ 304   2                      {
+ 305   3                              PointY = Y1;
+ 306   3                      }
+ 307   2                      for(i = 0;i <= ((Y0<Y1) ? (Y1-Y0) : (Y0-Y1));i++)
+ 308   2                      {
+ 309   3      
+ 310   3                                      Put_pixel(PointX,PointY,color);
+ 311   3                              PointY++;
+ 312   3                      }
+ 313   2                      return;
+ 314   2              }
+ 315   1              if(dy == 0)             //k=0斜率为0
+ 316   1              {
+ 317   2                      PointY = Y0;
+ 318   2                      if(X0 < X1)
+ 319   2                      {
+ 320   3                              PointX = X0;
+ 321   3                      }
+ 322   2                      else
+ 323   2                      {
+ 324   3                              PointX = X1;
+ 325   3                      }
+ 326   2                      for(i = 0;i <= ((X0<X1) ? (X1-X0) : (X0-X1));i++)
+ 327   2                      {
+ 328   3      
+ 329   3                                      Put_pixel(PointX,PointY,color);
+ 330   3                              PointX++;
+ 331   3                      }
+ 332   2                      return;
+ 333   2              }
+ 334   1      
+ 335   1              if(dx > 0)
+ 336   1                      incx = 1;
+ 337   1              else if(dx == 0)
+ 338   1                      incx = 0;
+ 339   1              else
+ 340   1                      incx = -1;
+ 341   1      
+ 342   1              if(dy > 0)
+ 343   1                      incy = 1;
+ 344   1              else if(dy == 0)
+ 345   1                      incy = 0;
+ 346   1              else
+ 347   1                      incy = -1;
+ 348   1      
+ 349   1          dx = ((X0>X1) ? (X0-X1) : (X1-X0));
+ 350   1          dy = ((Y0>Y1) ? (Y0-Y1) : (Y1-Y0));
+ 351   1      
+ 352   1          if(dx>dy) distance=dx;
+ 353   1          else distance=dy;
+ 354   1      
+ 355   1          PointX = X0;
+ 356   1          PointY = Y0;
+ 357   1          for(i=0;i<=distance+1;i++)
+ 358   1          {
+ 359   2      
+ 360   2                      Put_pixel(PointX,PointY,color);
+ 361   2              xerr+=dx;
+ 362   2              yerr+=dy;
+ 363   2              if(xerr>distance)
+ 364   2              {
+C51 COMPILER V9.00   9325TP                                                                11/10/2013 19:27:04 PAGE 7   
+
+ 365   3                  xerr-=distance;
+ 366   3                  PointX+=incx;
+ 367   3              }
+ 368   2              if(yerr>distance)
+ 369   2              {
+ 370   3                  yerr-=distance;
+ 371   3                  PointY+=incy;
+ 372   3              }
+ 373   2          }
+ 374   1      }
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1614    ----
+   CONSTANT SIZE    =   2048    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      80
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

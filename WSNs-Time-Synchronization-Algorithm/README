@@ -1,0 +1,15 @@
+Project Name: Research on Time Synchronization Algorithm for WSNs
+Date: 11/2013-?
+Team Member: Guo Weidong, Liu Jie, Qiu Tie
+Objective:
+work out the energy efficient and accurate time synchronization algorithm 
+Responsibility: 
+1. draw up the algorithm proposal after poring over analogous theses and consulting my adviser 
+2. simulate the algorithm mentioned above and other algorithms on NS-2 in Ubuntu, and compare their parameters on time accuracy, energy consumption, packet loss probability and delay
+3. compile the thesis 
+
+./code
+Open source code for both simulation on NS-2 and real environment testing. Simulation includes our approach STETS and two other approach for comparison. Real environment testing is based on STM32.
+./paper
+The final version of paper composed using Latex.
+

@@ -1,0 +1,233 @@
+###############################################################################
+#                                                                             #
+#     IAR Assembler V6.10.1.52143/W32 for ARM 05/Jul/2014  18:41:42           #
+#     Copyright 1999-2010 IAR Systems AB.                                     #
+#                                                                             #
+#           Source file   =  I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\cstartup_M.s#
+#           List file     =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET2\List\cstartup_M.lst#
+#           Object file   =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET2\Obj\cstartup_M.o#
+#           Command line  =  I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\cstartup_M.s #
+#                            -OI:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET2\Obj\ #
+#                            -s+ -M<> -w+ -r -DBOARD_MB851                    #
+#                            -DPLATFORM_HEADER="hal/micro/cortexm3/compiler/iar.h" #
+#                            -DBOARD_HEADER="hal/micro/cortexm3/stm32w108/board.h" #
+#                            -DCORTEXM3 -DCORTEXM3_STM32W108                  #
+#                            -DPHY_STM32W108XX -DDISABLE_WATCHDOG             #
+#                            -D__SOURCEFILE__="cstartup_M.s"                  #
+#                            -LI:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET2\List\ #
+#                            -t2 --cpu Cortex-M3 --fpu None                   #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\simplemac\include\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\hal\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\HAL\MICRO\CORTEXM3\STM32W108\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\simplemac\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\shared\ #
+#                                                                             #
+###############################################################################
+
+    1                          /**********************************************
+                               ****
+    2                           *
+    3                           * Part one of the system initialization code,
+                                contains low-level
+    4                           * initialization, plain thumb variant.
+    5                           *
+    6                          
+    7                           * Customized by St Corporation for STM32W
+    8                           *<!--(C) COPYRIGHT 2010 STMicroelectronics.
+                                All rights reserved.        -->
+    9                           *
+   10                           **********************************************
+                               ****/
+   11                          
+   12                          ;
+   13                          ; The modules in this file are included in the
+                                libraries, and may be replaced
+   14                          ; by any user-defined modules that define the
+                                PUBLIC symbol _program_start or
+   15                          ; a user defined start symbol.
+   16                          ; To override the cstartup defined in the
+                                library, simply add your modified
+   17                          ; version to the workbench project.
+   18                          ;
+   19                          ; The vector table is normally located at
+                                address 0.
+   20                          ; When debugging in RAM, it can be located in
+                                RAM, aligned to at least 2^6.
+   21                          ; The name "__vector_table" has special meaning
+                                for C-SPY:
+   22                          ; it is where the SP start value is found, and
+                                the NVIC vector
+   23                          ; table register (VTOR) is initialized to this
+                                address if != 0.
+   24                          ;
+   25                          ; Cortex-M version
+   26                          ;
+   27                          
+   28                                  MODULE  ?cstartup
+   29                          
+   30                                  ;; Forward declaration of sections.
+   31                                  SECTION CSTACK:DATA:NOROOT(3)
+   32                          
+   33                                  SECTION .intvec:CODE:NOROOT(2)
+   34                            
+   35                                  EXTERN  __iar_program_start
+   36                                  PUBLIC  __vector_table
+   37                          
+   38                                  DATA
+   39                          __vector_table
+   40    00000000 ........             DCD     sfe(CSTACK)
+   41    00000004 ........             DCD     __iar_program_start
+   42                          
+   43                                  ;; Standard Cortex-M3 Vectors
+   44    00000008 ........             DCD     NMI_Handler          ;;NMI
+                                                                     Handler
+   45    0000000C ........             DCD     HardFault_Handler    ;;Hard
+                                                                     Fault
+                                                                     Handler
+   46    00000010 ........             DCD     MemManage_Handler    ;;Memory
+                                                                     Fault
+                                                                     Handler
+                                                                     
+   47    00000014 ........             DCD     BusFault_Handler     ;;Bus Fault
+                                                                     Handler
+   48    00000018 ........             DCD     UsageFault_Handler   ;;Usage
+                                                                     Fault
+                                                                     Handler
+   49    0000001C 00000000             DCD     0                    ;;Reserved
+   50    00000020 00000000             DCD     0                    ;;Reserved
+   51    00000024 00000000             DCD     0                    ;;Reserved
+   52    00000028 00000000             DCD     0                    ;;Reserved
+   53    0000002C ........             DCD     SVC_Handler          ;;SVCall
+                                                                     Handler
+   54    00000030 ........             DCD     DebugMon_Handler     ;;Debug
+                                                                     Monitor
+                                                                     Handler
+   55    00000034 00000000             DCD     0                    ;;Reserved
+   56    00000038 ........             DCD     PendSV_Handler       ;;PendSV
+                                                                     Handler
+   57    0000003C ........             DCD     SysTick_Handler      ;;SysTick
+                                                                     Handler
+   58                          
+   59                                  ;; STM32W Vectors
+   60    00000040 ........             DCD     halTimer1Isr         ;;Timer 1
+                                                                     Handler
+   61    00000044 ........             DCD     halTimer2Isr         ;;Timer 2
+                                                                     Handler
+   62    00000048 ........             DCD     halManagementIsr     ;;Managemen
+                                                                    t
+                                                                     Handler
+   63    0000004C ........             DCD     halBaseBandIsr       ;;BaseBand
+                                                                     Handler
+   64    00000050 ........             DCD     halSleepTimerIsr     ;;Sleep
+                                                                     Timer
+                                                                     Handler
+   65    00000054 ........             DCD     halSc1Isr            ;;SC1
+                                                                     Handler
+   66    00000058 ........             DCD     halSc2Isr            ;;SC2
+                                                                     Handler
+   67    0000005C ........             DCD     halSecurityIsr       ;;Security
+                                                                     Handler
+   68    00000060 ........             DCD     halStackMacTimerIsr  ;;MAC Timer
+                                                                     Handler
+   69    00000064 ........             DCD     stmRadioTransmitIsr   ;;MAC TX
+                                                                      Handler
+   70    00000068 ........             DCD     stmRadioReceiveIsr    ;;MAC RX
+                                                                      Handler
+   71    0000006C ........             DCD     halAdcIsr            ;;ADC
+                                                                     Handler
+   72    00000070 ........             DCD     halIrqAIsr           ;;GPIO IRQA
+                                                                     Handler
+   73    00000074 ........             DCD     halIrqBIsr           ;;GPIO IRQB
+                                                                     Handler
+   74    00000078 ........             DCD     halIrqCIsr           ;;GPIO IRQC
+                                                                     Handler
+   75    0000007C ........             DCD     halIrqDIsr           ;;GPIO IRQD
+                                                                     Handler
+   76    00000080 ........             DCD     halDebugIsr          ;;Debug
+                                                                     Handler
+   77                          
+   78                          
+   79                          ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+                               ;;;;;
+   80                          ;;
+   81                          ;; Default interrupt handlers.
+   82                          ;;
+   83                          
+   84                                  PUBWEAK NMI_Handler
+   85                                  PUBWEAK HardFault_Handler
+   86                                  PUBWEAK MemManage_Handler
+   87                                  PUBWEAK BusFault_Handler
+   88                                  PUBWEAK UsageFault_Handler
+   89                                  PUBWEAK SVC_Handler
+   90                                  PUBWEAK DebugMon_Handler
+   91                                  PUBWEAK PendSV_Handler
+   92                                  PUBWEAK SysTick_Handler
+   93                          
+   94                                  PUBWEAK halTimer1Isr        
+   95                                  PUBWEAK halTimer2Isr        
+   96                                  PUBWEAK halManagementIsr    
+   97                                  PUBWEAK halBaseBandIsr      
+   98                                  PUBWEAK halSleepTimerIsr    
+   99                                  PUBWEAK halSc1Isr           
+  100                                  PUBWEAK halSc2Isr           
+  101                                  PUBWEAK halSecurityIsr      
+  102                                  PUBWEAK halStackMacTimerIsr 
+  103                                  PUBWEAK stmRadioTransmitIsr  
+  104                                  PUBWEAK stmRadioReceiveIsr   
+  105                                  PUBWEAK halAdcIsr           
+  106                                  PUBWEAK halIrqAIsr          
+  107                                  PUBWEAK halIrqBIsr          
+  108                                  PUBWEAK halIrqCIsr          
+  109                                  PUBWEAK halIrqDIsr          
+  110                                  PUBWEAK halDebugIsr         
+  111                          
+  112                          
+  113                          
+  114                          
+  115                          
+  116                          
+  117                                  SECTION .text:CODE:REORDER(1)
+  118                                  THUMB
+  119                          
+  120                          NMI_Handler
+  121                          HardFault_Handler
+  122                          MemManage_Handler
+  123                          BusFault_Handler
+  124                          UsageFault_Handler
+  125                          SVC_Handler
+  126                          DebugMon_Handler
+  127                          PendSV_Handler
+  128                          SysTick_Handler
+  129                          halTimer1Isr       
+  130                          halTimer2Isr       
+  131                          halManagementIsr   
+  132                          halBaseBandIsr     
+  133                          halSleepTimerIsr   
+  134                          halSc1Isr          
+  135                          halSc2Isr          
+  136                          halSecurityIsr     
+  137                          halStackMacTimerIsr
+  138                          stmRadioTransmitIsr 
+  139                          stmRadioReceiveIsr  
+  140                          halAdcIsr          
+  141                          halIrqAIsr         
+  142                          halIrqBIsr         
+  143                          halIrqCIsr         
+  144                          halIrqDIsr         
+  145                          halDebugIsr        
+  146                          Default_Handler
+  147    00000000 FEE7                 B Default_Handler
+  148                          
+  149                                  END
+##############################
+#           CRC:0            #
+#        Errors:   0         #
+#        Warnings: 0         #
+#         Bytes: 134         #
+##############################
+
+
+
+

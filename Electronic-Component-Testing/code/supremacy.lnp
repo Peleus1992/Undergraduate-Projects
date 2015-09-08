@@ -1,0 +1,6 @@
+"STARTUP.obj",
+"main.obj",
+"tftm.obj",
+"9325TP.obj" 
+TO "supremacy" 
+RAMSIZE(256) 

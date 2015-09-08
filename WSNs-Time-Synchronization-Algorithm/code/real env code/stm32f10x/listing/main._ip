@@ -1,0 +1,1 @@
+"main.c" -E -c --cpu Cortex-M3 -O3 --apcs=interwork --split_sections -I. -I "G:\Peleus_Program Files\Keil\ARM\RV31\Inc" -I "G:\Peleus_Program Files\Keil\ARM\CMSIS\Include" -I "G:\Peleus_Program Files\Keil\ARM\Inc\ST\STM32F10x" -o ".\listing\main.i" --list_dir ".\\listing\\" --list

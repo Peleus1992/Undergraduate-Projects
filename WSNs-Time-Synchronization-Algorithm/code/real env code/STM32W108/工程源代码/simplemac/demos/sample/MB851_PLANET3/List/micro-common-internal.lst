@@ -1,0 +1,713 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     05/Jul/2014  18:38:01 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro #
+#                    \cortexm3\micro-common-internal.c                        #
+#    Command line =  "I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micr #
+#                    o\cortexm3\micro-common-internal.c" -D BOARD_MB851 -D    #
+#                    "PLATFORM_HEADER=\"hal/micro/cortexm3/compiler/iar.h\""  #
+#                    -D "BOARD_HEADER=\"hal/micro/cortexm3/stm32w108/board.h\ #
+#                    "" -D CORTEXM3 -D CORTEXM3_STM32W108 -D PHY_STM32W108XX  #
+#                    -D DISABLE_WATCHDOG -D PLANET_ROLE -D BOARD_MB851 -D     #
+#                    "__SOURCEFILE__=\"micro-common-internal.c\"" -lC         #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\MB851_PLANET3\List\" --diag_suppress      #
+#                    Pa050 -o "I:\实验4 无线传感器节点多点通信实验\工程源代码 #
+#                    \simplemac\demos\sample\MB851_PLANET3\Obj\" --debug      #
+#                    --endian=little --cpu=Cortex-M3 -e --fpu=None            #
+#                    --dlib_config "D:\study soft\IAR6.10\IARsoft\arm\INC\c\D #
+#                    Lib_Config_Normal.h" -I "I:\实验4                        #
+#                    无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3 #
+#                    \" -I "I:\实验4 无线传感器节点多点通信实验\工程源代码\si #
+#                    mplemac\demos\sample\..\..\..\simplemac\include\" -I     #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\..\..\..\" -I "I:\实验4                   #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\..\..\..\hal\" -I "I:\实验4                         #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\..\..\..\HAL\MICRO\CORTEXM3\STM32W108\" -I          #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\..\..\..\simplemac\" -I "I:\实验4         #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\..\..\..\shared\" -Ohz --use_c++_inline             #
+#    List file    =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac #
+#                    \demos\sample\MB851_PLANET3\List\micro-common-internal.l #
+#                    st                                                       #
+#    Object file  =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac #
+#                    \demos\sample\MB851_PLANET3\Obj\micro-common-internal.o  #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\micro-common-internal.c
+      1          /*
+      2           * File: micro-common-internal.c
+      3           * Description: STM32W108 internal, micro specific HAL functions.
+      4           * This file is provided for completeness and it should not be modified
+      5           * by customers as it comtains code very tightly linked to undocumented
+      6           * device features
+      7           *
+      8           * <!--(C) COPYRIGHT 2010 STMicroelectronics. All rights reserved.        -->
+      9           */
+     10          
+     11          #include PLATFORM_HEADER
+     12          #include "error.h"
+     13          #include "hal/micro/micro-common.h"
+     14          #include "hal/micro/cortexm3/micro-common.h"
+     15          #include "hal/micro/cortexm3/mfg-token.h"
+     16          
+     17          #define HAL_STANDALONE
+     18          #ifdef HAL_STANDALONE
+     19          
+     20          #define AUXADC_REG (0xC0u)
+     21          #define DUMMY                   0
+     22          
+     23          #define ADC_6MHZ_CLOCK          0
+     24          #define ADC_1MHZ_CLOCK          1
+     25          
+     26          #define ADC_SAMPLE_CLOCKS_32    0
+     27          #define ADC_SAMPLE_CLOCKS_64    1
+     28          #define ADC_SAMPLE_CLOCKS_128   2
+     29          #define ADC_SAMPLE_CLOCKS_256   3
+     30          #define ADC_SAMPLE_CLOCKS_512   4
+     31          #define ADC_SAMPLE_CLOCKS_1024  5
+     32          #define ADC_SAMPLE_CLOCKS_2048  6
+     33          #define ADC_SAMPLE_CLOCKS_4096  7
+     34          
+     35          #define CAL_ADC_CHANNEL_VDD_4   0x00  //VDD_PADS/4
+     36          #define CAL_ADC_CHANNEL_VREG_2  0x01  //VREG_OUT/2
+     37          #define CAL_ADC_CHANNEL_TEMP    0x02
+     38          #define CAL_ADC_CHANNEL_GND     0x03
+     39          #define CAL_ADC_CHANNEL_VREF    0x04
+     40          #define CAL_ADC_CHANNEL_I       0x06
+     41          #define CAL_ADC_CHANNEL_Q       0x07
+     42          #define CAL_ADC_CHANNEL_ATEST_A 0x09
+     43          
+
+   \                                 In section .text, align 2, keep-with-next
+     44          void stCalibrateVref(void)
+     45          {
+   \                     stCalibrateVref:
+   \   00000000   E0B5               PUSH     {R5-R7,LR}
+     46            // Calibrate Vref by measuring a known voltage, Vdd/2.
+     47            //
+     48            // FIXME: add support for calibration if done in boost mode.
+     49            extern int16u stmRadioTxPowerMode;
+     50            tokTypeMfgAnalogueTrimBoth biasTrim;
+     51            
+     52            halCommonGetMfgToken(&biasTrim, TOKEN_MFG_ANALOG_TRIM_BOTH);
+   \   00000002   0A23               MOVS     R3,#+10
+   \   00000004   7F22               MOVS     R2,#+127
+   \   00000006   ....               LDR.N    R0,??DataTable9
+   \   00000008   0188               LDRH     R1,[R0, #+0]
+   \   0000000A   00A8               ADD      R0,SP,#+0
+   \   0000000C   ........           BL       halInternalGetMfgTokenData
+     53            
+     54            if(biasTrim.auxadc == 0xFFFF) {
+   \   00000010   BDF80600           LDRH     R0,[SP, #+6]
+   \   00000014   4FF6FF71           MOVW     R1,#+65535
+   \   00000018   8842               CMP      R0,R1
+   \   0000001A   09D1               BNE.N    ??stCalibrateVref_0
+     55              assert(FALSE);
+   \   0000001C   3722               MOVS     R2,#+55
+   \   0000001E   ........           ADR.W    R1,`?<Constant "I:\\\\\\312\\265\\321\\3514 \\316\\336\\317`
+   \   00000022   ........           ADR.W    R0,`?<Constant "FALSE">`
+   \   00000026   ........           BL       __aeabi_assert
+   \   0000002A   ........           BL       __iar_EmptyStepPoint
+   \   0000002E   07BD               POP      {R0-R2,PC}
+     56            } else {
+     57              //The bias trim token is set, so use the trim directly
+     58              int16u temp_value;
+     59              int16u mask = 0xFFFF;
+     60          
+     61              // halClearLed(BOARDLED3);
+     62          
+     63              while (SCR_BUSY_REG) ;
+   \                     ??stCalibrateVref_0:
+   \   00000030   ....               LDR.N    R1,??DataTable9_1  ;; 0x400010e8
+   \   00000032   4A68               LDR      R2,[R1, #+4]
+   \   00000034   002A               CMP      R2,#+0
+   \   00000036   FBD1               BNE.N    ??stCalibrateVref_0
+     64          
+     65              SCR_ADDR_REG = AUXADC_REG ;  // prepare the address to write to
+   \   00000038   C022               MOVS     R2,#+192
+   \   0000003A   8A60               STR      R2,[R1, #+8]
+     66          
+     67              // initiate read (starts on falling edge of SCR_CTRL_SCR_READ)
+     68              SCR_CTRL_REG = SCR_CTRL_SCR_READ_MASK;
+   \   0000003C   0122               MOVS     R2,#+1
+   \   0000003E   0A60               STR      R2,[R1, #+0]
+     69              SCR_CTRL_REG = 0;
+   \   00000040   0022               MOVS     R2,#+0
+   \   00000042   0A60               STR      R2,[R1, #+0]
+     70          
+     71              // wait for read to complete
+     72              while (SCR_BUSY_REG) ;
+   \                     ??stCalibrateVref_1:
+   \   00000044   4A68               LDR      R2,[R1, #+4]
+   \   00000046   002A               CMP      R2,#+0
+   \   00000048   FCD1               BNE.N    ??stCalibrateVref_1
+     73          
+     74              temp_value = SCR_READ_REG & ~mask;
+   \   0000004A   0A69               LDR      R2,[R1, #+16]
+     75              temp_value |= biasTrim.auxadc & mask;
+     76              
+     77              SCR_WRITE_REG = temp_value;
+   \   0000004C   C860               STR      R0,[R1, #+12]
+     78          
+     79              // initiate write (starts on falling edge of SCR_CTRL_SCR_WRITE_MASK)
+     80              SCR_CTRL_REG = SCR_CTRL_SCR_WRITE_MASK;
+   \   0000004E   0220               MOVS     R0,#+2
+   \   00000050   0860               STR      R0,[R1, #+0]
+     81              SCR_CTRL_REG = 0;
+   \   00000052   0020               MOVS     R0,#+0
+   \   00000054   0860               STR      R0,[R1, #+0]
+     82          
+     83              while (SCR_BUSY_REG) ;
+   \                     ??stCalibrateVref_2:
+   \   00000056   4868               LDR      R0,[R1, #+4]
+   \   00000058   0028               CMP      R0,#+0
+   \   0000005A   FCD1               BNE.N    ??stCalibrateVref_2
+     84              
+     85            }
+     86          }
+   \   0000005C   07BD               POP      {R0-R2,PC}       ;; return
+     87          
+     88          
+
+   \                                 In section .text, align 2, keep-with-next
+     89          void calDisableAdc(void) {
+     90            // Disable the Calibration ADC to save current.
+     91            CAL_ADC_CONFIG &= ~CAL_ADC_CONFIG_CAL_ADC_EN;
+   \                     calDisableAdc:
+   \   00000000   ....               LDR.N    R0,??DataTable9_2  ;; 0x40007004
+   \   00000002   0168               LDR      R1,[R0, #+0]
+   \   00000004   4908               LSRS     R1,R1,#+1
+   \   00000006   4900               LSLS     R1,R1,#+1
+   \   00000008   0160               STR      R1,[R0, #+0]
+     92          }
+   \   0000000A   7047               BX       LR               ;; return
+     93          
+     94          
+     95          
+     96          // These routines maintain the same signature as their hal- counterparts to
+     97          // facilitate simple support between phys.
+     98          // It is assumed (hoped?) that the compiler will optimize out unused arguments.
+
+   \                                 In section .text, align 2, keep-with-next
+     99          StStatus calStartAdcConversion(int8u dummy1, // Not used.
+    100                                            int8u dummy2, // Not used.
+    101                                            int8u channel,
+    102                                            int8u rate,
+    103                                            int8u clock) {
+   \                     calStartAdcConversion:
+   \   00000000   F8B5               PUSH     {R3-R7,LR}
+   \   00000002   1646               MOV      R6,R2
+   \   00000004   1F46               MOV      R7,R3
+   \   00000006   069C               LDR      R4,[SP, #+24]
+    104            // Disable the Calibration ADC interrupt so that we can poll it.
+    105            INT_MGMTCFG &= ~INT_MGMTCALADC;
+   \   00000008   ....               LDR.N    R5,??DataTable9_3  ;; 0x4000a018
+   \   0000000A   286C               LDR      R0,[R5, #+64]
+   \   0000000C   20F00800           BIC      R0,R0,#0x8
+   \   00000010   2864               STR      R0,[R5, #+64]
+    106          
+    107            ATOMIC(
+    108              // Enable the Calibration ADC, choose source, set rate, and choose clock.
+    109              CAL_ADC_CONFIG =((CAL_ADC_CONFIG_CAL_ADC_EN)                  |
+    110                               (channel << CAL_ADC_CONFIG_CAL_ADC_MUX_BIT)  |
+    111                               (rate << CAL_ADC_CONFIG_CAL_ADC_RATE_BIT)    |
+    112                               (clock << CAL_ADC_CONFIG_CAL_ADC_CLKSEL_BIT) );
+    113              // Clear any pending Calibration ADC interrupt.  Since we're atomic, the
+    114              // one we're interested in hasn't happened yet (will take ~10us at minimum).
+    115              // We're only clearing stale info.
+    116              INT_MGMTFLAG = INT_MGMTCALADC;
+    117            )
+   \   00000012   ........           BL       _disableBasePri
+   \   00000016   3903               LSLS     R1,R7,#+12
+   \   00000018   41EAC611           ORR      R1,R1,R6, LSL #+7
+   \   0000001C   41EA8401           ORR      R1,R1,R4, LSL #+2
+   \   00000020   41F00101           ORR      R1,R1,#0x1
+   \   00000024   ....               LDR.N    R2,??DataTable9_2  ;; 0x40007004
+   \   00000026   1160               STR      R1,[R2, #+0]
+   \   00000028   0821               MOVS     R1,#+8
+   \   0000002A   2960               STR      R1,[R5, #+0]
+   \   0000002C   ........           BL       _writeBasePri
+    118            return ST_SUCCESS;
+   \   00000030   0020               MOVS     R0,#+0
+   \   00000032   F2BD               POP      {R1,R4-R7,PC}    ;; return
+    119          }
+    120          
+    121          
+
+   \                                 In section .text, align 2, keep-with-next
+    122          StStatus calReadAdcBlocking(int8u  dummy,
+    123                                         int16u *value) {
+   \                     calReadAdcBlocking:
+   \   00000000   ....               LDR.N    R0,??DataTable9_3  ;; 0x4000a018
+    124            // Wait for conversion to complete.
+    125            while ( ! (INT_MGMTFLAG & INT_MGMTCALADC) );
+   \                     ??calReadAdcBlocking_0:
+   \   00000002   0268               LDR      R2,[R0, #+0]
+   \   00000004   1207               LSLS     R2,R2,#+28
+   \   00000006   FCD5               BPL.N    ??calReadAdcBlocking_0
+    126            // Clear the interrupt for this conversion.
+    127            INT_MGMTFLAG = INT_MGMTCALADC;
+   \   00000008   0822               MOVS     R2,#+8
+   \   0000000A   0260               STR      R2,[R0, #+0]
+    128            // Get the result.
+    129            *value = (int16u)CAL_ADC_DATA;
+   \   0000000C   ....               LDR.N    R0,??DataTable9_4  ;; 0x40007000
+   \   0000000E   0068               LDR      R0,[R0, #+0]
+   \   00000010   0880               STRH     R0,[R1, #+0]
+    130            return ST_SUCCESS;
+   \   00000012   0020               MOVS     R0,#+0
+   \   00000014   7047               BX       LR               ;; return
+    131          }
+    132          
+    133          
+    134          
+    135          
+    136          //Using 6MHz clock reduces resolution but greatly increases conversion speed.
+    137          //The sample clocks were chosen based upon empirical evidence and provided
+    138          //the fastest conversions with the greatest reasonable accuracy.  Variation
+    139          //across successive conversions appears to be +/-20mv of the average
+    140          //conversion.  Overall function time is <150us.
+
+   \                                 In section .text, align 2, keep-with-next
+    141          int16u stMeasureVddFast(void)
+    142          {
+   \                     stMeasureVddFast:
+   \   00000000   30B5               PUSH     {R4,R5,LR}
+   \   00000002   83B0               SUB      SP,SP,#+12
+    143            int16u value;
+    144            int32u Ngnd;
+    145            int32u Nreg;
+    146            int32u Nvdd;
+    147            tokTypeMfgRegVoltage1V8 vregOutTok;
+    148            halCommonGetMfgToken(&vregOutTok, TOKEN_MFG_1V8_REG_VOLTAGE);
+   \   00000004   0223               MOVS     R3,#+2
+   \   00000006   7F22               MOVS     R2,#+127
+   \   00000008   ....               LDR.N    R0,??DataTable9_5
+   \   0000000A   0188               LDRH     R1,[R0, #+0]
+   \   0000000C   01A8               ADD      R0,SP,#+4
+   \   0000000E   ........           BL       halInternalGetMfgTokenData
+    149            
+    150            //Measure GND
+    151            calStartAdcConversion(DUMMY,
+    152                                  DUMMY,
+    153                                  CAL_ADC_CHANNEL_GND,
+    154                                  ADC_SAMPLE_CLOCKS_128,
+    155                                  ADC_6MHZ_CLOCK);
+   \   00000012   0020               MOVS     R0,#+0
+   \   00000014   0090               STR      R0,[SP, #+0]
+   \   00000016   0223               MOVS     R3,#+2
+   \   00000018   0322               MOVS     R2,#+3
+   \   0000001A   0021               MOVS     R1,#+0
+   \   0000001C   ........           BL       calStartAdcConversion
+    156            calReadAdcBlocking(DUMMY, &value);
+   \   00000020   ........           BL       ?Subroutine0
+    157            Ngnd = (int32u)value;
+   \                     ??CrossCallReturnLabel_2:
+   \   00000024   BDF80640           LDRH     R4,[SP, #+6]
+    158            
+    159            //Measure VREG_OUT/2
+    160            calStartAdcConversion(DUMMY,
+    161                                  DUMMY,
+    162                                  CAL_ADC_CHANNEL_VREG_2,
+    163                                  ADC_SAMPLE_CLOCKS_128,
+    164                                  ADC_6MHZ_CLOCK);
+   \   00000028   0020               MOVS     R0,#+0
+   \   0000002A   0090               STR      R0,[SP, #+0]
+   \   0000002C   0223               MOVS     R3,#+2
+   \   0000002E   0122               MOVS     R2,#+1
+   \   00000030   0146               MOV      R1,R0
+   \   00000032   ........           BL       calStartAdcConversion
+    165            calReadAdcBlocking(DUMMY, &value);
+   \   00000036   ........           BL       ?Subroutine0
+    166            Nreg = (int32u)value;
+   \                     ??CrossCallReturnLabel_1:
+   \   0000003A   BDF80650           LDRH     R5,[SP, #+6]
+    167            
+    168            //Measure VDD_PADS/4
+    169            calStartAdcConversion(DUMMY,
+    170                                  DUMMY,
+    171                                  CAL_ADC_CHANNEL_VDD_4,
+    172                                  ADC_SAMPLE_CLOCKS_128,
+    173                                  ADC_6MHZ_CLOCK);
+   \   0000003E   0020               MOVS     R0,#+0
+   \   00000040   0090               STR      R0,[SP, #+0]
+   \   00000042   0223               MOVS     R3,#+2
+   \   00000044   0246               MOV      R2,R0
+   \   00000046   0146               MOV      R1,R0
+   \   00000048   ........           BL       calStartAdcConversion
+    174            calReadAdcBlocking(DUMMY, &value);
+   \   0000004C   ........           BL       ?Subroutine0
+    175            Nvdd = (int32u)value;
+   \                     ??CrossCallReturnLabel_0:
+   \   00000050   BDF80600           LDRH     R0,[SP, #+6]
+    176            
+    177            calDisableAdc();
+   \   00000054   ....               LDR.N    R1,??DataTable9_2  ;; 0x40007004
+   \   00000056   0A68               LDR      R2,[R1, #+0]
+   \   00000058   5208               LSRS     R2,R2,#+1
+   \   0000005A   5200               LSLS     R2,R2,#+1
+   \   0000005C   0A60               STR      R2,[R1, #+0]
+    178            
+    179            //Convert the value into mV.  VREG_OUT is ideally 1.8V, but it wont be
+    180            //exactly 1.8V.  The actual value is stored in the manufacturing token
+    181            //TOKEN_MFG_1V8_REG_VOLTAGE.  The token stores the value in 10^-4, but we
+    182            //need 10^-3 so divide by 10.  If this token is not set (0xFFFF), then
+    183            //assume 1800mV.
+    184            if(vregOutTok == 0xFFFF) {
+   \   0000005E   BDF80410           LDRH     R1,[SP, #+4]
+   \   00000062   4FF6FF72           MOVW     R2,#+65535
+   \   00000066   9142               CMP      R1,R2
+   \   00000068   0EBF               ITEE     EQ 
+   \   0000006A   4FF4E161           MOVEQ    R1,#+1800
+   \   0000006E   0A22               MOVNE    R2,#+10
+   \   00000070   91FBF2F1           SDIVNE   R1,R1,R2
+    185              vregOutTok = 1800;
+    186            } else {
+    187              vregOutTok /= 10;
+   \   00000074   ADF80410           STRH     R1,[SP, #+4]
+    188            }
+    189            return ((((((Nvdd-Ngnd)<<16)/(Nreg-Ngnd))*vregOutTok)*2)>>16);
+   \   00000078   001B               SUBS     R0,R0,R4
+   \   0000007A   0004               LSLS     R0,R0,#+16
+   \   0000007C   291B               SUBS     R1,R5,R4
+   \   0000007E   B0FBF1F0           UDIV     R0,R0,R1
+   \   00000082   BDF80410           LDRH     R1,[SP, #+4]
+   \   00000086   4843               MULS     R0,R1,R0
+   \   00000088   4000               LSLS     R0,R0,#+1
+   \   0000008A   000C               LSRS     R0,R0,#+16
+   \   0000008C   3EBD               POP      {R1-R5,PC}       ;; return
+    190          }
+
+   \                                 In section .text, align 2, keep-with-next
+   \                     ?Subroutine0:
+   \   00000000   0DF10601           ADD      R1,SP,#+6
+   \   00000004   0020               MOVS     R0,#+0
+   \   00000006   ....               B.N      calReadAdcBlocking
+    191          #endif
+    192          
+
+   \                                 In section .text, align 2, keep-with-next
+    193          void halCommonCalibratePads(void)
+    194          {
+   \                     halCommonCalibratePads:
+   \   00000000   10B5               PUSH     {R4,LR}
+    195            if(stMeasureVddFast() < 2700) {
+   \   00000002   ....               LDR.N    R4,??DataTable9_6  ;; 0x4000bc00
+   \   00000004   ........           BL       stMeasureVddFast
+   \   00000008   40F68C21           MOVW     R1,#+2700
+   \   0000000C   8842               CMP      R0,R1
+   \   0000000E   2068               LDR      R0,[R4, #+0]
+   \   00000010   34BF               ITE      CC 
+   \   00000012   40F00800           ORRCC    R0,R0,#0x8
+   \   00000016   20F00800           BICCS    R0,R0,#0x8
+    196              GPIO_DBGCFG |= GPIO_DBGCFGRSVD;
+    197            } else {
+    198              GPIO_DBGCFG &= ~GPIO_DBGCFGRSVD;
+   \   0000001A   2060               STR      R0,[R4, #+0]
+    199            }
+    200          }
+   \   0000001C   10BD               POP      {R4,PC}          ;; return
+    201          
+    202          
+
+   \                                 In section .text, align 2, keep-with-next
+    203          void halInternalSetRegTrim(boolean boostMode)
+    204          {
+   \                     halInternalSetRegTrim:
+   \   00000000   10B5               PUSH     {R4,LR}
+   \   00000002   82B0               SUB      SP,SP,#+8
+   \   00000004   0446               MOV      R4,R0
+    205            tokTypeMfgRegTrim regTrim;
+    206            int8u trim1V2;
+    207            int8u trim1V8;
+    208            
+    209            halCommonGetMfgToken(&regTrim, TOKEN_MFG_REG_TRIM);
+   \   00000006   0223               MOVS     R3,#+2
+   \   00000008   7F22               MOVS     R2,#+127
+   \   0000000A   ....               LDR.N    R0,??DataTable9_7
+   \   0000000C   0188               LDRH     R1,[R0, #+0]
+   \   0000000E   00A8               ADD      R0,SP,#+0
+   \   00000010   ........           BL       halInternalGetMfgTokenData
+    210            // The compiler can optimize this function a bit more and keep the 
+    211            // values in processor registers if we use separate local vars instead
+    212            // of just accessing via the structure fields
+    213            trim1V8 = regTrim.regTrim1V8;
+   \   00000014   9DF80100           LDRB     R0,[SP, #+1]
+    214            trim1V2 = regTrim.regTrim1V2;
+   \   00000018   9DF80010           LDRB     R1,[SP, #+0]
+    215            
+    216            //If tokens are erased, default to reasonable values, otherwise use the
+    217            //token values.
+    218            if((trim1V2 == 0xFF) && (trim1V8 == 0xFF)) {
+   \   0000001C   FF29               CMP      R1,#+255
+   \   0000001E   03D1               BNE.N    ??halInternalSetRegTrim_0
+   \   00000020   FF28               CMP      R0,#+255
+   \   00000022   04BF               ITT      EQ 
+   \   00000024   0420               MOVEQ    R0,#+4
+   \   00000026   0021               MOVEQ    R1,#+0
+    219              trim1V8 = 4;
+    220              trim1V2 = 0;
+    221            }
+    222            
+    223            //When the radio is in boost mode, we have to increase the 1.8V trim.
+    224            if(boostMode) {
+   \                     ??halInternalSetRegTrim_0:
+   \   00000028   04B1               CBZ.N    R4,??halInternalSetRegTrim_1
+    225              trim1V8 += 2;
+   \   0000002A   801C               ADDS     R0,R0,#+2
+    226            }
+    227            
+    228            //Clamp at 7 to ensure we don't exceed max values, accidentally set
+    229            //other bits, or wrap values.
+    230            if(trim1V8>7) {
+   \                     ??halInternalSetRegTrim_1:
+   \   0000002C   C0B2               UXTB     R0,R0
+   \   0000002E   0828               CMP      R0,#+8
+   \   00000030   28BF               IT       CS 
+   \   00000032   0720               MOVCS    R0,#+7
+    231              trim1V8 = 7;
+    232            }
+    233            if(trim1V2>7) {
+   \   00000034   0829               CMP      R1,#+8
+   \   00000036   28BF               IT       CS 
+   \   00000038   0721               MOVCS    R1,#+7
+    234              trim1V2 = 7;
+    235            }
+    236            
+    237            VREG_REG = ( (trim1V8<<VREG_VREG_1V8_TRIM_BIT) |
+    238                         (trim1V2<<VREG_VREG_1V2_TRIM_BIT) );
+   \   0000003A   41EAC010           ORR      R0,R1,R0, LSL #+7
+   \   0000003E   ....               LDR.N    R1,??DataTable9_8  ;; 0x40000018
+   \   00000040   0860               STR      R0,[R1, #+0]
+    239          }
+   \   00000042   13BD               POP      {R0,R1,R4,PC}    ;; return
+    240          
+    241          
+    242          // halCommonDelayMicroseconds
+    243          // -enables MAC Timer and leaves it enabled.
+    244          // -does not touch MAC Timer Compare registers.
+    245          // -max delay is 65535 usec.
+    246          // NOTE: This function primarily designed for when the chip is running off of
+    247          //       the XTAL, which is the most common situation.  When running from
+    248          //       OSCHF, though, the clock speed is cut in half, so the input parameter
+    249          //       is divided by two.  With respect to accuracy, we're now limited by
+    250          //       the accuracy of OSCHF (much lower than XTAL).
+
+   \                                 In section .text, align 2, keep-with-next
+    251          void halCommonDelayMicroseconds(int16u us)
+    252          {
+    253            int32u beginTime = MAC_TIMER;
+   \                     halCommonDelayMicroseconds:
+   \   00000000   ....               LDR.N    R1,??DataTable9_9  ;; 0x40002038
+   \   00000002   0A68               LDR      R2,[R1, #+0]
+    254            
+    255            //If we're not using the XTAL, the MAC Timer is running off OSCHF,
+    256            //that means the clock is half speed, 6MHz.  We need to halve our delay
+    257            //time.
+    258            if((OSC24M_CTRL&OSC24M_CTRL_OSC24M_SEL)!=OSC24M_CTRL_OSC24M_SEL) {
+   \   00000004   ....               LDR.N    R3,??DataTable9_10  ;; 0x4000401c
+   \   00000006   1B68               LDR      R3,[R3, #+0]
+   \   00000008   DB07               LSLS     R3,R3,#+31
+   \   0000000A   58BF               IT       PL 
+   \   0000000C   4008               LSRPL    R0,R0,#+1
+    259              us >>= 1;
+    260            }
+    261              
+    262            //we have about 2us of overhead in the calculations
+    263            if(us<=2) {
+   \   0000000E   0328               CMP      R0,#+3
+   \   00000010   09D3               BCC.N    ??halCommonDelayMicroseconds_0
+    264              return;
+    265            }
+    266            
+    267            // MAC Timer is enabled in stmRadioInit, which may not have been called yet.
+    268            // This algorithm needs the MAC Timer so we enable it here.
+    269            MAC_TIMER_CTRL |= MAC_TIMER_CTRL_MAC_TIMER_EN;
+   \   00000012   4B6D               LDR      R3,[R1, #+84]
+   \   00000014   43F00103           ORR      R3,R3,#0x1
+   \   00000018   4B65               STR      R3,[R1, #+84]
+    270          
+    271            // since our max delay (65535<<1) is less than half the size of the 
+    272            //  20 bit mac timer, we can easily just handle the potential for
+    273            //  mac timer wrapping by subtracting the time delta and masking out
+    274            //  the extra bits
+    275            while( ((MAC_TIMER-beginTime)&MAC_TIMER_MAC_TIMER_MASK) < us ) {
+   \                     ??halCommonDelayMicroseconds_1:
+   \   0000001A   0B68               LDR      R3,[R1, #+0]
+   \   0000001C   9B1A               SUBS     R3,R3,R2
+   \   0000001E   1B03               LSLS     R3,R3,#+12
+   \   00000020   1B0B               LSRS     R3,R3,#+12
+   \   00000022   8342               CMP      R3,R0
+   \   00000024   F9D3               BCC.N    ??halCommonDelayMicroseconds_1
+   \                     ??halCommonDelayMicroseconds_0:
+   \   00000026   7047               BX       LR               ;; return
+    276              ; // spin
+    277            }
+    278          }
+    279          
+    280          
+    281          //Burning cycles for milliseconds is generally a bad idea, but it is
+    282          //necessary in some situations.  If you have to burn more than 65ms of time,
+    283          //the halCommonDelayMicroseconds function becomes cumbersome, so this
+    284          //function gives you millisecond granularity.
+
+   \                                 In section .text, align 2, keep-with-next
+    285          void halCommonDelayMilliseconds(int16u ms)
+    286          {
+   \                     halCommonDelayMilliseconds:
+   \   00000000   10B5               PUSH     {R4,LR}
+   \   00000002   0400               MOVS     R4,R0
+    287            if(ms==0) {
+   \   00000004   04D1               BNE.N    ??halCommonDelayMilliseconds_0
+   \   00000006   10BD               POP      {R4,PC}
+    288              return;
+    289            }
+    290            
+    291            while(ms-->0) {
+    292              halCommonDelayMicroseconds(1000);
+   \                     ??halCommonDelayMilliseconds_1:
+   \   00000008   4FF47A70           MOV      R0,#+1000
+   \   0000000C   ........           BL       halCommonDelayMicroseconds
+    293            }
+   \                     ??halCommonDelayMilliseconds_0:
+   \   00000010   2046               MOV      R0,R4
+   \   00000012   441E               SUBS     R4,R0,#+1
+   \   00000014   80B2               UXTH     R0,R0
+   \   00000016   0028               CMP      R0,#+0
+   \   00000018   F6D1               BNE.N    ??halCommonDelayMilliseconds_1
+   \   0000001A   10BD               POP      {R4,PC}          ;; return
+    294          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9:
+   \   00000000   ........           DC32     TOKEN_MFG_ANALOG_TRIM_BOTH
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_1:
+   \   00000000   E8100040           DC32     0x400010e8
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_2:
+   \   00000000   04700040           DC32     0x40007004
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_3:
+   \   00000000   18A00040           DC32     0x4000a018
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_4:
+   \   00000000   00700040           DC32     0x40007000
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_5:
+   \   00000000   ........           DC32     TOKEN_MFG_1V8_REG_VOLTAGE
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_6:
+   \   00000000   00BC0040           DC32     0x4000bc00
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_7:
+   \   00000000   ........           DC32     TOKEN_MFG_REG_TRIM
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_8:
+   \   00000000   18000040           DC32     0x40000018
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_9:
+   \   00000000   38200040           DC32     0x40002038
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable9_10:
+   \   00000000   1C400040           DC32     0x4000401c
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "FALSE">`:
+   \   00000000                      ; Initializer data, 8 bytes
+   \   00000000   46414C534500       DC8 70, 65, 76, 83, 69, 0, 0, 0
+   \              0000        
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     `?<Constant "I:\\\\\\312\\265\\321\\3514 \\316\\336\\317`:
+   \   00000000                      ; Initializer data, 92 bytes
+   \   00000000   493A5CCAB5D1       DC8 73, 58, 92, 202, 181, 209, 233, 52, 32, 206
+   \              E93420CE    
+   \   0000000A   DECFDFB4ABB8       DC8 222, 207, 223, 180, 171, 184, 208, 198, 247, 189
+   \              D0C6F7BD    
+   \   00000014   DAB5E3B6E0B5       DC8 218, 181, 227, 182, 224, 181, 227, 205, 168, 208
+   \              E3CDA8D0    
+   \   0000001E   C5CAB5D1E95C       DC8 197, 202, 181, 209, 233, 92, 185, 164, 179, 204
+   \              B9A4B3CC    
+   \   00000028   D4B4B4FAC2EB       DC8 212, 180, 180, 250, 194, 235, 92, 104, 97, 108
+   \              5C68616C    
+   \   00000032   5C6D6963726F       DC8 92, 109, 105, 99, 114, 111, 92, 99, 111, 114
+   \              5C636F72    
+   \   0000003C   7465786D335C       DC8 116, 101, 120, 109, 51, 92, 109, 105, 99, 114
+   \              6D696372    
+   \   00000046   6F2D636F6D6D       DC8 111, 45, 99, 111, 109, 109, 111, 110, 45, 105
+   \              6F6E2D69    
+   \   00000050   6E7465726E61       DC8 110, 116, 101, 114, 110, 97, 108, 46, 99, 0
+   \              6C2E6300    
+   \   0000005A   0000               DC8 0, 0
+
+   Maximum stack usage in bytes:
+
+     Function                   .cstack
+     --------                   -------
+     calDisableAdc                   0
+     calReadAdcBlocking              0
+     calStartAdcConversion          24
+     halCommonCalibratePads          8
+     halCommonDelayMicroseconds      0
+     halCommonDelayMilliseconds      8
+     halInternalSetRegTrim          16
+     stCalibrateVref                16
+     stMeasureVddFast               24
+
+
+   Section sizes:
+
+     Function/Label                                 Bytes
+     --------------                                 -----
+     stCalibrateVref                                  94
+     calDisableAdc                                    12
+     calStartAdcConversion                            52
+     calReadAdcBlocking                               22
+     stMeasureVddFast                                142
+     ?Subroutine0                                      8
+     halCommonCalibratePads                           30
+     halInternalSetRegTrim                            68
+     halCommonDelayMicroseconds                       40
+     halCommonDelayMilliseconds                       28
+     ??DataTable9                                      4
+     ??DataTable9_1                                    4
+     ??DataTable9_2                                    4
+     ??DataTable9_3                                    4
+     ??DataTable9_4                                    4
+     ??DataTable9_5                                    4
+     ??DataTable9_6                                    4
+     ??DataTable9_7                                    4
+     ??DataTable9_8                                    4
+     ??DataTable9_9                                    4
+     ??DataTable9_10                                   4
+     ?<Constant "FALSE">                               8
+     ?<Constant "I:\\\312\265\321\3514 \316\336\317   92
+
+ 
+ 640 bytes in section .text
+ 
+ 640 bytes of CODE memory
+
+Errors: none
+Warnings: none

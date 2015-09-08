@@ -1,0 +1,313 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     17/Jul/2014  09:45:13 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  E:\实验4 16点组网\工程源代码\hal\micro\cortexm3\stm32w10 #
+#                    8\low_level_init.c                                       #
+#    Command line =  "E:\实验4 16点组网\工程源代码\hal\micro\cortexm3\stm32w1 #
+#                    08\low_level_init.c" -D BOARD_MB851 -D                   #
+#                    "PLATFORM_HEADER=\"hal/micro/cortexm3/compiler/iar.h\""  #
+#                    -D "BOARD_HEADER=\"hal/micro/cortexm3/stm32w108/board.h\ #
+#                    "" -D CORTEXM3 -D CORTEXM3_STM32W108 -D PHY_STM32W108XX  #
+#                    -D DISABLE_WATCHDOG -D PLANET_ROLE -D BOARD_MB851 -D     #
+#                    "__SOURCEFILE__=\"low_level_init.c\"" -lC "E:\实验4      #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_PLANET\ #
+#                    List\" --diag_suppress Pa050 -o "E:\实验4                #
+#                    16点组网\工程源代码\simplemac\demos\sample\MB851_PLANET\ #
+#                    Obj\" --debug --endian=little --cpu=Cortex-M3 -e         #
+#                    --fpu=None --dlib_config "D:\study                       #
+#                    soft\IAR6.10\IARsoft\arm\INC\c\DLib_Config_Normal.h" -I  #
+#                    "E:\实验4 16点组网\工程源代码\hal\micro\cortexm3\stm32w1 #
+#                    08\" -I "E:\实验4 16点组网\工程源代码\simplemac\demos\sa #
+#                    mple\..\..\..\simplemac\include\" -I "E:\实验4           #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\"    #
+#                    -I "E:\实验4 16点组网\工程源代码\simplemac\demos\sample\ #
+#                    ..\..\..\hal\" -I "E:\实验4                              #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\HAL\ #
+#                    MICRO\CORTEXM3\STM32W108\" -I "E:\实验4                  #
+#                    16点组网\工程源代码\simplemac\demos\sample\..\..\..\simp #
+#                    lemac\" -I "E:\实验4 16点组网\工程源代码\simplemac\demos #
+#                    \sample\..\..\..\shared\" -Ohz --use_c++_inline          #
+#    List file    =  E:\实验4 16点组网\工程源代码\simplemac\demos\sample\MB85 #
+#                    1_PLANET\List\low_level_init.lst                         #
+#    Object file  =  E:\实验4 16点组网\工程源代码\simplemac\demos\sample\MB85 #
+#                    1_PLANET\Obj\low_level_init.o                            #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\实验4 16点组网\工程源代码\hal\micro\cortexm3\stm32w108\low_level_init.c
+      1          /**************************************************
+      2           *
+      3           * This module contains the function `__low_level_init', a function
+      4           * that is called before the `main' function of the program.  Normally
+      5           * low-level initializations - such as setting the prefered interrupt
+      6           * level or setting the watchdog - can be performed here.
+      7           *
+      8           * Note that this function is called before the data segments are
+      9           * initialized, this means that this function cannot rely on the
+     10           * values of global or static variables.
+     11           *
+     12           * When this function returns zero, the startup code will inhibit the
+     13           * initialization of the data segments. The result is faster startup,
+     14           * the drawback is that neither global nor static data will be
+     15           * initialized.
+     16           *
+     17           * Copyright 1999-2004 IAR Systems. All rights reserved.
+     18           * Customized by STMicroelectronics for STM32W
+     19           *
+     20           **************************************************/
+     21          
+     22          #include PLATFORM_HEADER
+     23          
+     24          #ifdef __cplusplus
+     25          extern "C" {
+     26          #endif
+     27          
+     28          #pragma language=extended
+     29          
+     30          #include "hal/micro/cortexm3/memmap.h"
+
+   \                                 In section FAT, align 4, root
+     31          __root __no_init const HalFixedAddressTableType halFixedAddressTable @ __FAT__;
+   \                     halFixedAddressTable:
+   \   00000000                      DS8 44
+     32          
+     33          extern const HalVectorTableType __vector_table[];
+     34          
+     35          
+     36          __interwork int __low_level_init(void);
+     37          
+
+   \                                 In section .text, align 4, keep-with-next
+     38          __interwork int __low_level_init(void)
+     39          {
+   \                     __low_level_init:
+   \   00000000   80B5               PUSH     {R7,LR}
+     40            //Ensure there is enough margin on VREG_1V8 for stable RAM reads by
+     41            //setting it to a code of 6.  VREG_1V2 can be left at its reset value.
+     42            VREG = 0x00000307;
+   \   00000002   1D48               LDR.N    R0,??__low_level_init_0  ;; 0x40000018
+   \   00000004   40F20731           MOVW     R1,#+775
+   \   00000008   0160               STR      R1,[R0, #+0]
+     43            
+     44            // This code should be careful about the use of local variables in case the
+     45            // reset type happens to be a deep sleep reset.  If the reset is not from
+     46            // deep sleep, then locals can be freely used
+     47          
+     48            //When the Cortex-M3 exits reset, interrupts are enable.  Explicitely
+     49            //disable them immediately using the standard set PRIMASK instruction.
+     50            //Injecting an assembly instruction this early does not effect optimization.
+     51            asm("CPSID i");
+   \   0000000A   72B6               CPSID i          
+     52          
+     53            //It is quite possible that when the Cortex-M3 begins executing code the
+     54            //Core Reset Vector Catch is still left enabled.  Because this VC would
+     55            //cause us to halt at reset if another reset event tripped, we should
+     56            //clear it as soon as possible.  If a debugger wants to halt at reset,
+     57            //it will set this bit again.
+     58            DEBUG_EMCR &= ~DEBUG_EMCR_VC_CORERESET;
+   \   0000000C   1B49               LDR.N    R1,??__low_level_init_0+0x4  ;; 0xe000edfc
+   \   0000000E   0A68               LDR      R2,[R1, #+0]
+   \   00000010   5208               LSRS     R2,R2,#+1
+   \   00000012   5200               LSLS     R2,R2,#+1
+   \   00000014   0A60               STR      R2,[R1, #+0]
+     59          
+     60            //Configure flash access for optimal current consumption early
+     61            //during boot to save as much current as we can.
+     62            FLASH_ACCESS = (FLASH_ACCESS_PREFETCH_EN          |
+     63                            (1<<FLASH_ACCESS_CODE_LATENCY_BIT));
+   \   00000016   1A49               LDR.N    R1,??__low_level_init_0+0x8  ;; 0x40008000
+   \   00000018   1122               MOVS     R2,#+17
+   \   0000001A   0A60               STR      R2,[R1, #+0]
+     64          
+     65            ////---- Always remap the vector table ----////
+     66            // We might be coming from a bootloader at the base of flash, or even in the
+     67            //  NULL_BTL case, the BAT/AAT will be at the beginning of the image
+     68            SCS_VTOR = (int32u)__vector_table;
+   \   0000001C   1949               LDR.N    R1,??__low_level_init_0+0xC  ;; 0xe000ed04
+   \   0000001E   1A4A               LDR.N    R2,??__low_level_init_0+0x10
+   \   00000020   4A60               STR      R2,[R1, #+4]
+     69          
+     70            ////---- Always Configure Interrupt Priorities ----////
+     71            //The STM32W support 5 bits of priority configuration.
+     72            //  The cortex allows this to be further divided into preemption and a
+     73            //  "tie-breaker" sub-priority.
+     74            //We configure a scheme that allows for 3 bits (8 values) of preemption and
+     75            //   2 bits (4 values) of tie-breaker by using the value 4 in PRIGROUP.
+     76            //The value 0x05FA0000 is a special key required to write to this register.
+     77            SCS_AIRCR = (0x05FA0000 | (4 <<SCS_AIRCR_PRIGROUP_BIT));
+   \   00000022   1A4A               LDR.N    R2,??__low_level_init_0+0x14  ;; 0x5fa0400
+   \   00000024   8A60               STR      R2,[R1, #+8]
+     78              
+     79            //A few macros to help with interrupt priority configuration.  Really only 
+     80            //  uses 6 of the possible levels, and ignores the tie-breaker sub-priority
+     81            //  for now.
+     82            //Don't forget that the priority level values need to be shifted into the
+     83            //  top 5 bits of the 8 bit priority fields. (hence the <<3)
+     84            //
+     85            // NOTE: The ATOMIC and DISABLE_INTERRUPTS macros work by setting the 
+     86            //       current priority to a value of 12, which still allows CRITICAL and 
+     87            //       HIGH priority interrupts to fire, while blocking MED and LOW.
+     88            //       If a different value is desired, spmr.s79 will need to be edited.
+     89            #define CRITICAL (0  <<3)
+     90            #define HIGH     (8  <<3)
+     91            #define MED      (16 <<3)
+     92            #define LOW      (28 <<3)
+     93            #define NONE     (31 <<3)
+     94          
+     95            //With optimization turned on, the compiler will indentify all the values
+     96            //and variables used here as constants at compile time and will truncate
+     97            //this entire block of code to 98 bytes, comprised of 7 load-load-store
+     98            //operations.
+     99                              //vect00 is fixed                        //Stack pointer
+    100                              //vect01 is fixed                        //Reset Vector
+    101                              //vect02 is fixed                        //NMI Handler
+    102                              //vect03 is fixed                        //Hard Fault Handler
+    103            SCS_SHPR_7to4   = ((CRITICAL <<SCS_SHPR_7to4_PRI_4_BIT) |  //Memory Fault Handler 
+    104                               (CRITICAL <<SCS_SHPR_7to4_PRI_5_BIT) |  //Bus Fault Handler
+    105                               (CRITICAL <<SCS_SHPR_7to4_PRI_6_BIT) |  //Usage Fault Handler
+    106                               (NONE <<SCS_SHPR_7to4_PRI_7_BIT));      //Reserved
+   \   00000026   4FF07842           MOV      R2,#-134217728
+   \   0000002A   4A61               STR      R2,[R1, #+20]
+    107            SCS_SHPR_11to8  = ((NONE <<SCS_SHPR_11to8_PRI_8_BIT)  |    //Reserved
+    108                               (NONE <<SCS_SHPR_11to8_PRI_9_BIT)  |    //Reserved
+    109                               (NONE <<SCS_SHPR_11to8_PRI_10_BIT) |    //Reserved
+    110                               (HIGH <<SCS_SHPR_11to8_PRI_11_BIT));    //SVCall Handler
+   \   0000002C   184A               LDR.N    R2,??__low_level_init_0+0x18  ;; 0x40f8f8f8
+   \   0000002E   8A61               STR      R2,[R1, #+24]
+    111            SCS_SHPR_15to12 = ((MED  <<SCS_SHPR_15to12_PRI_12_BIT) |   //Debug Monitor Handler
+    112                               (NONE <<SCS_SHPR_15to12_PRI_13_BIT) |   //Reserved
+    113                               (HIGH <<SCS_SHPR_15to12_PRI_14_BIT) |   //PendSV Handler
+    114                               (MED  <<SCS_SHPR_15to12_PRI_15_BIT));   //SysTick Handler
+   \   00000030   184A               LDR.N    R2,??__low_level_init_0+0x1C  ;; 0x8040f880
+   \   00000032   CA61               STR      R2,[R1, #+28]
+    115            NVIC_IPR_3to0   = ((MED  <<NVIC_IPR_3to0_PRI_0_BIT) |      //Timer 1 Handler
+    116                               (MED  <<NVIC_IPR_3to0_PRI_1_BIT) |      //Timer 2 Handler
+    117                               (HIGH <<NVIC_IPR_3to0_PRI_2_BIT) |      //Management Handler
+    118                               (MED  <<NVIC_IPR_3to0_PRI_3_BIT));      //BaseBand Handler
+   \   00000034   184A               LDR.N    R2,??__low_level_init_0+0x20  ;; 0xe000e400
+   \   00000036   194B               LDR.N    R3,??__low_level_init_0+0x24  ;; 0x80408080
+   \   00000038   1360               STR      R3,[R2, #+0]
+    119            NVIC_IPR_7to4   = ((MED  <<NVIC_IPR_7to4_PRI_4_BIT) |      //Sleep Timer Handler
+    120                               (MED  <<NVIC_IPR_7to4_PRI_5_BIT) |      //SC1 Handler
+    121                               (MED  <<NVIC_IPR_7to4_PRI_6_BIT) |      //SC2 Handler
+    122                               (MED  <<NVIC_IPR_7to4_PRI_7_BIT));      //Security Handler
+   \   0000003A   4FF08033           MOV      R3,#-2139062144
+   \   0000003E   5360               STR      R3,[R2, #+4]
+    123            NVIC_IPR_11to8  = ((MED  <<NVIC_IPR_11to8_PRI_8_BIT)  |    //MAC Timer Handler
+    124                               (MED  <<NVIC_IPR_11to8_PRI_9_BIT)  |    //MAC TX Handler
+    125                               (MED  <<NVIC_IPR_11to8_PRI_10_BIT) |    //MAC RX Handler
+    126                               (MED  <<NVIC_IPR_11to8_PRI_11_BIT));    //ADC Handler
+   \   00000040   9360               STR      R3,[R2, #+8]
+    127            NVIC_IPR_15to12 = ((MED  <<NVIC_IPR_15to12_PRI_12_BIT) |   //GPIO IRQA Handler
+    128                               (MED  <<NVIC_IPR_15to12_PRI_13_BIT) |   //GPIO IRQB Handler
+    129                               (MED  <<NVIC_IPR_15to12_PRI_14_BIT) |   //GPIO IRQC Handler
+    130                               (MED  <<NVIC_IPR_15to12_PRI_15_BIT));   //GPIO IRQD Handler
+   \   00000042   D360               STR      R3,[R2, #+12]
+    131            NVIC_IPR_19to16 = ((LOW  <<NVIC_IPR_19to16_PRI_16_BIT));   //Debug Handler
+   \   00000044   E023               MOVS     R3,#+224
+   \   00000046   1361               STR      R3,[R2, #+16]
+    132                              //vect33 not implemented
+    133                              //vect34 not implemented
+    134                              //vect35 not implemented
+    135          
+    136            ////---- Always Configure System Handlers Control and Configuration ----////
+    137            SCS_CCR = SCS_CCR_DIV_0_TRP_MASK;
+   \   00000048   1022               MOVS     R2,#+16
+   \   0000004A   0A61               STR      R2,[R1, #+16]
+    138            SCS_SHCSR = ( SCS_SHCSR_USGFAULTENA_MASK
+    139                          | SCS_SHCSR_BUSFAULTENA_MASK
+    140                          | SCS_SHCSR_MEMFAULTENA_MASK );
+   \   0000004C   4FF4E022           MOV      R2,#+458752
+   \   00000050   0A62               STR      R2,[R1, #+32]
+    141          
+    142          
+    143            if((RESET_EVENT&RESET_DSLEEP) == RESET_DSLEEP) {
+   \   00000052   4069               LDR      R0,[R0, #+20]
+   \   00000054   8006               LSLS     R0,R0,#+26
+   \   00000056   09D5               BPL.N    ??__low_level_init_1
+    144              //Since the 13 NVIC registers above are fixed values, they are restored
+    145              //above (where they get set anyways during normal boot sequences) instead
+    146              //of inside of the halInternalSleep code:
+    147          
+    148              void halTriggerContextRestore(void);
+    149              extern volatile boolean halPendSvSaveContext;
+    150              halPendSvSaveContext = 0;       //0 means restore context
+   \   00000058   1148               LDR.N    R0,??__low_level_init_0+0x28
+   \   0000005A   0022               MOVS     R2,#+0
+   \   0000005C   0270               STRB     R2,[R0, #+0]
+    151              SCS_ICSR |= SCS_ICSR_PENDSVSET; //pend halPendSvIsr to enable later
+   \   0000005E   0868               LDR      R0,[R1, #+0]
+   \   00000060   40F08050           ORR      R0,R0,#0x10000000
+   \   00000064   0860               STR      R0,[R1, #+0]
+    152              halTriggerContextRestore();     //sets MSP, enables interrupts
+   \   00000066   ........           BL       halTriggerContextRestore
+    153              //if the context restore worked properly, we should never return here
+    154              while(1) { ; }
+   \                     ??__low_level_init_2:
+   \   0000006A   FEE7               B.N      ??__low_level_init_2
+    155            }
+    156          
+    157            INTERRUPTS_OFF();
+   \                     ??__low_level_init_1:
+   \   0000006C   ........           BL       _disableBasePri
+    158            asm("CPSIE i");
+   \   00000070   62B6               CPSIE i          
+    159          
+    160            /*==================================*/
+    161            /* Choose if segment initialization */
+    162            /* should be done or not.           */
+    163            /* Return: 0 to omit seg_init       */
+    164            /*         1 to run seg_init        */
+    165            /*==================================*/
+    166            return 1;
+   \   00000072   0120               MOVS     R0,#+1
+   \   00000074   02BD               POP      {R1,PC}          ;; return
+   \   00000076   00BF               Nop      
+   \                     ??__low_level_init_0:
+   \   00000078   18000040           DC32     0x40000018
+   \   0000007C   FCED00E0           DC32     0xe000edfc
+   \   00000080   00800040           DC32     0x40008000
+   \   00000084   04ED00E0           DC32     0xe000ed04
+   \   00000088   ........           DC32     __vector_table
+   \   0000008C   0004FA05           DC32     0x5fa0400
+   \   00000090   F8F8F840           DC32     0x40f8f8f8
+   \   00000094   80F84080           DC32     0x8040f880
+   \   00000098   00E400E0           DC32     0xe000e400
+   \   0000009C   80804080           DC32     0x80408080
+   \   000000A0   ........           DC32     halPendSvSaveContext
+    167          }
+    168          
+    169          #pragma language=default
+    170          
+    171          #ifdef __cplusplus
+    172          }
+    173          #endif
+
+   Maximum stack usage in bytes:
+
+     Function         .cstack
+     --------         -------
+     __low_level_init      8
+
+
+   Section sizes:
+
+     Function/Label       Bytes
+     --------------       -----
+     halFixedAddressTable   44
+     __low_level_init      164
+
+ 
+ 164 bytes in section .text
+  44 bytes in section FAT
+ 
+ 164 bytes of CODE memory
+  44 bytes of DATA memory
+
+Errors: none
+Warnings: none

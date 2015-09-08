@@ -1,0 +1,339 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><meta http-equiv="Content-Type" content="text/html;charset=iso-8859-1">
+<title>STM32W108 Simple MAC Library Demonstration Applications</title>
+
+</head><body>
+
+<h2>STM32W108 Simple MAC Library Demonstration Applications</h2>
+
+<p><br></p>
+<h3> Explanations of included example code </h3>
+Click on the links below to read a description of each application:<br>
+<ul>
+<li> <a href = "#sampleApp">Simple MAC Library sample application </a> 
+<li> <a href = "#talkApp">Simple MAC Library talk application </a> 
+<li> <a href = "#bootloaderdemo">Simple MAC Library OTA bootloader application </a> 
+<li> <a href = "#iapbootloader">IAP bootloader </a>
+</ul>
+
+<p>
+<h3> List of included application workspaces </h3>
+Click on the links below to open the various applications (using IAR):<br>
+<ul>
+  <li> Simple MAC sample application
+  <ul>
+    <li> <b> Sample </b> (with 2 workspaces: SUN, PLANET) for 
+         <a type="application/octet-stream" href = "../../simplemac/demos/sample/sample.eww"> STM32W108 </a> 
+  </ul>
+</ul>
+
+<ul>
+  <li> Simple MAC talk application 
+  <ul>
+    <li> <b> Talk </b> for
+           <a type="application/octet-stream" href = "../../simplemac/demos/talk/talk.eww"> STM32W108 </a> 
+  </ul>
+</ul>
+
+
+<ul>
+  <li> Simple MAC OTA bootloader application
+  <ul>
+    <li> <b> bootloader demo </b> for
+           <a type="application/octet-stream" href = "../../simplemac/demos/bootloader_demo/bootloader_demo.eww"> STM32W108 </a> 
+  </ul>
+</ul>
+
+<ul>
+  <li> IAP bootloader application
+  <ul>
+    <li> <b> IAP bootloader </b> for
+           <a type="application/octet-stream" href = "../../iap_bootloader/iap_bootloader_project/iap_bootloader.eww"> STM32W108 </a> 
+  </ul>
+</ul>
+
+<b> Note: </b> All the available IAR projects provide workspaces with suffix -btl allowing to build the application image supporting the OTA bootloader. The related built application binary images have suffix -btl: talk-btl.s37, sample_sun-btl.s37, sample_planet-btl.s37.
+<hr>
+<a name = "sampleApp"></a> <b>Simple MAC sample application </b><br>
+<i>Synopsis: </i>An Application Framework that allows to setup a basic star topology and supports parent and child roles.  To prevent name collisions with other software, applications, and implementations the parent role is called "sun" and the child role is called "planet".  These roles are implemented using specific defines: SUN_ROLE and PLANET_ROLE. On a node loaded with the sun image, executing the form command will cause the node to form a network.  On a node loaded with the planet image, executing the join command will cause the node to join to the network formed by the sun node.  Executing the leave command will cause each node to leave the network.  Remember that there cannot be multiple suns on the same PAN ID.
+
+<br>
+<br>
+<b>The sample applications demonstrate:</b> <br>
+<li>Management of a simple direct transmission queue </i>
+<li>Management of a simple indirect transmit queue including interaction with the receive ISR to handle setting the ACK frame pending bit in response to a data poll. </i>
+<li>Sleepy planets automatically sleep the radio when no more data is available to transmit </i>
+<li>Retry of packet on ACK failure </i>
+<li>Active search for a sun implemented as simple blocking code</i>
+<li>Energy search for a channel with low activity implemented as simple blocking code. </i>
+<li>Capture of transmit SFD time and insertion of time value into packet payload. </i>
+<li>Conversion of correlator error count to LQI </i>
+<li>Planets deep sleeping</i>
+</i>
+<br>
+<br>
+NOTE:  All references to "sleep" and "sleepy" are referring to deep sleep operations.
+<br>
+<br>
+<b>The sample application support these roles:</b>
+<li> Sun node: a device which forms the star network </i>
+<li> Planet node: a device which joins to the star network</i>
+<br>
+<br>
+<b>Serial baud rates used:</b><br>
+115200 bps for all devices
+<br>
+<br>
+<b>Buttons used:</b><br>
+S1 on planet node (join a network)
+<br> When a planet joins a network, the MB851 led D3 turns on (it turns off when leaving the network).
+<br>
+<br>
+<b>
+Top Level serial command supported</b>: 
+<ul>
+	<li><b>i</b> - Display status information (sun and planet)
+	<li><b>f</b> - Form a network (sun)
+        <li><b>j</b> - Join a network (planet)
+        <li><b>l</b> - Leave a network (sun and planet)
+        <li><b>s</b> - Send data (sun and planet)
+        <li><b>c</b> - Clear indirect transmit queue  (sun)
+        <li><b>p</b> - Poll for data (planet)
+        <li><b>r</b> - Adjust send/poll rates (sun and planet)
+        <li><b>t</b> - Display the planet table (sun)
+        <li><b>o</b> - Enter OTA bootloader mode (sun and planet)
+        <li><b>u</b> - Enter Uart bootloader mode (sun and planet)
+        <li><b>?</b> - Display this help menu (sun and planet)
+</ul>
+NOTE: The top level commands are invoked as single characters.
+<br>
+<br>
+<b>Command Details : </b>
+<br>
+<br>
+<b>i </b> <i>- Display status information </i>
+<br><br>It displays the status of the node.  This includes information such as:
+<ul>
+	<li>Network role
+	<li>Radio on/off state
+        <li>In or out of a network
+        <li>Channel
+        <li>Power
+        <li>EUI64
+        <li>PAN ID
+        <li>Node ID
+        <li>Send Rate
+        <li>Poll Rate
+</ul>
+
+<b>f </b> <i>- Form a network </i>
+<ul>
+This command can only be executed while not already in a network. To form the network, the node first initializes all persistent state then loops over all channels searching for a channel with the lowest energy.  The node dwells on each channel taking multiple energy readings and records the highest energy level seen on every channel.  After obtaining a maximum energy reading for each channel, the node selects the channel with the lowest maximum energy reading and configures itself for that channel.  The node then assigns itself a random PAN ID and assigns itself the short address (node ID) 0x0000.
+</ul>
+
+
+<b>j </b> <i>- - Join a network </i>
+<ul>
+This command can only be executed while not already in a network. To join the network, the node first initializes all persistent state then loops over all channels searching for a channel with a sun.  On each channel, the node transmits a sun search broadcast packet and then waits a healthy 200ms for a sun available response.  If the node does not receive a sun available broadcast response after 200ms it moves on to the next channel.  If the node never receives a sun available response or cannot complete the join process on any channel, the node indicates this fact to the user and the user must invoke the join network command to try again.  The sun will only send the sun available response if there is room in the sun's planet table.  If the node does receive a sun available response, the response includes the sun's PAN ID as the source PAN ID.  If the node receives more than one sun available response, the node tries to join to the first response it receives.  It is not valid to have multiple suns on the same PAN ID and there is no collision detection for this situation.  The planet sends a join request unicast packet using long addressing and the sun's PAN ID.  When the sun receives the join request, the sun attempts to place to the planet in its planet table.  The planet table is a fixed size.  If there is no room in the planet table, the sun responds with a join denied unicast packet.  If there is room in the planet table, the sun allocates a new short ID to the planet, puts the planet in its planet table, and responds with a join accepted unicast packet.  There is no error detection if the join process fails before the join accepted or denied packet has been received.  The sun does not remove planets from its planet table unless the planet specifically sends a leaving network packet.
+</ul>
+
+
+<b>l </b> <i>- Leave a network</i>
+<ul>
+This command can only be executed while already in a network.  On sun nodes, this command simply clears out key persistent state indicating it is no longer active in a network.  On planet nodes, this command sends a message to the sun indicating that it is leaving the network.  After sending the leaving message, key persistent state is cleared out indicating it is no longer active in a network.  The sun does not acknowledge the leave message.  After the leave is complete, on either a sun or planet, forming a new network or joining an existing network is now allowed.
+</ul>
+
+<b>s </b> <i>- Send data </i>
+<ul>
+This command can only be executed while already in a network.  Send a single unicast message.  Automatically sending is controlled with the command "r - Adjust send/poll rates".  On planet nodes, a unicast message is placed on the direct transmission queue and sent directly to the sun.  On sun nodes, the user is first presented a table of all planet nodes that are active in the sun's planet table.  The user must then select the node that the unicast message will be sent to.  The unicast message is placed on the indirect transmission queue.  The message will stay on the queue until that destination node polls for messages at which point the sun will transmit the message to the planet.  These unicast messages use short addresses for both the destination and source.  The payload includes the 16 bit VDD_PADS measurement as provided by the related API.  Additionally, the 20 bit (3 byte) transmit SFD time of the packet being transmitted is added to the end of the packet payload while the packet is being transmitted.  The MSB of the 3 byte SFD time is set last indicating to the receiver that the SFD was correctly placed into the packet.
+</ul>
+
+<b>c </b> <i>- Clear indirect transmit queue</i>
+<ul>
+This command can only be executed while already in a network. It forcefully clears the indirect transmit queue of all packets that are not already in flight.  This command is necessary due to the limited size of the indirect transmit queue, the persistance of the packets in the queue, and the fact that a planet with pending data could disappear from the network and never poll for its pending data.
+</ul>
+
+<b>p </b> <i>- Poll for data </i>
+<ul>
+This command can only be executed while already in a network and this command is ineffectual on sun nodes.  Poll once.  Automatically polling is controlled with the command "r - Adjust send/poll rates".  Non-sleepy planets are allowed to poll but since the sun will not queue up indirect transmission for non-sleepy planets the poll will never result in receiving messages.  This command sends a short unicast poll packet to the sun.  If the sun has data pending for the polling planet, the sun sets the frame pending bit in the MAC ACK.  When the planet receives the MAC ACK it observes the frame pending bit.  If the frame pending bit is not set, the planet immediately goes back to sleep.  If the frame pending bit is set, the planet stays awake for 200ms with receiver on waiting for the sun to transmit the message.  After 200ms, the planet goes back to sleep.
+
+</ul>
+
+
+<b>r </b> <i>- Adjust send/poll rates </i>
+<ul>
+This command can only be executed while already in a network.  Sending data at a regular rate is valid on both the sun and planets, but polling at a regular rate is only valid on sleepy planets.  The rate command implements a sub menu for independently controlling automatic/periodic sends and polls.  Rates are chosen as the number of quarter-seconds between the events.  A rate of zero will turn off that event.  The send data command performs a single send whereas the rate command enables automatic and regular sending.  The poll command performs a single poll whereas the rate command enables automatic and regular polling.  It is valid to issue a send command while the send rate is greater than zero and it is valid to issue a poll command while poll rate is greater than zero.  Manually issuing a send or poll command while the rates are greater than zero will simply add those commands to the queue and not disrupt rate controlled operations.  This command implements a series of sub menus which configure:
+
+<br>
+<ul>
+   <li>which planets get regular messages from the sun
+   <li>the rate at which the sun sends regular messages to the planet
+   <li>the rate at which the planet sends regular messages to the sun
+   <li>the rate at which the planet polls for messages from the sun
+</ul>
+</ul>
+
+<b>t </b> <i>- Display the planet table</i>
+<ul>
+On sun nodes this command displays the entire planet table.  Each entry in the table indicates:
+<ul>
+<li>if that entry is active, which means the planet is still joined to the sun
+<li>if there is pending data in the indirect transmission queue for that planet
+<li>the short address (node ID) of that planet
+<li>the long address (EUI64) of that planet
+</ul>
+</ul>
+
+
+<b>o </b> <i>- Enter OTA bootloader mode</i>
+<ul>
+This command activates the IAP bootloader in Over the Air mode. 
+User is requested to provide the application binary image over the air (see the stm32w_flasher -i rf option or the bootloader_demo application example)
+</ul>
+</ul>
+
+
+<b>u </b> <i>- Enter Uart bootloader mode</i>
+<ul>
+This command activates the IAP bootloader in Uart mode.User is requested to provide the application binary image
+through the uart interface (see the stm32w_flasher -b option). 
+</ul>
+
+
+<b>? </b> <i>- Display this help menu</i>
+<ul>
+Displays the help menu showing the top level commands and their associated single character command.
+</ul>
+
+<b>Notes : </b>
+<ul><li><i>Packet Reception:</i><br>
+Commands will print status information while those commands are operating.  For example, when forming a network the form command will display the selected channel, that channels energy, and the chosen PAN ID.  As for received packets, only data (unicast) messages will be printed.  These messages are the result of the send command or the rate command.  When a node receives a data message it will print:
+<ul>
+<li>Short address of the sender (hex number)
+<li>VDD_PADS, stored in the message payload (decimal number)
+<li>The 20 bit SFD time from the receiver (hex number)
+<li>The 20 bit SFD time from the transmitter, stored in the message payload (hex number)
+<li>The RSSI (decimal number)
+<li> LQI (hex number)
+</ul>
+</li>
+
+</ul>
+
+<ul><li><i>Deepsleep Behavior:</i><br>
+When a node is not connected to a network or is a planet, the node will immediately begin deep sleep operations.  The user is also informed that the node is entering deepsleep operations and the command interface is dormant.  Wakeup can occur due to debugger activity, periodic events, or UART activity.  If the node wakes up due to the debugger or periodic events, the node will inform the user that it is awake and return to deep sleep as soon a possible.  In this situation, the command interface stays dormant.  To wakeup from deepsleep and reactivate the command interface, the user must send a character on the UART.  When the node wakes up from UART activity the user will be prompted that the node is awake and the command interface is capable of accepting a command.  The node will stay awake with the command interface active until the user executes any command.  After a command is executed and completed, the node will return to deep sleep.
+</li>
+</ul>
+<ul><li><i>Periodic Events:</i><br>
+In addition to constantly driving network activity in the main loop, the application performs periodic and scheduled events.  The timing of two of these periodic events, send and poll, are controlled by the use via the rate command.  In addition to the send and poll events, there is a periodic maintenance event that occurs every 60 seconds and performs tasks that are critical to keeping the chip in optimal operating conditions.  The maintenance event:
+<ul>
+<li>checks the radio and invokes calibration if necessary
+<li>checks the 24MHz crystal bias trim and adjust the trim if necessary
+<li>checks the GPIO pad drive strength and adjusts the drive strength if necessary
+</ul>
+</ul>
+
+<ul><li><i>Primer2 sun application :</i><br>
+<ul>
+<li  Each time the Primer 2 sun application is started, a network is formed (a blue box is displayed on the LCD).
+<li> When a planet device joins to the network, a green box with the assigned node ID is displayed on the LCD (up to 5 planets).
+<li> The Primer2 sun application displays the received VDD_PADS value from each planet (in mV)
+<li> The "Send data" command is not supported through the Primer2 LCD menu 
+<li> The Primer2 sun application doesn't display the "poll" message coming from a planet 
+<li> When interacting with the Primer2 sun application, it is recommended to keep the planet send rate to a value not lower than the default set value.
+</ul>
+</li>
+</ul>
+
+
+</ul>
+
+<hr>
+<a name = "talkApp"></a> <b>Simple MAC talk application</b><br>
+<i>Synopsis:</i> An example of a simple chat program that shows point-to-point  802.15.4 wireless communication using the STM32W108  microcontroller. <br>
+<br>
+
+<b>The talk application supports this role:</b>
+<li> Talk -- A node that allows sending/receiving a text message to/from another talk node. </i>
+<br>
+<br>
+<b>Serial baud rates used:</b><br>
+115200 bps for all devices
+<br>
+<br>
+<b>Notes and Limitations:</b> 
+
+<ul>
+	<li> None
+</ul>
+
+<hr>
+<a name = "bootloaderdemo"></a> <b>Simple MAC OTA bootloader application</b><br>
+<i>Synopsis:</i> An example of a simple program that shows an Over the Air upload of a fixed binary image in a device already in bootloader mode. 
+<br> <br> 
+<i>Prerequisites on destination device:</i>
+The assumption  is that the destination device has already the bootloader  downloaded (prebuilt image: iap_bootloader.s37) and that the related EUI64 address is known.
+For activating the bootloader on the destination device press together S1 and RST1 buttons and then release RST1. The destination board LED D3 turns on for indicating that the device is in bootloader mode (hardware activation)<br>
+<br>
+
+<b>The OTA bootloader demonstration application supports this role:</b>
+<li> OTA bootloader -- A node that allows to upload OTA a destination device Flash with a fixed image (sleep_test). Further it supports a set of bootloader commands  </i>
+<br>
+<br>
+<b>Serial baud rates used:</b><br>
+115200 bps 
+
+<br>
+<br>
+<b>
+Serial commands supported</b>: 
+<ul>
+        <li><b>setDestEui64 eui64</b> - Set the destination 'eui64' address for booloader commands (example: setDestEui64 {0080E10200000798})
+        <li><b>getDestEui64</b> - get the destination EUI64 address
+        <li><b>findBLNodes </b> - find the nodes in bootloader mode
+        <li><b>loadImage</b> - find first bootlader node and load test image to it
+	<li><b>get</b> - get the version and the allowed commands supported by the current version of the bootloader
+        <li><b>bget</b> - get command (broadcast)
+	<li><b>getid</b> - get the chip ID
+        <li><b> bgetid </b> - get id command (broadcast)
+        <li><b>getversion</b> - get the bootloader version and the Read Protection status of the Flash memory
+        <li><b>bgetversion</b> - get version command (broadcast)
+
+        <li><b>read  </b> - read u bytes starting from the  destination  address w (example: read 0x08003000 4)
+        <li><b>write address bytes data</b> - write 'bytes' of  'data' to the destination device 'address' (example: write 0x08003000 4 {12345678})
+
+        <li><b>writeIncremental bytes data</b> - write inc memory command 
+        <li><b>erase pages page_list</b> - erase 'pages' from destination device 'page_list' (example: erase 1 {0c})
+        <li><b>go address</b> - jump to destination device 'address' 
+        <li><b>help</b> - display this help menu
+</ul>
+
+<b>Notes and Limitations:</b> 
+
+<ul>
+        <li> User is requested to set the destination EUI64 addres (setDestEui64 b eui64) before being able to raise all the other supported commands, except loadImage which will find the node by itself.
+	<li> If the loadImage command fails, user is requested to put the destination device in bootloader mode and repeat the command (no recovery mechanism is supported currently).
+        <li> The iap_bootloader.s37 image can be also built through the iap_bootloader IAR project.
+</ul>
+
+<hr>
+<a name = "iapbootloader"></a> <b>IAP bootloader </b><br>
+<i>Synopsis:</i> IAP bootloader application which allows to upload the STM32W108 Flash image <br>
+<br>
+
+<b>The IAP bootloader application supports these features:</b>
+<li>  OTA mode: image is coming from over the air.
+<li>  Uart mode: image is coming from the serial port.
+<br>
+<br>
+<b>Notes and Limitations:</b> 
+
+<ul>
+	<li> The IAR project for the IAP bootloader provides an example about how building an iap bootloader using the iap_bootloader.a library. 
+             In particular, a file (bl_users.c) is provided with the implementation of two user defined functions for the bootloader hardware activation (S1 + RST buttons) and related indication (led D3 turns on ) on the MB851 platform. This code has to be customized by user based on its platform. It is only requested that this code is simple, reliable and small. 
+        <li> The IAP bootloader can be also started by the application (software activation). An halBootloaderStart() API is provided for such purpose.
+             The sample sun and planet applications support the software activation of the IAP bootloader.
+</ul>
+
+</body>
+</html>

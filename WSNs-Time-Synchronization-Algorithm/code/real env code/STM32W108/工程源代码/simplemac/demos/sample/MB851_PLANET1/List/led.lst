@@ -1,0 +1,220 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.10.1.52143/W32 for ARM     08/Jul/2014  10:29:40 #
+# Copyright 1999-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  thumb                                                    #
+#    Endian       =  little                                                   #
+#    Source file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\hal\micro\cortexm3\led.c                 #
+#    Command line =  "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\hal\micro\cortexm3\led.c" -D             #
+#                    BOARD_MB851 -D "PLATFORM_HEADER=\"hal/micro/cortexm3/com #
+#                    piler/iar.h\"" -D "BOARD_HEADER=\"hal/micro/cortexm3/stm #
+#                    32w108/board.h\"" -D CORTEXM3 -D CORTEXM3_STM32W108 -D   #
+#                    PHY_STM32W108XX -D DISABLE_WATCHDOG -D PLANET_ROLE -D    #
+#                    BOARD_MB851 -D "__SOURCEFILE__=\"led.c\"" -lC "E:\实验4  #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\" --diag_suppress Pa050 -o "E:\实验4                   #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \" --debug --endian=little --cpu=Cortex-M3 -e            #
+#                    --fpu=None --dlib_config "D:\study                       #
+#                    soft\IAR6.10\IARsoft\arm\INC\c\DLib_Config_Normal.h" -I  #
+#                    "E:\实验4 无线传感器节点多点通信实验 - 副本 -            #
+#                    副本\工程源代码\hal\micro\cortexm3\" -I "E:\实验4        #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\include\" -I "E:\实验4 无线传感器节点多点通信实验 -    #
+#                    副本 - 副本\工程源代码\simplemac\demos\sample\..\..\..\" #
+#                     -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -        #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\hal\"    #
+#                    -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -         #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\HAL\MICR #
+#                    O\CORTEXM3\STM32W108\" -I "E:\实验4                      #
+#                    无线传感器节点多点通信实验 - 副本 -                      #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\simplema #
+#                    c\" -I "E:\实验4 无线传感器节点多点通信实验 - 副本 -     #
+#                    副本\工程源代码\simplemac\demos\sample\..\..\..\shared\" #
+#                     -Ohz --use_c++_inline                                   #
+#    List file    =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Lis #
+#                    t\led.lst                                                #
+#    Object file  =  E:\实验4 无线传感器节点多点通信实验 - 副本 -             #
+#                    副本\工程源代码\simplemac\demos\sample\MB851_PLANET1\Obj #
+#                    \led.o                                                   #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+E:\实验4 无线传感器节点多点通信实验 - 副本 - 副本\工程源代码\hal\micro\cortexm3\led.c
+      1          /** @file hal/micro/cortexm3/led.c
+      2           *  @brief LED manipulation routines; stack and example APIs
+      3           *
+      4           * <!--(C) COPYRIGHT 2010 STMicroelectronics. All rights reserved.        -->
+      5           */
+      6          
+      7          #include PLATFORM_HEADER
+      8          #include BOARD_HEADER
+      9          #include "hal/micro/led.h"
+     10          #include "hal/micro/micro-common.h"
+     11          #include "hal/micro/cortexm3/micro-common.h"
+     12          
+     13          #define GPIO_PxCLR_BASE (GPIO_PACLR_ADDR)
+     14          #define GPIO_PxSET_BASE (GPIO_PASET_ADDR)
+     15          #define GPIO_PxOUT_BASE (GPIO_PAOUT_ADDR)
+     16          // Each port is offset from the previous port by the same amount
+     17          #define GPIO_Px_OFFSET  (GPIO_PBCFGL_ADDR-GPIO_PACFGL_ADDR)
+     18          
+
+   \                                 In section .text, align 2, keep-with-next
+     19          void halInitLed(void)
+     20          {
+   \                     halInitLed:
+   \   00000000   80B5               PUSH     {R7,LR}
+     21          #ifdef PLANET_ROLE
+     22            /* Set GPIO pins for Led D1 and Led D3  */
+     23            halGpioConfig(LED_D4, GPIOCFG_OUT);
+   \   00000002   0121               MOVS     R1,#+1
+   \   00000004   0D20               MOVS     R0,#+13
+   \   00000006   ........           BL       halGpioConfig
+     24            halGpioConfig(LED_D3, GPIOCFG_OUT);
+   \   0000000A   0121               MOVS     R1,#+1
+   \   0000000C   0E20               MOVS     R0,#+14
+   \   0000000E   ........           BL       halGpioConfig
+     25            /* Switch off Led D1,D3 */
+     26            halClearLed(LED_D4);
+   \   00000012   0D20               MOVS     R0,#+13
+   \   00000014   ........           BL       halClearLed
+     27            halClearLed(LED_D3);
+   \   00000018   0E20               MOVS     R0,#+14
+   \   0000001A   BDE80240           POP      {R1,LR}
+   \   0000001E   ....               B.N      halClearLed
+     28          #elif SUN_ROLE
+     29              /* Set GPIO pins for Led D1 and Led D3  */
+     30            halGpioConfig(LED_D1, GPIOCFG_OUT);
+     31            halGpioConfig(LED_D2, GPIOCFG_OUT);
+     32            /* Switch off Led D1,D3 */
+     33            halClearLed(LED_D1);
+     34            halClearLed(LED_D2);
+     35          #endif
+     36          }
+     37          
+
+   \                                 In section .text, align 2, keep-with-next
+     38          void halSetLed(HalBoardLed led)
+     39          {
+     40            if(led/8 < 3) {
+   \                     halSetLed:
+   \   00000000   C108               LSRS     R1,R0,#+3
+   \   00000002   0329               CMP      R1,#+3
+   \   00000004   08D2               BCS.N    ??halSetLed_0
+     41              *((volatile int32u *)(GPIO_PxCLR_BASE+(GPIO_Px_OFFSET*(led/8)))) = BIT(led&7);
+   \   00000006   C110               ASRS     R1,R0,#+3
+   \   00000008   8902               LSLS     R1,R1,#+10
+   \   0000000A   ....               LDR.N    R2,??DataTable2  ;; 0x4000b014
+   \   0000000C   0123               MOVS     R3,#+1
+   \   0000000E   00F00700           AND      R0,R0,#0x7
+   \   00000012   03FA00F0           LSL      R0,R3,R0
+   \   00000016   5050               STR      R0,[R2, R1]
+     42            }
+     43          }
+   \                     ??halSetLed_0:
+   \   00000018   7047               BX       LR               ;; return
+     44          
+
+   \                                 In section .text, align 2, keep-with-next
+     45          void halClearLed(HalBoardLed led)
+     46          {
+     47            if(led/8 < 3) {
+   \                     halClearLed:
+   \   00000000   C108               LSRS     R1,R0,#+3
+   \   00000002   0329               CMP      R1,#+3
+   \   00000004   08D2               BCS.N    ??halClearLed_0
+     48              *((volatile int32u *)(GPIO_PxSET_BASE+(GPIO_Px_OFFSET*(led/8)))) = BIT(led&7);
+   \   00000006   C110               ASRS     R1,R0,#+3
+   \   00000008   8902               LSLS     R1,R1,#+10
+   \   0000000A   ....               LDR.N    R2,??DataTable2_1  ;; 0x4000b010
+   \   0000000C   0123               MOVS     R3,#+1
+   \   0000000E   00F00700           AND      R0,R0,#0x7
+   \   00000012   03FA00F0           LSL      R0,R3,R0
+   \   00000016   5050               STR      R0,[R2, R1]
+     49            }
+     50          }
+   \                     ??halClearLed_0:
+   \   00000018   7047               BX       LR               ;; return
+     51          
+
+   \                                 In section .text, align 2, keep-with-next
+     52          void halToggleLed(HalBoardLed led)
+     53          {
+   \                     halToggleLed:
+   \   00000000   10B5               PUSH     {R4,LR}
+   \   00000002   0446               MOV      R4,R0
+     54            //to avoid contention with other code using the other pins for other
+     55            //purposes, we disable interrupts since this is a read-modify-write
+     56            ATOMIC(
+     57              if(led/8 < 3) {
+     58                *((volatile int32u *)(GPIO_PxOUT_BASE+(GPIO_Px_OFFSET*(led/8)))) ^= BIT(led&7);
+     59              }
+     60            )
+   \   00000004   ........           BL       _disableBasePri
+   \   00000008   E108               LSRS     R1,R4,#+3
+   \   0000000A   0329               CMP      R1,#+3
+   \   0000000C   0AD2               BCS.N    ??halToggleLed_0
+   \   0000000E   E110               ASRS     R1,R4,#+3
+   \   00000010   ....               LDR.N    R2,??DataTable2_2  ;; 0x4000b00c
+   \   00000012   02EB8121           ADD      R1,R2,R1, LSL #+10
+   \   00000016   0A68               LDR      R2,[R1, #+0]
+   \   00000018   0123               MOVS     R3,#+1
+   \   0000001A   04F00704           AND      R4,R4,#0x7
+   \   0000001E   A340               LSLS     R3,R3,R4
+   \   00000020   5A40               EORS     R2,R3,R2
+   \   00000022   0A60               STR      R2,[R1, #+0]
+   \                     ??halToggleLed_0:
+   \   00000024   BDE81040           POP      {R4,LR}
+   \   00000028   ........           B.W      _writeBasePri
+     61          }
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2:
+   \   00000000   14B00040           DC32     0x4000b014
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_1:
+   \   00000000   10B00040           DC32     0x4000b010
+
+   \                                 In section .text, align 4, keep-with-next
+   \                     ??DataTable2_2:
+   \   00000000   0CB00040           DC32     0x4000b00c
+
+   Maximum stack usage in bytes:
+
+     Function     .cstack
+     --------     -------
+     halClearLed       0
+     halInitLed        8
+     halSetLed         0
+     halToggleLed      8
+
+
+   Section sizes:
+
+     Function/Label Bytes
+     -------------- -----
+     halInitLed       32
+     halSetLed        26
+     halClearLed      26
+     halToggleLed     44
+     ??DataTable2      4
+     ??DataTable2_1    4
+     ??DataTable2_2    4
+
+ 
+ 140 bytes in section .text
+ 
+ 140 bytes of CODE memory
+
+Errors: none
+Warnings: none

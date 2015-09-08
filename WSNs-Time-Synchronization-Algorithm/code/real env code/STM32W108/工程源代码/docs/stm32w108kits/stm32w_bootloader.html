@@ -1,0 +1,163 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:w="urn:schemas-microsoft-com:office:word"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=ProgId content=Word.Document>
+<meta name=Generator content="Microsoft Word 11">
+<meta name=Originator content="Microsoft Word 11">
+<link rel=File-List href="Bootloader%20information_files/filelist.xml">
+<title>Bootloader information</title>
+<!--[if gte mso 9]><xml>
+ <o:DocumentProperties>
+  <o:Author>STMicroelectronics</o:Author>
+  <o:LastAuthor>STMicroelectronics</o:LastAuthor>
+  <o:Revision>2</o:Revision>
+  <o:TotalTime>22</o:TotalTime>
+  <o:Created>2010-09-01T09:01:00Z</o:Created>
+  <o:LastSaved>2010-09-01T09:01:00Z</o:LastSaved>
+  <o:Pages>1</o:Pages>
+  <o:Words>236</o:Words>
+  <o:Characters>1347</o:Characters>
+  <o:Company>STMicroelectronics</o:Company>
+  <o:Lines>11</o:Lines>
+  <o:Paragraphs>3</o:Paragraphs>
+  <o:CharactersWithSpaces>1580</o:CharactersWithSpaces>
+  <o:Version>11.9999</o:Version>
+ </o:DocumentProperties>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:SpellingState>Clean</w:SpellingState>
+  <w:GrammarState>Clean</w:GrammarState>
+  <w:DrawingGridHorizontalSpacing>6 pt</w:DrawingGridHorizontalSpacing>
+  <w:DisplayHorizontalDrawingGridEvery>2</w:DisplayHorizontalDrawingGridEvery>
+  <w:DisplayVerticalDrawingGridEvery>2</w:DisplayVerticalDrawingGridEvery>
+  <w:ValidateAgainstSchemas/>
+  <w:SaveIfXMLInvalid>false</w:SaveIfXMLInvalid>
+  <w:IgnoreMixedContent>false</w:IgnoreMixedContent>
+  <w:AlwaysShowPlaceholderText>false</w:AlwaysShowPlaceholderText>
+  <w:Compatibility>
+   <w:SelectEntireFieldWithStartOrEnd/>
+   <w:UseWord2002TableStyleRules/>
+  </w:Compatibility>
+  <w:BrowserLevel>MicrosoftInternetExplorer4</w:BrowserLevel>
+ </w:WordDocument>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:LatentStyles DefLockedState="false" LatentStyleCount="156">
+ </w:LatentStyles>
+</xml><![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0cm;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";}
+h1
+	{mso-style-next:Normal;
+	margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	mso-pagination:widow-orphan;
+	page-break-after:avoid;
+	mso-outline-level:1;
+	font-size:16.0pt;
+	font-family:Arial;
+	mso-font-kerning:16.0pt;}
+span.SpellE
+	{mso-style-name:"";
+	mso-spl-e:yes;}
+@page Section1
+	{size:21.0cm 842.0pt;
+	margin:72.0pt 89.85pt 72.0pt 89.85pt;
+	mso-header-margin:36.0pt;
+	mso-footer-margin:36.0pt;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 10]>
+<style>
+ /* Style Definitions */
+ table.MsoNormalTable
+	{mso-style-name:"Table Normal";
+	mso-tstyle-rowband-size:0;
+	mso-tstyle-colband-size:0;
+	mso-style-noshow:yes;
+	mso-style-parent:"";
+	mso-padding-alt:0cm 5.4pt 0cm 5.4pt;
+	mso-para-margin:0cm;
+	mso-para-margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:10.0pt;
+	font-family:"Times New Roman";
+	mso-ansi-language:#0400;
+	mso-fareast-language:#0400;
+	mso-bidi-language:#0400;}
+</style>
+<![endif]-->
+</head>
+
+<body lang=EN-US style='tab-interval:36.0pt'>
+
+<div class=Section1>
+
+<h1><span class=SpellE>Bootloader</span> information</h1>
+
+<p class=MsoNormal><o:p>&nbsp;</o:p></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>The </span><span
+style='font-family:"Courier New"'>iap_bootloader.s37</span><span
+style='font-family:Arial'> is a <span class=SpellE>bootloader</span> application
+that is placed at the basis of the flash where STM32W will boot from. After
+reset it will check whether a valid image is present and in this case it will
+jump to the application. If no valid application is present or software or
+hardware activation is forced the <span class=SpellE>bootloader</span> will
+wait for RF commands to upgrade and verify the application image (see AN3262).<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>Most projects will have two
+different configurations: MB851 and MB851-btl. The difference between the two
+configurations is that MB851 will be built to run without <span class=SpellE>bootloader</span>,
+while MB851-btl will be built to run under the assumption that the <span
+class=SpellE>booloader</span> is present. In other words, the configuration
+MB851-btl will be based at address </span><span style='font-family:"Courier New"'>0x08003000</span><span
+style='font-family:Arial'> (12K above the base of the flash).<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>In order to correctly
+download and execute an image built for <span class=SpellE>bootloader</span>,
+the user is requested first to flash the image </span><span style='font-family:
+"Courier New"'>iap_bootload.s37</span><span style='font-family:Arial'> and then
+its application which will have the </span><span style='font-family:"Courier New"'>–<span
+class=SpellE>btl</span></span><span style='font-family:Arial'> in its name.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>The <span class=SpellE>prebuilt</span>
+directory will follow the same convention, which is <span class=SpellE>prebuilt</span>
+image with </span><span style='font-family:"Courier New"'>–<span class=SpellE>btl</span></span><span
+style='font-family:Arial'> in their name require the </span><span
+style='font-family:"Courier New"'>iap_bootload.s37 </span><span
+style='font-family:Arial'>to be flashed in the board</span><span
+style='font-family:"Courier New"'>.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>The <span class=SpellE>iap_bootloader</span>
+project is provided mostly in binary format. The file <span class=SpellE>bl_user.c</span>
+will allow user to customize the <span class=SpellE>behaviour</span> in order
+to define the way to hardware activate the <span class=SpellE>bootloader</span>
+and to indicate that the <span class=SpellE>bootloader</span> is active.<o:p></o:p></span></p>
+
+<p class=MsoNormal><span style='font-family:Arial'>The <span class=SpellE>prebuilt</span>
+iap_bootloader.s37 will be hardware activated holding S1 button while resetting
+the board. The indication that the <span class=SpellE>bootloader</span> is
+active is given by LED D3 on.<o:p></o:p></span></p>
+
+</div>
+
+</body>
+
+</html>

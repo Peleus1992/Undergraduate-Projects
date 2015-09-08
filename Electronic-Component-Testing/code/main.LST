@@ -1,0 +1,184 @@
+C51 COMPILER V9.00   MAIN                                                                  11/10/2013 19:27:03 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: E:\软件\Keil C51 V9.00(推荐使用最新)\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<intrins.h>
+   2          #include<reg52.h>
+   3          #include<stdio.h>
+   4          #include"74.h"
+   5          #include"x9313_10.h"
+   6          #include"x9313_1.h"
+   7          #include"AD7895.h"
+   8          #include"tftm.h"
+   9          #define uchar unsigned char
+  10          #define uint unsigned int
+  11           
+  12          //digital
+  13          int code Rb[5] = {0, 0, 6130, 3539, 2492};//base risisitance
+  14          int code Rb2[5] = {0, 0, 4430, 2539, 1302};//base risisitance   
+  15          #define Vd  8      //dead Volt 
+  16          #define Vd2 9
+  17          #define SampleNum 10
+  18          #define Rc                0
+  19          
+  20          
+  21          //key
+  22          sbit key = P2^6;
+  23          //relay
+  24          sbit relaycon = P3^7;
+  25          //tmpt
+  26          short s_volt;
+  27          float f_volt;
+  28          
+  29          uchar isNPN = 1;
+  30          float curUce;//v
+  31          float curIc; //mA
+  32          int beta;
+  33          
+  34          //main
+  35          void init()
+  36          {
+  37   1      //      init1602A();
+  38   1              ILI9325_Initial();
+  39   1              init74();
+  40   1              initAD7895();
+  41   1              initx9313_10();
+  42   1              initx9313_1();
+  43   1              relaycon = 1;
+  44   1              key = 1;
+  45   1              isNPN = 1;
+  46   1      }
+  47          void delaymain(int t)
+  48          {
+  49   1              while(t--);
+  50   1      }
+  51          
+  52          float getUce()
+  53          {
+  54   1              convertAD7895();
+  55   1              s_volt = readAD7895();
+C51 COMPILER V9.00   MAIN                                                                  11/10/2013 19:27:03 PAGE 2   
+
+  56   1              f_volt = getvoltAD7895(s_volt);
+  57   1              if(f_volt < 0)
+  58   1                      curUce = -f_volt;
+  59   1              else
+  60   1                      curUce = f_volt;
+  61   1              return curUce;
+  62   1      }
+  63          float getIc()
+  64          {
+  65   1              if(isNPN)//////////////////////////////////////////////////////////////
+  66   1                      curIc = (9.28 - curUce) / (curVal_1 + Rc)*1000 * 0.67;
+  67   1              else
+  68   1                      curIc = ((10.0 - curUce) / (curVal_1 + Rc)*1000 + 2.0)*0.90     ;
+  69   1              return curIc;
+  70   1      }
+  71          void judgeNPN()
+  72          {
+  73   1              
+  74   1              Setx9313_1(500); //Rc   800
+  75   1              Setx9313_10(Rb[4]);
+  76   1              if(getUce() > Vd)
+  77   1              {
+  78   2                      isNPN = 0;
+  79   2                      relaycon = 0;
+  80   2                      delaymain(200);
+  81   2                      initx9313_10();
+  82   2                      Setx9313_10(Rb2[4]);
+  83   2                      if(getUce() > Vd2)
+  84   2                      {
+  85   3                              isNPN = 2;
+  86   3                              relaycon = 1;
+  87   3                              delaymain(200);
+  88   3                      }
+  89   2              }          
+  90   1      }
+  91          void showChart()
+  92          {
+  93   1              int i;
+  94   1              int b[5];
+  95   1              b[3] = 0;b[4] = 9999;
+  96   1              coordinate();
+  97   1              initx9313_1();
+  98   1              Setx9313_1(500); //Rc   800     /////////////////////////
+  99   1              for(i = 2; i < 5; i++)   
+ 100   1              {
+ 101   2                      initx9313_10();
+ 102   2                      if(isNPN)
+ 103   2                              Setx9313_10(Rb[i]);     
+ 104   2                      else
+ 105   2                              Setx9313_10(Rb2[i]);
+ 106   2      //              Changex9313_10((i-2)*2,DOWN10,1);
+ 107   2      //              while(key1);//test///////////////////////////////////////////////////////////////////////////
+ 108   2      //              while(!key1)
+ 109   2      //              for(j = 0; j < SampleNum; j++)
+ 110   2      //              {
+ 111   2      //                      Changex9313_1(1, UP1, 1);
+ 112   2                              delaymain(200);
+ 113   2                              getUce();
+ 114   2                              getIc();
+ 115   2      //              }
+ 116   2                      if(curIc < 10)
+ 117   2                              printcurve(curIc,i*10);//show Uce and Ic according to Ib//NPNor PNP///
+C51 COMPILER V9.00   MAIN                                                                  11/10/2013 19:27:03 PAGE 3   
+
+ 118   2                      b[i-2] = curIc * 1000 / (i*10);
+ 119   2                      if(b[i-2] > b[3])
+ 120   2                              b[3] = b[i-2];
+ 121   2                      if(b[i-2] < b[4])
+ 122   2                              b[4] = b[i-2];
+ 123   2              }
+ 124   1      
+ 125   1      //      beta = (b[0]+b[1]+b[2])/3;
+ 126   1      //      P0 = beta;////////////////////////////////////////////////////////////////
+ 127   1              if(isNPN == 1)
+ 128   1                      printtype('N', b[4], b[3]);
+ 129   1              else
+ 130   1                      printtype('P', b[4], b[3]);
+ 131   1              //show beta//remember -//////////////////////////////////////////////////////////////////////////////////
+ 132   1      
+ 133   1      } 
+ 134          void main()
+ 135          {
+ 136   1              
+ 137   1              while(1)
+ 138   1              {
+ 139   2                      init();
+ 140   2                      wait();//wait
+ 141   2                      while(key);
+ 142   2                      delaymain(30);
+ 143   2                      while(!key);
+ 144   2                      judgeNPN();
+ 145   2                      if(isNPN != 2)
+ 146   2                              showChart();
+ 147   2                      else
+ 148   2                              printchip(judge74());
+ 149   2                      while(key);
+ 150   2                      delaymain(30);
+ 151   2                      while(!key);
+ 152   2                      
+ 153   2              }
+ 154   1              while(1);
+ 155   1      }         
+ 156          
+ 157          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1838    ----
+   CONSTANT SIZE    =     20    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     21      22
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

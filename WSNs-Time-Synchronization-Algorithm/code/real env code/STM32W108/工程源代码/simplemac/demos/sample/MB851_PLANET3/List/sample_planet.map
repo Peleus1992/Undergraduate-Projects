@@ -1,0 +1,713 @@
+###############################################################################
+#                                                                             #
+# IAR ELF Linker V6.10.1.52143/W32 for ARM              05/Jul/2014  18:38:15 #
+# Copyright 2007-2010 IAR Systems AB.                                         #
+#                                                                             #
+#    Output file  =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac #
+#                    \demos\sample\MB851_PLANET3\Exe\sample_planet.out        #
+#    Map file     =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac #
+#                    \demos\sample\MB851_PLANET3\List\sample_planet.map       #
+#    Command line =  "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\MB851_PLANET3\Obj\adc.o" "I:\实验4        #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\button.o" "I:\实验4               #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\clocks.o" "I:\实验4               #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\context-switch.o" "I:\实验4       #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\cstartup_M.o" "I:\实验4           #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\flash.o" "I:\实验4                #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\led.o" "I:\实验4                  #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\low_level_init.o" "I:\实验4       #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\mfg-token.o" "I:\实验4            #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\micro-common-internal.o"          #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\MB851_PLANET3\Obj\micro-common.o"         #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\MB851_PLANET3\Obj\micro.o" "I:\实验4      #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\nvm.o" "I:\实验4                  #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\sleep.o" "I:\实验4                #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\solar-system.o" "I:\实验4         #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\spmr.o" "I:\实验4                 #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\system-timer.o" "I:\实验4         #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\transmit.o" "I:\实验4             #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Obj\uart.o" "I:\实验4                 #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\library\ #
+#                    simplemac-library.a" --redirect _Printf=_PrintfSmall     #
+#                    --redirect _Scanf=_ScanfSmall -o "I:\实验4               #
+#                    无线传感器节点多点通信实验\工程源代码\simplemac\demos\sa #
+#                    mple\MB851_PLANET3\Exe\sample_planet.out" --map          #
+#                    "I:\实验4 无线传感器节点多点通信实验\工程源代码\simplema #
+#                    c\demos\sample\MB851_PLANET3\List\sample_planet.map"     #
+#                    --log initialization,modules,sections,veneers            #
+#                    --log_file "I:\实验4 无线传感器节点多点通信实验\工程源代 #
+#                    码\simplemac\demos\sample\MB851_PLANET3\List\sample_plan #
+#                    et.log" --config "I:\实验4 无线传感器节点多点通信实验\工 #
+#                    程源代码\simplemac\demos\sample/../../../hal/micro/corte #
+#                    xm3/stm32w108/iar-cfg.icf" --diag_suppress Lp012         #
+#                    --entry __iar_program_start                              #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+*******************************************************************************
+*** RUNTIME MODEL ATTRIBUTES
+***
+
+CppFlavor       = *
+__SystemLibrary = DLib
+
+
+*******************************************************************************
+*** PLACEMENT SUMMARY
+***
+
+"A1":  place at 0x08040000 { section FAT };
+"P1":  place in [from 0x08000000 to 0x0801ffff] { block FLASH_IMAGE };
+"A2":  place at end of [0x08000000-0x0801ffff] { section NVM };
+"P2":  place in [from 0x20000000 to 0x20001fff] { rw, block CSTACK };
+
+  Section              Kind        Address    Size  Object
+  -------              ----        -------    ----  ------
+"P1":                                       0x3e98
+  FLASH_IMAGE                   0x08000000  0x3e96  <Block>
+    .intvec            ro code  0x08000000    0x84  cstartup_M.o [1]
+    .iar.init_table    const    0x08000084    0x24  - Linker created -
+    .rodata            const    0x080000a8    0x40  analogue-min.o [5]
+    .rodata            const    0x080000e8    0x20  analogue-min.o [5]
+    .rodata            const    0x08000108     0x8  analogue-min.o [5]
+    .rodata            const    0x08000110    0x80  phy-common-min.o [5]
+    .rodata            const    0x08000190    0x30  phy-min.o [5]
+    .rodata            const    0x080001c0    0x4c  analogue-filter-min.o [5]
+    .rodata            const    0x0800020c    0x64  analogue-cell-bias-min.o [5]
+    .rodata            const    0x08000270    0x2c  analogue-vco-min.o [5]
+    .text              ro code  0x0800029c    0xc0  adc.o [1]
+    .text              ro code  0x0800035c   0x280  micro-common-internal.o [1]
+    .text              ro code  0x080005dc    0x78  mfg-token.o [1]
+    .text              ro code  0x08000654    0x5c  xassert.o [3]
+    .text              ro code  0x080006b0     0xc  spmr.o [1]
+    .text              ro code  0x080006bc     0x6  spmr.o [1]
+    .text              ro code  0x080006c2     0x2  cstartup_M.o [1]
+    .text              ro code  0x080006c4    0x90  micro.o [1]
+    .text              ro code  0x08000754    0xa0  xreportassert.o [3]
+    .text              ro code  0x080007f4     0xa  abort.o [3]
+    .text              ro code  0x080007fe    0x22  zero_init3.o [4]
+    .text              ro code  0x08000820   0x198  clocks.o [1]
+    .text              ro code  0x080009b8    0x8c  micro-common.o [1]
+    .text              ro code  0x08000a44    0x70  ABImemcpy.o [4]
+    .text              ro code  0x08000ab4    0x62  memcmp.o [4]
+    .text              ro code  0x08000b16    0x28  putchar.o [3]
+    .text              ro code  0x08000b3e    0x2e  copy_init3.o [4]
+    .text              ro code  0x08000b6c     0xc  XXexit.o [4]
+    .text              ro code  0x08000b78   0x1d8  uart.o [1]
+    .text              ro code  0x08000d50    0x34  button.o [1]
+    .text              ro code  0x08000d84    0x38  context-switch.o [1]
+    .text              ro code  0x08000dbc    0x10  context-switch.o [1]
+    .text              ro code  0x08000dcc   0x144  flash.o [1]
+    .text              ro code  0x08000f10    0x8c  led.o [1]
+    .text              ro code  0x08000f9c    0xa4  low_level_init.o [1]
+    .text              ro code  0x08001040   0x4ac  nvm.o [1]
+    .text              ro code  0x080014ec   0x9e8  solar-system.o [1]
+    .text              ro code  0x08001ed4     0x6  ABImemclr.o [4]
+    .text              ro code  0x08001edc    0xc6  phy-library-min.o [5]
+    .text              ro code  0x08001fa4   0x484  transmit.o [1]
+    .text              ro code  0x08002428    0x30  system-timer.o [1]
+    .text              ro code  0x08002458    0x24  printf.o [3]
+    .text              ro code  0x0800247c     0x8  spmr.o [1]
+    .text              ro code  0x08002484    0x66  ABImemset.o [4]
+    .text              ro code  0x080024ec   0x524  phy-common-min.o [5]
+    .text              ro code  0x08002a10   0x3dc  analogue-min.o [5]
+    .text              ro code  0x08002dec   0x3f0  phy-min.o [5]
+    .text              ro code  0x080031dc   0x470  xprintfsmall.o [3]
+    .text              ro code  0x0800364c    0x18  eui64-min.o [5]
+    .text              ro code  0x08003664    0xc0  analogue-cell-bias-min.o [5]
+    .text              ro code  0x08003724    0xd8  analogue-vco-min.o [5]
+    .text              ro code  0x080037fc   0x150  analogue-mod-dac-min.o [5]
+    .text              ro code  0x0800394c    0x44  analogue-filter-min.o [5]
+    .text              ro code  0x08003990   0x256  analogue-lna-min.o [5]
+    .text              ro code  0x08003be8    0xe8  aes-min.o [5]
+    .text              ro code  0x08003cd0    0x16  strchr.o [4]
+    .text              ro code  0x08003ce8    0x58  memchr.o [4]
+    .text              ro code  0x08003d40    0x36  strlen.o [4]
+    .text              ro code  0x08003d76     0x8  abs.o [3]
+    .text              ro code  0x08003d7e    0x44  misc-min.o [5]
+    .text              ro code  0x08003dc4    0x16  cmain.o [4]
+    .text              ro code  0x08003ddc    0x2c  data_init3.o [4]
+    .text              ro code  0x08003e08     0x8  exit.o [3]
+    .text              ro code  0x08003e10     0xa  cexit.o [4]
+    Initializer bytes  ro data  0x08003e1c    0x58  <for P2-1>
+    .text              ro code  0x08003e74     0xc  cstartup_M.o [4]
+    .text              ro code  0x08003e80    0x16  xprout.o [3]
+                              - 0x08003e96  0x3e96
+
+"A2":                                        0x800
+  NVM                  uninit   0x0801f800   0x400  nvm.o [1]
+  NVM                  uninit   0x0801fc00   0x400  nvm.o [1]
+                              - 0x08020000   0x800
+
+"A1":                                         0x2c
+  FAT                  uninit   0x08040000    0x2c  low_level_init.o [1]
+                              - 0x0804002c    0x2c
+
+"P2", part 1 of 3:                            0x58
+  P2-1                          0x20000000    0x58  <Init block>
+    .data              inited   0x20000000     0x2  clocks.o [1]
+    .data              inited   0x20000002     0x4  micro.o [1]
+    .data              inited   0x20000008     0x8  solar-system.o [1]
+    .data              inited   0x20000010    0x10  solar-system.o [1]
+    .data              inited   0x20000020    0x18  transmit.o [1]
+    .data              inited   0x20000038     0x2  analogue-min.o [5]
+    .data              inited   0x2000003c     0xe  analogue-min.o [5]
+    .data              inited   0x2000004a     0x1  phy-common-min.o [5]
+    .data              inited   0x2000004c     0xc  phy-common-min.o [5]
+  CSTACK               const    0x20000058     0x0  context-switch.o [1]
+  CSTACK               const    0x20000058     0x0  spmr.o [1]
+  RESETINFO            const    0x20000058     0x0  context-switch.o [1]
+  RESETINFO            const    0x20000058     0x0  spmr.o [1]
+                              - 0x20000058    0x58
+
+"P2", part 2 of 3:                           0x400
+  CSTACK                        0x20000058   0x400  <Block>
+    CSTACK             uninit   0x20000058   0x400  <Block tail>
+                              - 0x20000458   0x400
+
+"P2", part 3 of 3:                           0x630
+  .bss                 zero     0x20000458   0x2a8  transmit.o [1]
+  .bss                 zero     0x20000700   0x128  phy-min.o [5]
+  .bss                 zero     0x20000828    0x8c  solar-system.o [1]
+  .bss                 zero     0x200008b4    0x88  transmit.o [1]
+  .bss                 zero     0x2000093c    0x80  uart.o [1]
+  .bss                 zero     0x200009bc    0x78  solar-system.o [1]
+  .bss                 zero     0x20000a34    0x1e  adc.o [1]
+  .bss                 zero     0x20000a52     0x6  uart.o [1]
+  .bss                 zero     0x20000a58    0x10  phy-common-min.o [5]
+  .bss                 zero     0x20000a68     0x8  context-switch.o [1]
+  .bss                 zero     0x20000a70     0x8  eui64-min.o [5]
+  .bss                 zero     0x20000a78     0x4  phy-common-min.o [5]
+  .bss                 zero     0x20000a7c     0x3  analogue-vco-min.o [5]
+  .bss                 zero     0x20000a7f     0x1  flash.o [1]
+  .bss                 zero     0x20000a80     0x2  phy-min.o [5]
+  .bss                 zero     0x20000a82     0x2  analogue-lna-min.o [5]
+  .bss                 zero     0x20000a84     0x2  analogue-mod-dac-min.o [5]
+  .bss                 zero     0x20000a86     0x1  system-timer.o [1]
+                              - 0x20000a87   0x62f
+
+
+*******************************************************************************
+*** INIT TABLE
+***
+
+          Address     Size
+          -------     ----
+Zero (__iar_zero_init3)
+    1 destination range, total size 0x62f:
+          0x20000458  0x62f
+
+Copy (__iar_copy_init3)
+    1 source range, total size 0x58:
+          0x08003e1c   0x58
+    1 destination range, total size 0x58:
+          0x20000000   0x58
+
+
+*******************************************************************************
+*** MODULE SUMMARY
+***
+
+    Module                    ro code  ro data  rw data
+    ------                    -------  -------  -------
+I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\Obj: [1]
+    adc.o                         192                30
+    button.o                       52
+    clocks.o                      408        2        2
+    context-switch.o               72                 8
+    cstartup_M.o                  134
+    flash.o                       324                 1
+    led.o                         140
+    low_level_init.o              164                44
+    mfg-token.o                   120
+    micro-common-internal.o       640
+    micro-common.o                140
+    micro.o                       144        4        4
+    nvm.o                       1 196             2 048
+    solar-system.o              2 536       26      284
+    spmr.o                         26
+    system-timer.o                 48                 1
+    transmit.o                  1 156       24      840
+    uart.o                        472               134
+    ---------------------------------------------------
+    Total:                      7 964       56    3 396
+
+command line: [2]
+    ---------------------------------------------------
+    Total:
+
+dl7M_tln.a: [3]
+    abort.o                        10
+    abs.o                           8
+    exit.o                          8
+    printf.o                       36
+    putchar.o                      40
+    xassert.o                      92
+    xprintfsmall.o              1 136
+    xprout.o                       22
+    xreportassert.o               160
+    ---------------------------------------------------
+    Total:                      1 512
+
+rt7M_tl.a: [4]
+    ABImemclr.o                     6
+    ABImemcpy.o                   112
+    ABImemset.o                   102
+    XXexit.o                       12
+    cexit.o                        10
+    cmain.o                        22
+    copy_init3.o                   46
+    cstartup_M.o                   12
+    data_init3.o                   44
+    memchr.o                       88
+    memcmp.o                       98
+    strchr.o                       22
+    strlen.o                       54
+    zero_init3.o                   34
+    ---------------------------------------------------
+    Total:                        662
+
+simplemac-library.a: [5]
+    aes-min.o                     232
+    analogue-cell-bias-min.o      192      100
+    analogue-filter-min.o          68       76
+    analogue-lna-min.o            598                 2
+    analogue-min.o                988      122       16
+    analogue-mod-dac-min.o        336                 2
+    analogue-vco-min.o            216       44        3
+    eui64-min.o                    24                 8
+    misc-min.o                     68
+    phy-common-min.o            1 316      142       33
+    phy-library-min.o             198
+    phy-min.o                   1 008       48      298
+    ---------------------------------------------------
+    Total:                      5 244      532      362
+
+    Gaps                           14                 5
+    Linker created                          38    1 024
+-------------------------------------------------------
+    Grand Total:               15 396      626    4 787
+
+
+*******************************************************************************
+*** ENTRY LIST
+***
+
+Entry                      Address   Size  Type      Object
+-----                      -------   ----  ----      ------
+?main                   0x08003dc5         Code  Gb  cmain.o [4]
+BusFault_Handler        0x080006c3         Code  Wk  cstartup_M.o [1]
+CSTACK$$Base            0x20000058          --   Gb  - Linker created -
+CSTACK$$Limit           0x20000458          --   Gb  - Linker created -
+DebugMon_Handler        0x080006c3         Code  Wk  cstartup_M.o [1]
+FLASH_IMAGE$$Base       0x08000000          --   Gb  - Linker created -
+FLASH_IMAGE$$Limit      0x08003e96          --   Gb  - Linker created -
+HardFault_Handler       0x080006c3         Code  Wk  cstartup_M.o [1]
+MemManage_Handler       0x080006c3         Code  Wk  cstartup_M.o [1]
+NMI_Handler             0x080006c3         Code  Wk  cstartup_M.o [1]
+Nvdd                    0x20000a3a    0x2  Data  Lc  adc.o [1]
+Nvss                    0x20000a50    0x2  Data  Lc  adc.o [1]
+PendSV_Handler          0x08000d85         Code  Gb  context-switch.o [1]
+Region$$Table$$Base     0x08000084          --   Gb  - Linker created -
+Region$$Table$$Limit    0x080000a8          --   Gb  - Linker created -
+ST_RadioDataPendingLongIdIsrCallback
+                        0x08002287    0x4  Code  Gb  transmit.o [1]
+ST_RadioDataPendingShortIdIsrCallback
+                        0x08002285    0x2  Code  Gb  transmit.o [1]
+ST_RadioEnableOverflowNotification
+                        0x08001f21    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioEnableSfdSentNotification
+                        0x08001f07    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioGetChannel      0x08001efb    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioGetEui64        0x08001f1b    0x2  Code  Gb  phy-library-min.o [5]
+ST_RadioGetNodeId       0x08001f0f    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioGetPanId        0x08001f17    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioGetRandomNumbers
+                        0x08001f25    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioInit            0x08001edd   0x16  Code  Gb  phy-library-min.o [5]
+ST_RadioMacTimerCompareIsrCallback
+                        0x08001c3d    0x2  Code  Gb  solar-system.o [1]
+ST_RadioOverflowIsrCallback
+                        0x08001829   0x1a  Code  Gb  solar-system.o [1]
+ST_RadioReceiveIsrCallback
+                        0x08001565   0x42  Code  Gb  solar-system.o [1]
+ST_RadioSetChannel      0x08001ef7    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioSetNodeId       0x08001f0b    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioSetPanId        0x08001f13    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioSfdSentIsrCallback
+                        0x0800223f   0x22  Code  Gb  transmit.o [1]
+ST_RadioTransmit        0x08001eff    0x4  Code  Gb  phy-library-min.o [5]
+ST_RadioTransmitCompleteIsrCallback
+                        0x08002185   0xb2  Code  Gb  transmit.o [1]
+ST_RadioWake            0x08001ef3    0x4  Code  Gb  phy-library-min.o [5]
+SVC_Handler             0x080006c3         Code  Wk  cstartup_M.o [1]
+SysTick_Handler         0x080006c3         Code  Wk  cstartup_M.o [1]
+T2                      0x20000018    0x4  Data  Gb  solar-system.o [1]
+T3                      0x2000001c    0x4  Data  Gb  solar-system.o [1]
+TOKEN_MFG_1V8_REG_VOLTAGE
+                        0x08000644    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_ANALOG_TRIM_BOOST
+                        0x0800063e    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_ANALOG_TRIM_BOTH
+                        0x08000640    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_ANALOG_TRIM_NORMAL
+                        0x0800063c    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_EUI_64        0x0800064a    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_OSC24M_BIAS_TRIM
+                        0x08000648    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_PHY_CONFIG    0x08000646    0x2  Data  Gb  mfg-token.o [1]
+TOKEN_MFG_REG_TRIM      0x08000642    0x2  Data  Gb  mfg-token.o [1]
+UsageFault_Handler      0x080006c3         Code  Wk  cstartup_M.o [1]
+_LitobSmall             0x0800357f   0xc6  Code  Lc  xprintfsmall.o [3]
+_PrintfSmall            0x080031dd  0x374  Code  Gb  xprintfsmall.o [3]
+_Prout                  0x08003e81   0x16  Code  Gb  xprout.o [3]
+__aeabi_assert          0x08000657   0x5a  Code  Gb  xassert.o [3]
+__aeabi_memclr          0x08001ed5         Code  Gb  ABImemclr.o [4]
+__aeabi_memcpy          0x08000a45         Code  Gb  ABImemcpy.o [4]
+__aeabi_memcpy4         0x08000a5f         Code  Gb  ABImemcpy.o [4]
+__aeabi_memcpy8         0x08000a5f         Code  Gb  ABImemcpy.o [4]
+__aeabi_memset          0x08002485         Code  Gb  ABImemset.o [4]
+__cmain                 0x08003dc5         Code  Gb  cmain.o [4]
+__exit                  0x08000b6d         Code  Gb  XXexit.o [4]
+__iar_EmptyStepPoint    0x08000655    0x2  Code  Gb  xassert.o [3]
+__iar_Memchr            0x08003ce9         Code  Gb  memchr.o [4]
+__iar_Memset            0x08002485         Code  Gb  ABImemset.o [4]
+__iar_Memset_word       0x0800248d         Code  Gb  ABImemset.o [4]
+__iar_ReportAssert      0x0800076b   0x50  Code  Gb  xreportassert.o [3]
+__iar_Strchr            0x08003cd1         Code  Gb  strchr.o [4]
+__iar_copy_init3        0x08000b3f   0x2e  Code  Gb  copy_init3.o [4]
+__iar_data_init3        0x08003ddd   0x2c  Code  Gb  data_init3.o [4]
+__iar_program_start     0x08003e75         Code  Gb  cstartup_M.o [4]
+__iar_zero_init3        0x080007ff   0x22  Code  Gb  zero_init3.o [4]
+__low_level_init        0x08000f9d   0xa4  Code  Gb  low_level_init.o [1]
+__vector_table          0x08000000         Data  Gb  cstartup_M.o [1]
+__write                 0x08000c19   0x44  Code  Gb  uart.o [1]
+_call_main              0x08003dd1         Code  Gb  cmain.o [4]
+_disableBasePri         0x080006b1         Code  Gb  spmr.o [1]
+_enableBasePri          0x0800247d         Code  Gb  spmr.o [1]
+_exit                   0x08003e11         Code  Gb  cexit.o [4]
+_main                   0x08003dd7         Code  Gb  cmain.o [4]
+_writeBasePri           0x080006bd         Code  Gb  spmr.o [1]
+abort                   0x080007f5    0xa  Code  Gb  abort.o [3]
+abs                     0x08003d77    0x8  Code  Gb  abs.o [3]
+activeInNetwork         0x20000011    0x1  Data  Gb  solar-system.o [1]
+adcCalibrated           0x20000a37    0x1  Data  Lc  adc.o [1]
+adcConfig               0x20000a48    0x8  Data  Lc  adc.o [1]
+adcData                 0x20000a38    0x2  Data  Lc  adc.o [1]
+adcPendingConversion    0x20000a35    0x1  Data  Lc  adc.o [1]
+adcPendingRequests      0x20000a34    0x1  Data  Lc  adc.o [1]
+adcReadingValid         0x20000a36    0x1  Data  Lc  adc.o [1]
+adcReadings             0x20000a40    0x8  Data  Lc  adc.o [1]
+adcStaticConfig         0x20000a3c    0x2  Data  Lc  adc.o [1]
+addressMatchingEnabled  0x2000004e    0x1  Data  Lc  phy-common-min.o [5]
+adjustLna               0x08003991    0xc  Code  Lc  analogue-lna-min.o [5]
+adjustModulationDac     0x080037fd    0xe  Code  Gb  analogue-mod-dac-min.o [5]
+adjustVco               0x08003725   0x22  Code  Lc  analogue-vco-min.o [5]
+advanceHead             0x08001ffb   0x12  Code  Gb  transmit.o [1]
+advanceTail             0x0800200d   0x16  Code  Gb  transmit.o [1]
+autoAckEnabled          0x2000004f    0x1  Data  Lc  phy-common-min.o [5]
+autoPollRate            0x20000017    0x1  Data  Gb  solar-system.o [1]
+autoSendRate            0x20000016    0x1  Data  Gb  solar-system.o [1]
+availableSunFound       0x20000012    0x1  Data  Gb  solar-system.o [1]
+biasTrim                0x20000000    0x2  Data  Gb  clocks.o [1]
+boostTxPowerMax         0x20000040    0x8  Data  Gb  analogue-min.o [5]
+bothTokSerialRegAddress
+                        0x0800020c    0x8  Data  Gb  analogue-cell-bias-min.o [5]
+calDisableAdc           0x080003bb    0xc  Code  Gb  micro-common-internal.o [1]
+calReadAdcBlocking      0x080003fb   0x16  Code  Gb  micro-common-internal.o [1]
+calStartAdcConversion   0x080003c7   0x34  Code  Gb  micro-common-internal.o [1]
+calculateLqi            0x08001551   0x14  Code  Gb  solar-system.o [1]
+calculateModDacTuneValue
+                        0x0800385b   0xa6  Code  Lc  analogue-mod-dac-min.o [5]
+ccaAttempt              0x20000a5b    0x1  Data  Gb  phy-common-min.o [5]
+clearDirectQueue        0x08001fa5   0x36  Code  Gb  transmit.o [1]
+clearIndirectQueue      0x08001fdb   0x20  Code  Gb  transmit.o [1]
+currSeqNum              0x20000015    0x1  Data  Gb  solar-system.o [1]
+currentReceiveChannel   0x20000700    0x1  Data  Lc  phy-min.o [5]
+determineState          0x08001041   0x7e  Code  Lc  nvm.o [1]
+deviceIsCoordinator     0x2000004d    0x1  Data  Lc  phy-common-min.o [5]
+directTransmit          0x080020ef   0x38  Code  Gb  transmit.o [1]
+directTxTick            0x08002065   0x44  Code  Gb  transmit.o [1]
+droppedAckWorkarounds   0x20000a60    0x4  Data  Gb  phy-common-min.o [5]
+edCcaThreshold          0x20000050    0x1  Data  Lc  phy-common-min.o [5]
+enqueueTxPacket         0x08002167   0x1e  Code  Gb  transmit.o [1]
+erasePage               0x080011bb   0x36  Code  Lc  nvm.o [1]
+exit                    0x08003e09    0x8  Code  Gb  exit.o [3]
+extraAckWorkarounds     0x20000a78    0x4  Data  Gb  phy-common-min.o [5]
+fibToStStatus           0x08000f08    0x8  Data  Lc  flash.o [1]
+flashEraseIsActive      0x20000a7f    0x1  Data  Gb  flash.o [1]
+framePendingBitSetTime  0x2000070c    0x4  Data  Gb  phy-min.o [5]
+framePendingMsTick      0x20000026    0x2  Data  Gb  transmit.o [1]
+framePendingPktEnroute  0x20000025    0x1  Data  Gb  transmit.o [1]
+framePendingSetInOutgoingAck
+                        0x20000702    0x2  Data  Lc  phy-min.o [5]
+getRandomBackoff        0x08002527   0x36  Code  Gb  phy-common-min.o [5]
+halAdcIsr               0x0800029d   0x64  Code  Gb  adc.o [1]
+halBaseBandIsr          0x080006c3         Code  Wk  cstartup_M.o [1]
+halClearLed             0x08000f4b   0x1a  Code  Gb  led.o [1]
+halCommonCalibratePads  0x080004a7   0x1e  Code  Gb  micro-common-internal.o [1]
+halCommonDelayMicroseconds
+                        0x08000509   0x28  Code  Gb  micro-common-internal.o [1]
+halCommonDelayMilliseconds
+                        0x0800055d   0x1c  Code  Gb  micro-common-internal.o [1]
+halCommonGetInt16uMillisecondTick
+                        0x08002429    0xa  Code  Gb  system-timer.o [1]
+halCommonGetInt32uMillisecondTick
+                        0x08002433    0xc  Code  Gb  system-timer.o [1]
+halCommonGetRandom      0x08000721   0x1c  Code  Gb  micro.o [1]
+halCommonMemCompare     0x08000741    0xa  Code  Gb  micro.o [1]
+halCommonMemCopy        0x0800073d    0x4  Code  Gb  micro.o [1]
+halCommonReadFromNvm    0x080010bf   0xde  Code  Gb  nvm.o [1]
+halCommonSeedRandom     0x080006f9   0x18  Code  Gb  micro.o [1]
+halCommonWriteToNvm     0x080011f1  0x1cc  Code  Gb  nvm.o [1]
+halDebugIsr             0x080006c3         Code  Wk  cstartup_M.o [1]
+halFixedAddressTable    0x08040000   0x2c  Data  Gb  low_level_init.o [1]
+halGetButtonStatus      0x08000d67   0x16  Code  Gb  button.o [1]
+halGpioConfig           0x080009c1   0x24  Code  Gb  micro-common.o [1]
+halInit                 0x080006c5   0x22  Code  Gb  micro.o [1]
+halInitButton           0x08000d51   0x16  Code  Gb  button.o [1]
+halInitLed              0x08000f11   0x20  Code  Gb  led.o [1]
+halInternalCalibrateFastRc
+                        0x0800087f   0x22  Code  Gb  clocks.o [1]
+halInternalCalibrateSlowRc
+                        0x08000821   0x5e  Code  Gb  clocks.o [1]
+halInternalFlashErase   0x08000df1   0x5a  Code  Gb  flash.o [1]
+halInternalFlashWrite   0x08000e4b   0x52  Code  Gb  flash.o [1]
+halInternalGetMfgTokenData
+                        0x080005dd   0x5c  Code  Gb  mfg-token.o [1]
+halInternalInitAdc      0x08000301   0x4c  Code  Gb  adc.o [1]
+halInternalResetWatchDog
+                        0x080009b9    0x2  Code  Gb  micro-common.o [1]
+halInternalSearchForBiasTrim
+                        0x080008bb   0x44  Code  Gb  clocks.o [1]
+halInternalSetRegTrim   0x080004c5   0x44  Code  Gb  micro-common-internal.o [1]
+halInternalStartSystemTimer
+                        0x080009e5   0x2e  Code  Gb  micro-common.o [1]
+halInternalSwitchToXtal
+                        0x080008ff   0x94  Code  Gb  clocks.o [1]
+halIrqAIsr              0x080006c3         Code  Wk  cstartup_M.o [1]
+halIrqBIsr              0x080006c3         Code  Wk  cstartup_M.o [1]
+halIrqCIsr              0x080006c3         Code  Wk  cstartup_M.o [1]
+halIrqDIsr              0x080006c3         Code  Wk  cstartup_M.o [1]
+halManagementIsr        0x080006c3         Code  Wk  cstartup_M.o [1]
+halPendSvIsr            0x08000d85         Code  Gb  context-switch.o [1]
+halPendSvSaveContext    0x20000a68         Data  Gb  context-switch.o [1]
+halPowerUp              0x080006e7   0x12  Code  Gb  micro.o [1]
+halSc1Isr               0x08000c5d   0x5a  Code  Gb  uart.o [1]
+halSc2Isr               0x080006c3         Code  Wk  cstartup_M.o [1]
+halSecurityIsr          0x080006c3         Code  Wk  cstartup_M.o [1]
+halSetLed               0x08000f31   0x1a  Code  Gb  led.o [1]
+halSleepTimerIsr        0x0800243f    0xe  Code  Gb  system-timer.o [1]
+halStackMacTimerIsr     0x08001f2d   0x1a  Code  Gb  phy-library-min.o [5]
+halTimer1Isr            0x080006c3         Code  Wk  cstartup_M.o [1]
+halTimer2Isr            0x080006c3         Code  Wk  cstartup_M.o [1]
+halToggleLed            0x08000f65   0x2c  Code  Gb  led.o [1]
+halTriggerContextRestore
+                        0x08000dbd         Code  Gb  context-switch.o [1]
+indirectTransmit        0x08002127   0x2a  Code  Gb  transmit.o [1]
+indirectTxTick          0x08002023   0x42  Code  Gb  transmit.o [1]
+initNetworkState        0x080014ed   0x64  Code  Gb  solar-system.o [1]
+isDataPendingForShortId
+                        0x08002261   0x16  Code  Gb  transmit.o [1]
+joinCmd                 0x08001843  0x126  Code  Gb  solar-system.o [1]
+lastBackoff             0x20000a5c    0x2  Data  Gb  phy-common-min.o [5]
+lastTxSfdTime           0x20000a64    0x4  Data  Gb  phy-common-min.o [5]
+lastVcoCalChannel       0x20000a7d    0x1  Data  Lc  analogue-vco-min.o [5]
+lastVcoValue            0x20000a7e    0x1  Data  Lc  analogue-vco-min.o [5]
+lnaForceReCal           0x20000a82    0x2  Data  Gb  analogue-lna-min.o [5]
+main                    0x08001b49   0xd0  Code  Gb  solar-system.o [1]
+memchr                  0x08003ce9         Code  Gb  memchr.o [4]
+memcmp                  0x08000ab5         Code  Gb  memcmp.o [4]
+modDacForceReCal        0x20000a84    0x2  Data  Gb  analogue-mod-dac-min.o [5]
+networkJoinedStopSearching
+                        0x20000013    0x1  Data  Gb  solar-system.o [1]
+normalOrBoostTokSerialRegAddress
+                        0x08000214    0xc  Data  Gb  analogue-cell-bias-min.o [5]
+nullEui                 0x0800064c    0x8  Data  Lc  mfg-token.o [1]
+nvmStorageLeft          0x0801f800  0x400  Data  Gb  nvm.o [1]
+nvmStorageRight         0x0801fc00  0x400  Data  Gb  nvm.o [1]
+out                     0x08000755   0x16  Code  Lc  xreportassert.o [3]
+paPresent               0x2000003e    0x1  Data  Lc  analogue-min.o [5]
+packetRxTime            0x20000710    0x4  Data  Gb  phy-min.o [5]
+pad                     0x08003551   0x2e  Code  Lc  xprintfsmall.o [3]
+planetTable             0x200009bc   0x78  Data  Gb  solar-system.o [1]
+powerLevelSettings      0x08000108    0x8  Data  Gb  analogue-min.o [5]
+previousTemperature     0x20000a80    0x2  Data  Lc  phy-min.o [5]
+printf                  0x08002459   0x24  Code  Gb  printf.o [3]
+processRxAddressReceiveCompleteIsr
+                        0x08002e89   0x9a  Code  Lc  phy-min.o [5]
+processRxPacket         0x080015a7  0x27c  Code  Gb  solar-system.o [1]
+processRxPacketCompleteIsr
+                        0x08002f2f  0x11e  Code  Lc  phy-min.o [5]
+ptiEnabled              0x2000004c    0x1  Data  Lc  phy-common-min.o [5]
+putchar                 0x08000b17   0x28  Code  Gb  putchar.o [3]
+radioCheckCrc           0x2000004a    0x1  Data  Gb  phy-common-min.o [5]
+radioCurrentPowerStatus
+                        0x20000053    0x1  Data  Gb  phy-common-min.o [5]
+radioPowerState         0x20000010    0x1  Data  Gb  solar-system.o [1]
+radioTransmitConfig     0x20000008    0x8  Data  Gb  solar-system.o [1]
+readAdcTemperatureChannel
+                        0x08003173   0x22  Code  Lc  phy-min.o [5]
+replySync               0x0800197d   0xc8  Code  Gb  solar-system.o [1]
+rxBuffer                0x20000714  0x114  Data  Lc  phy-min.o [5]
+rxData                  0x20000828   0x8c  Data  Gb  solar-system.o [1]
+rxHead                  0x20000a52    0x2  Data  Gb  uart.o [1]
+rxQ                     0x2000093c   0x80  Data  Gb  uart.o [1]
+rxTail                  0x20000a54    0x2  Data  Gb  uart.o [1]
+rxUsed                  0x20000a56    0x2  Data  Gb  uart.o [1]
+savedMSP                0x20000a6c         Data  Gb  context-switch.o [1]
+seed0                   0x20000002    0x2  Data  Lc  micro.o [1]
+seed1                   0x20000004    0x2  Data  Lc  micro.o [1]
+sendVddDataPacket       0x08001a45   0x26  Code  Gb  solar-system.o [1]
+sendVddDataPacket3      0x08001add   0x50  Code  Gb  solar-system.o [1]
+setBiasCheckLow         0x080008a1   0x1a  Code  Lc  clocks.o [1]
+setTxStepTime           0x08002a5d   0x34  Code  Lc  analogue-min.o [5]
+shift                   0x08000711   0x10  Code  Lc  micro.o [1]
+shortAddrCounter        0x20000014    0x1  Data  Gb  solar-system.o [1]
+sleepTimerInterruptOccurred
+                        0x20000a86    0x1  Data  Lc  system-timer.o [1]
+stCalibrateVref         0x0800035d   0x5e  Code  Gb  micro-common-internal.o [1]
+stGetEui64              0x08001f29         Code  Gb  phy-library-min.o [5]
+stGetNodeId             0x08002927    0x6  Code  Gb  phy-common-min.o [5]
+stGetPanId              0x08002937    0x6  Code  Gb  phy-common-min.o [5]
+stGetRadioChannel       0x08002cbd    0x6  Code  Gb  analogue-min.o [5]
+stGetTxPowerMode        0x08002b37    0x6  Code  Gb  analogue-min.o [5]
+stMeasureVddFast        0x08000411   0x8e  Code  Gb  micro-common-internal.o [1]
+stSetRadioPower         0x08002cc3   0xd8  Code  Gb  analogue-min.o [5]
+stSetTxPowerMode        0x08002a91   0xa6  Code  Gb  analogue-min.o [5]
+stmAesEncrypt           0x08003ca5   0x2c  Code  Gb  aes-min.o [5]
+stmChannelSettings      0x080000a8   0x40  Data  Gb  analogue-min.o [5]
+stmDroppedAckStallWorkaround
+                        0x080024ed   0x2c  Code  Gb  phy-common-min.o [5]
+stmFetchInt32u          0x08003d9b   0x28  Code  Gb  misc-min.o [5]
+stmGetKeyFromCore       0x08003c15   0x30  Code  Gb  aes-min.o [5]
+stmGetMacTimer          0x080030ff    0x6  Code  Gb  phy-min.o [5]
+stmInitEui64            0x0800364d   0x18  Code  Gb  eui64-min.o [5]
+stmLoadKeyIntoCore      0x08003be9   0x2c  Code  Gb  aes-min.o [5]
+stmLocalEui64           0x20000a70    0x8  Data  Gb  eui64-min.o [5]
+stmLocalNodeId          0x20000054    0x2  Data  Lc  phy-common-min.o [5]
+stmLocalPanId           0x20000056    0x2  Data  Lc  phy-common-min.o [5]
+stmLongIdDataPendingForDevice
+                        0x08001f1d    0x4  Code  Gb  phy-library-min.o [5]
+stmMacAckNeeded         0x20000a58    0x1  Data  Gb  phy-common-min.o [5]
+stmMfglibMode           0x20000a59    0x1  Data  Gb  phy-common-min.o [5]
+stmMfglibTransmitComplete
+                        0x20000a5a    0x1  Data  Gb  phy-common-min.o [5]
+stmPacketReceivedInternalIsrCallback
+                        0x08001f55   0x4e  Code  Gb  phy-library-min.o [5]
+stmPhySetCoordinator    0x0800290f   0x18  Code  Gb  phy-common-min.o [5]
+stmPhySetEui64          0x080028e1   0x2e  Code  Gb  phy-common-min.o [5]
+stmPowerLevel           0x080000e8   0x20  Data  Gb  analogue-min.o [5]
+stmRadioBootPhySpecific
+                        0x08002e25   0x64  Code  Gb  phy-min.o [5]
+stmRadioCalibrateCellBias
+                        0x08003665   0xc0  Code  Gb  analogue-cell-bias-min.o [5]
+stmRadioCalibrateChannelFilter
+                        0x0800394d   0x44  Code  Gb  analogue-filter-min.o [5]
+stmRadioCalibrateLna    0x0800399d  0x1e6  Code  Gb  analogue-lna-min.o [5]
+stmRadioCalibrateModulationDac
+                        0x08003901   0x32  Code  Gb  analogue-mod-dac-min.o [5]
+stmRadioCalibrateVco    0x08003747   0x98  Code  Gb  analogue-vco-min.o [5]
+stmRadioChannel         0x20000038    0x1  Data  Gb  analogue-min.o [5]
+stmRadioEnableAddressMatching
+                        0x080028b1   0x18  Code  Gb  phy-common-min.o [5]
+stmRadioEnableAutoAck   0x080028c9   0x18  Code  Gb  phy-common-min.o [5]
+stmRadioEnableOverflowNotification
+                        0x0800294d   0x18  Code  Gb  phy-common-min.o [5]
+stmRadioEnablePacketTrace
+                        0x08002983   0x18  Code  Gb  phy-common-min.o [5]
+stmRadioEnableSfdSentNotification
+                        0x08002965   0x1e  Code  Gb  phy-common-min.o [5]
+stmRadioGetPowerStatus  0x080028ab    0x6  Code  Gb  phy-common-min.o [5]
+stmRadioGetRandomNumbers
+                        0x08003105   0x66  Code  Gb  phy-min.o [5]
+stmRadioInit            0x0800270b   0xde  Code  Gb  phy-common-min.o [5]
+stmRadioOverflowCallbackEnabled
+                        0x20000051    0x1  Data  Lc  phy-common-min.o [5]
+stmRadioPower           0x2000003c    0x1  Data  Gb  analogue-min.o [5]
+stmRadioReadSerialReg   0x08002a11    0xc  Code  Gb  analogue-min.o [5]
+stmRadioReceiveCrcEnabled
+                        0x08002947    0x6  Code  Gb  phy-common-min.o [5]
+stmRadioReceiveIsr      0x0800304d   0xb2  Code  Gb  phy-min.o [5]
+stmRadioReceiverFrameStatus
+                        0x20000706    0x2  Data  Gb  phy-min.o [5]
+stmRadioReceiverGain    0x20000708    0x2  Data  Gb  phy-min.o [5]
+stmRadioResetAndEnableReceive
+                        0x08002ded   0x38  Code  Gb  phy-min.o [5]
+stmRadioSetChannel      0x08002b3d  0x180  Code  Gb  analogue-min.o [5]
+stmRadioSetEdCcaThreshold
+                        0x0800299b   0x12  Code  Gb  phy-common-min.o [5]
+stmRadioSfdSentCallbackEnabled
+                        0x20000052    0x1  Data  Lc  phy-common-min.o [5]
+stmRadioSleep           0x080027e9   0x6a  Code  Gb  phy-common-min.o [5]
+stmRadioTransmit        0x0800255d   0xa4  Code  Gb  phy-common-min.o [5]
+stmRadioTransmitCompleteCallback
+                        0x08001f03    0x4  Code  Gb  phy-library-min.o [5]
+stmRadioTransmitIsr     0x08002601  0x10a  Code  Gb  phy-common-min.o [5]
+stmRadioTxPowerMode     0x20000048    0x2  Data  Gb  analogue-min.o [5]
+stmRadioUnpackChipErrors
+                        0x08002519    0xe  Code  Gb  phy-common-min.o [5]
+stmRadioWakeUp          0x08002853   0x58  Code  Gb  phy-common-min.o [5]
+stmRadioWriteSerialReg  0x08002a1d   0x22  Code  Gb  analogue-min.o [5]
+stmRxCRCFail            0x20000704    0x2  Data  Gb  phy-min.o [5]
+stmRxPacket             0x2000070a    0x2  Data  Gb  phy-min.o [5]
+stmSetNodeId            0x0800292d    0xa  Code  Gb  phy-common-min.o [5]
+stmSetPanId             0x0800293d    0xa  Code  Gb  phy-common-min.o [5]
+stmStandAloneEncryptBlock
+                        0x08003c45   0x46  Code  Gb  aes-min.o [5]
+stmStoreInt32u          0x08003d7f   0x1c  Code  Gb  misc-min.o [5]
+stmTxStepTimeAltRfPath  0x2000003d    0x1  Data  Gb  analogue-min.o [5]
+stmVcoAutoTuneEnabled   0x20000039    0x1  Data  Gb  analogue-min.o [5]
+strchr                  0x08003cd1         Code  Gb  strchr.o [4]
+strlen                  0x08003d41         Code  Gb  strlen.o [4]
+txDirectQ               0x20000458  0x2a8  Data  Gb  transmit.o [1]
+txDirectQHead           0x20000020    0x1  Data  Gb  transmit.o [1]
+txDirectQTail           0x20000021    0x1  Data  Gb  transmit.o [1]
+txIndirectQ             0x200008b4   0x88  Data  Gb  transmit.o [1]
+txPacket                0x2000002c    0x4  Data  Gb  transmit.o [1]
+txPacketAttemptsLeft    0x20000022    0x1  Data  Gb  transmit.o [1]
+txPacketDroppedNotifcation
+                        0x20000034    0x4  Data  Gb  transmit.o [1]
+txPacketInFlight        0x20000023    0x1  Data  Gb  transmit.o [1]
+txPacketInUse           0x20000028    0x4  Data  Gb  transmit.o [1]
+txPacketIsDirect        0x20000024    0x1  Data  Gb  transmit.o [1]
+txPacketSfd             0x20000030    0x4  Data  Gb  transmit.o [1]
+txTick                  0x080020cf   0x20  Code  Gb  transmit.o [1]
+uartInit                0x08000b79   0xa0  Code  Gb  uart.o [1]
+vcoLastTuneValueAvailable
+                        0x20000a7c    0x1  Data  Gb  analogue-vco-min.o [5]
+vcoTuneModDacError      0x0800380b   0x42  Code  Lc  analogue-mod-dac-min.o [5]
+verifyFib               0x08000dcd   0x24  Code  Lc  flash.o [1]
+
+
+[1] = I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\Obj
+[2] = command line
+[3] = dl7M_tln.a
+[4] = rt7M_tl.a
+[5] = simplemac-library.a
+
+  15 396 bytes of readonly  code memory
+     626 bytes of readonly  data memory
+   4 787 bytes of readwrite data memory
+
+Errors: none
+Warnings: none

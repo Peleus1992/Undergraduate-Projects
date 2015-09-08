@@ -1,0 +1,21 @@
+\contentsline {section}{\numberline {1}Introduction}{4}
+\contentsline {section}{\numberline {2}Related Works And Problem Statement}{5}
+\contentsline {subsection}{\numberline {2.1}Related works}{5}
+\contentsline {subsection}{\numberline {2.2}Motivation}{7}
+\contentsline {section}{\numberline {3}Model and Strategy}{8}
+\contentsline {subsection}{\numberline {3.1}Assumption}{8}
+\contentsline {subsection}{\numberline {3.2}Node Classification}{8}
+\contentsline {subsection}{\numberline {3.3}Message Format}{9}
+\contentsline {section}{\numberline {4}Algorithm Design}{10}
+\contentsline {subsection}{\numberline {4.1}BNs and PNs Election}{10}
+\contentsline {subsection}{\numberline {4.2}Initial value of timer}{12}
+\contentsline {subsection}{\numberline {4.3}Time Synchronization}{12}
+\contentsline {subsection}{\numberline {4.4}Algorithm Pseudo-code}{15}
+\contentsline {section}{\numberline {5}Experiments and Performance Evaluation}{15}
+\contentsline {subsection}{\numberline {5.1}Simulation Setup}{15}
+\contentsline {subsection}{\numberline {5.2}Broadcast number and Energy Consumption}{18}
+\contentsline {subsection}{\numberline {5.3}Local time synchronization error and global time synchronization error}{18}
+\contentsline {subsection}{\numberline {5.4}BN time synchronization error and PN time synchronization error}{19}
+\contentsline {subsection}{\numberline {5.5}Implementation on STM32W108}{20}
+\contentsline {section}{\numberline {6}Conclusion}{21}
+\contentsline {section}{\numberline {7}Acknowledgment}{22}

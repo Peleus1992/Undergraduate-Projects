@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<Workspace>
+  <ConfigDictionary>
+    
+  <CurrentConfigs><Project>sample/MB851_SUN</Project></CurrentConfigs></ConfigDictionary>
+  <Desktop>
+    <Static>
+      <Workspace>
+        <ColumnWidths>
+          
+          
+          
+          
+        <Column0>21</Column0><Column1>27</Column1><Column2>27</Column2><Column3>27</Column3></ColumnWidths>
+      </Workspace>
+      <Build>
+        
+        
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>980</ColumnWidth1><ColumnWidth2>261</ColumnWidth2><ColumnWidth3>65</ColumnWidth3></Build>
+      <TerminalIO/>
+      <Debug-Log>
+        
+        
+      <ColumnWidth0>20</ColumnWidth0><ColumnWidth1>1307</ColumnWidth1></Debug-Log>
+    <Disassembly><MixedMode>1</MixedMode><CodeCovShow>1</CodeCovShow><InstrProfShow>1</InstrProfShow></Disassembly></Static>
+    <Windows>
+      
+      
+    <Wnd0>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-27405-17355</Identity>
+            <TabName>Workspace</TabName>
+            <Factory>Workspace</Factory>
+            <Session>
+              
+            <NodeDict><ExpandedNode>sample</ExpandedNode><ExpandedNode>sample/Output</ExpandedNode><ExpandedNode>sample/sample_application</ExpandedNode><ExpandedNode>sample/simplemac_library</ExpandedNode></NodeDict></Session>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>0</SelectedTab></Wnd0><Wnd1>
+        <Tabs>
+          <Tab>
+            <Identity>TabID-22178-17453</Identity>
+            <TabName>Build</TabName>
+            <Factory>Build</Factory>
+            <Session/>
+          </Tab>
+          <Tab>
+            <Identity>TabID-5156-17567</Identity>
+            <TabName>Debug Log</TabName>
+            <Factory>Debug-Log</Factory>
+            <Session/>
+          </Tab>
+        </Tabs>
+        
+      <SelectedTab>1</SelectedTab></Wnd1></Windows>
+    <Editor>
+      
+      
+      
+      
+    <Pane><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\transmit.c</Filename><XPos>0</XPos><YPos>229</YPos><SelStart>6283</SelStart><SelEnd>6283</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\button.c</Filename><XPos>0</XPos><YPos>12</YPos><SelStart>184</SelStart><SelEnd>184</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\micro-common-internal.c</Filename><XPos>0</XPos><YPos>281</YPos><SelStart>8880</SelStart><SelEnd>8880</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\solar-system.c</Filename><XPos>0</XPos><YPos>0</YPos><SelStart>24058</SelStart><SelEnd>24058</SelEnd></Tab><ActiveTab>3</ActiveTab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\mfg-token.c</Filename><XPos>0</XPos><YPos>62</YPos><SelStart>1884</SelStart><SelEnd>1884</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\micro.c</Filename><XPos>0</XPos><YPos>21</YPos><SelStart>934</SelStart><SelEnd>934</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\system-timer.c</Filename><XPos>0</XPos><YPos>48</YPos><SelStart>2103</SelStart><SelEnd>2123</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\uart.c</Filename><XPos>0</XPos><YPos>76</YPos><SelStart>2588</SelStart><SelEnd>2588</SelEnd></Tab><Tab><Factory>TextEditor</Factory><Filename>$WS_DIR$\..\..\..\hal\micro\cortexm3\micro-common.c</Filename><XPos>0</XPos><YPos>63</YPos><SelStart>2019</SelStart><SelEnd>2019</SelEnd></Tab></Pane><ActivePane>0</ActivePane><Sizes><Pane><X>1000000</X><Y>1000000</Y></Pane></Sizes><SplitMode>1</SplitMode></Editor>
+    <Positions>
+      
+      
+      
+      
+      
+    <Top><Row0><Sizes><Toolbar-02edfda8><key>iaridepm.enu1</key></Toolbar-02edfda8></Sizes></Row0></Top><Left><Row0><Sizes><Wnd0><Rect><Top>-2</Top><Left>-2</Left><Bottom>535</Bottom><Right>95</Right><x>-2</x><y>-2</y><xscreen>906</xscreen><yscreen>42</yscreen><sizeHorzCX>663250</sizeHorzCX><sizeHorzCY>61314</sizeHorzCY><sizeVertCX>71010</sizeVertCX><sizeVertCY>783942</sizeVertCY></Rect></Wnd0></Sizes></Row0></Left><Right><Row0><Sizes/></Row0></Right><Bottom><Row0><Sizes><Wnd1><Rect><Top>-2</Top><Left>-2</Left><Bottom>105</Bottom><Right>1368</Right><x>-2</x><y>-2</y><xscreen>1370</xscreen><yscreen>107</yscreen><sizeHorzCX>1002928</sizeHorzCX><sizeHorzCY>156204</sizeHorzCY><sizeVertCX>663250</sizeVertCX><sizeVertCY>61314</sizeVertCY></Rect></Wnd1></Sizes></Row0></Bottom><Float><Sizes/></Float></Positions>
+  </Desktop>
+</Workspace>
+
+

@@ -1,0 +1,306 @@
+###############################################################################
+#                                                                             #
+#     IAR Assembler V6.10.1.52143/W32 for ARM 05/Jul/2014  18:37:58           #
+#     Copyright 1999-2010 IAR Systems AB.                                     #
+#                                                                             #
+#           Source file   =  I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\context-switch.s79#
+#           List file     =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\List\context-switch.lst#
+#           Object file   =  I:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\Obj\context-switch.o#
+#           Command line  =  I:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\context-switch.s79 #
+#                            -OI:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\Obj\ #
+#                            -s+ -M<> -w+ -r -DBOARD_MB851                    #
+#                            -DPLATFORM_HEADER="hal/micro/cortexm3/compiler/iar.h" #
+#                            -DBOARD_HEADER="hal/micro/cortexm3/stm32w108/board.h" #
+#                            -DCORTEXM3 -DCORTEXM3_STM32W108                  #
+#                            -DPHY_STM32W108XX -DDISABLE_WATCHDOG             #
+#                            -D__SOURCEFILE__="context-switch.s79"            #
+#                            -LI:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\MB851_PLANET3\List\ #
+#                            -t2 --cpu Cortex-M3 --fpu None                   #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\hal\micro\cortexm3\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\simplemac\include\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\hal\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\HAL\MICRO\CORTEXM3\STM32W108\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\simplemac\ #
+#                            -II:\实验4 无线传感器节点多点通信实验\工程源代码\simplemac\demos\sample\..\..\..\shared\ #
+#                                                                             #
+###############################################################################
+
+    1                          //---------------------------------------------
+                               ---------------------------------
+    2                          // @file hal/micro/cortexm3/context-switch.s79
+    3                          // @brief Context save/restore for deep sleep
+                                using the PendSV exception.
+    4                          //
+    5                          // This file also contains a simple halInternal
+                               IdleSleep() function that
+    6                          // executes just the WFI instruction for idle
+                                sleeping.
+    7                          // 
+    8                          // When the STM32W108XX enters deep sleep, the
+                                hardware will actually remove power
+    9                          // from the Cortex-M3 core (in Deep Sleep 0,
+                                power is not removed but the core
+   10                          // is held in reset).  Since this will clear
+                                the internal state of the core, it
+   11                          // must be properly restored such that
+                                execution can resume from the sleep code.
+   12                          // The simplest and most secure mechanism to do
+                                this is to perform a context save
+   13                          // and restore.  Context save/restore is almost
+                                identical to a context switch
+   14                          // used in multi-threaded systems with the main
+                                difference being only one stack
+   15                          // pointer is used and the save/restore
+                                operations are disjoint.
+   16                          // 
+   17                          // When an interrupt is triggered in the
+                                STM32W108XX, the core automatically saves
+                                8
+   18                          // of the 16 CPU registers on the stack.  The
+                                ISR then only needs to save the
+   19                          // other 8 registers and store the resulting
+                                stack pointer.  Restoring is the
+   20                          // reverse operation where 8 registers are
+                                manually copied back with the other 8
+   21                          // being restored on the return from interrupt.
+   22                          // 
+   23                          // As its last act, the deep sleep code will
+                                trigger the PendSV exception to
+   24                          // perform a context save.  When the core is
+                                booted upon deep sleep exit, the
+   25                          // RESET_EVENT register informs cstartup if the
+                                chip just exited deep sleep.
+   26                          // Cstartup will then trigger halTriggerContext
+                               Restore which sets up the stack
+   27                          // pointer and trigger the PendSV exception to
+                                perform a restore.  When PendSV
+   28                          // returns from interrupt context the system
+                                will be back at the same point it
+   29                          // was before deep sleep.
+   30                          // 
+   31                          // 
+   32                          // <!--(C) COPYRIGHT 2010 STMicroelectronics.
+                                All rights reserved.        -->
+   33                          //---------------------------------------------
+                               ---------------------------------
+   34                          
+   35                          #include "compiler/asm.h"
+   36                          
+   37                          //---------------------------------------------
+                               ---------------------------------
+   38                          //   boolean halPendSvSaveContext
+   39                          //
+   40                          // A simple boolean flag used to indicate if a
+                                context save or a context restore
+   41                          // should be performed.  Since context
+                                switching is handled with the PendSV
+   42                          // interrupt, parameters cannot be passed into
+                                the ISR and as such this boolean
+   43                          // flag is used.  If this flag is zero, PendSV
+                                should perform a context restore.
+   44                          // If this flag is non-zero, PendSV should
+                                perform a context save.
+   45                          // Note: The smallest unit of storage is a
+                                single byte.
+   46                          //
+   47                          // NOTE: This flag must be set before PendSV is
+                                triggered!
+   48                          //---------------------------------------------
+                               ---------------------------------
+   49                                  __BSS__
+   50                                  __EXPORT__ halPendSvSaveContext
+   51                          halPendSvSaveContext:
+   52                                  __SPACE__ 1
+   53                          
+   54                          
+   55                          //---------------------------------------------
+                               ---------------------------------
+   56                          //   int32u savedMSP
+   57                          //
+   58                          // Private storage to hold the saved stack
+                                pointer.  This variable is only used
+   59                          // in this file and should not be extern'ed. 
+                                In our current design we
+   60                          // do not use real context switching, but only
+                                context saving and restoring.
+   61                          // As such, we only need to keep track of the
+                                Main Stack Pointer (MSP). This
+   62                          // variable is used to hold the MSP between a
+                                save and a restore.
+   63                          //---------------------------------------------
+                               ---------------------------------
+   64                                  __BSS__
+   65                                  __EXPORT__ savedMSP
+   66                          savedMSP:
+   67                                  __SPACE__ 4
+   68                          
+   69                          
+   70                          //---------------------------------------------
+                               ---------------------------------
+   71                          //   void halPendSvIsr(void)
+   72                          //
+   73                          // This ISR is installed by cstartup in the
+                                vector table for the PendSV
+   74                          // exception.  The purpose of this ISR is to
+                                either save the current context
+   75                          // and trigger sleeping through the 'WFI'
+                                instruction, or restore a
+   76                          // previous context.  The variable halPendSvSav
+                               eContext is used to
+   77                          // decide if a save or a restore is performed. 
+                                Since entering/exiting interrupt
+   78                          // context automatically saves/restores 8 of
+                                the 16 CPU registers on the stack
+   79                          // we need to manually save the other 8 onto
+                                the stack as well.
+   80                          //
+   81                          // When a context save is complete, the stack
+                                will have been expanded by 16
+   82                          // words with the current Stack Pointer stored
+                                in savedMSP.
+   83                          //
+   84                          // When a context restore is complete, the
+                                stack will have been shrunk by 16
+   85                          // words with the old context restored after
+                                the return instruction.
+   86                          //
+   87                          // NOTE: The IAR default handler name for
+                                PendSV, PendSV_Handler, is also
+   88                          //       instantiated here so it routes to the
+                                same code as the St
+   89                          //       name halPendSvIsr.
+   90                          //---------------------------------------------
+                               ---------------------------------
+   91                                  __CODE__
+   92                                  __THUMB__
+   93                                  __EXPORT__ PendSV_Handler
+   94                                  __EXPORT__ halPendSvIsr
+   95                          PendSV_Handler:
+   96                          halPendSvIsr:
+   97    00000000 0B48                 LDR  R0, =halPendSvSaveContext  //load
+                                                 the variable's address
+   98    00000002 0078                 LDRB R0, [R0]           //get the value
+                                                 in the variable
+   99    00000004 50B1                 CBZ  R0, contextRestore //if variable is
+                                                 zero, branch to contextRestore
+  100                          contextSave:
+  101    00000006 EFF30880             MRS  R0, MSP          //load the main
+                                                 stack pointer into R0
+  102    0000000A A0F12000             SUB  R0, R0, #0x20    //make room on the
+                                                 stack for 8 words (32
+                                                 bytes)
+  103    0000000E 80F30888             MSR  MSP, R0          //load new MSP
+                                                  from adjusted stack
+                                                  pointer
+  104    00000012 80E8F00F             STM  R0, {R4-R11}     //store R4-R11 (8
+                                                 words) onto the stack
+  105    00000016 0749                 LDR  R1, =savedMSP    //load address of
+                                                 savedMSP into R1
+  106    00000018 0860                 STR  R0, [R1]         //store the MSP
+                                                 into savedMSP
+  107    0000001A 30BF                 WFI                   //all saved,
+                                                              trigger deep
+                                                              sleep
+  108                                  // Even if we fall through the WFI
+                                instruction, we will immediately
+  109                                  // execute a context restore and end up
+                                where we left off with no
+  110                                  // ill effects.  Normally at this point
+                                the core will either be
+  111                                  // powered off or reset (depending on
+                                the deep sleep level).
+  112                          contextRestore:
+  113    0000001C 0548                 LDR  R0, =savedMSP    //load address of
+                                                 savedMSP into R0
+  114    0000001E 0068                 LDR  R0, [R0]         //load the MSP
+                                                 from savedMSP
+  115    00000020 90E8F00F             LDM  R0, {R4-R11}     //load R4-R11 (8
+                                                 words) from the stack
+  116    00000024 00F12000             ADD  R0, R0, #0x20    //eliminate the 8
+                                                 words (32 bytes) from the
+                                                 stack
+  117    00000028 80F30888             MSR  MSP, R0          //restore the MSP
+                                                  from R0
+  118    0000002C 7047                 BX   LR               //return to the
+                                                              old context
+  119                                  
+  120                                  
+  121                          //---------------------------------------------
+                               ---------------------------------
+  122                          //   void halTriggerContextRestore(void)
+  123                          //
+  124                          // Cstartup is responsible for triggering a
+                                context restore based upon the
+  125                          // RESET_EVENT register.  Since the stack
+                                pointer sits at the top of memory
+  126                          // after the core boots, cstartup cannot simply
+                                trigger a PendSV to restore
+  127                          // context as this will cause existing stack
+                                data to be over written.  Cstartup
+  128                          // disables interrupts, pends PendSV, and then
+                                calls this function. This
+  129                          // function simply configures the Stack Pointer
+                                to be past the previous data
+  130                          // such that when interrupts are enabled and
+                                PendSV fires it wont corrupt
+  131                          // previous data.
+  132                          //---------------------------------------------
+                               ---------------------------------
+  133                                  __CODE__
+  133.1  0000002E 0000                  TABLE
+  133.2  00000030 ........             Reference on line 97 
+  133.3  00000034 ........             Reference on line 105,113 
+  133.4                                RSEG (including table)
+  133                                  __CODE__
+  134                                  __THUMB__
+  135                                  __EXPORT__ halTriggerContextRestore
+  136                          halTriggerContextRestore:
+  137    00000000 0248                 LDR   R0, =savedMSP    //load address of
+                                                  savedMSP into R0
+  138    00000002 0068                 LDR   R0, [R0]         //load the MSP
+                                                  from savedMSP
+  139    00000004 80F30888             MSR   MSP, R0          //restore the MSP
+                                                   from R0
+  140    00000008 62B6                 CPSIE i                //enable
+                                                               interrupts and
+                                                               let PendSV
+                                                               fire
+  141    0000000A 7047                 BX    LR               //this return
+                                                               should never be
+                                                               triggered
+  142                                  
+  143                                  
+  144                          //---------------------------------------------
+                               ---------------------------------
+  145                          //   void halInternalIdleSleep(void)
+  146                          //
+  147                          // A simple internal function call (to be
+                                called from halSleep) for executing
+  148                          // the WFI instruction and entering the simple,
+                                idle sleep state.
+  149                          //---------------------------------------------
+                               ---------------------------------
+  150                                  __CODE__
+  150.1                                 TABLE
+  150.2  0000000C ........             Reference on line 137 
+  150.3                                RSEG (including table)
+  150                                  __CODE__
+  151                                  __THUMB__
+  152                                  __EXPORT__ halInternalIdleSleep
+  153                          halInternalIdleSleep:
+  154    00000000 30BF                 WFI                    //trigger idle
+                                                               sleep
+  155    00000002 7047                 BX   LR                //return
+  156                                  
+  157                                  __END__
+##############################
+#           CRC:0            #
+#        Errors:   0         #
+#        Warnings: 0         #
+#         Bytes: 81          #
+##############################
+
+
+
+

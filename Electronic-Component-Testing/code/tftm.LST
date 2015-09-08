@@ -1,0 +1,415 @@
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 1   
+
+
+C51 COMPILER V9.00, COMPILATION OF MODULE TFTM
+OBJECT MODULE PLACED IN tftm.OBJ
+COMPILER INVOKED BY: E:\软件\Keil C51 V9.00(推荐使用最新)\C51\BIN\C51.EXE tftm.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include<reg52.h>
+   2          #include"9325tp.h"
+   3          #include<math.h>
+   4          
+   5          /*-----------------------------------------------
+   6                            全局变量
+   7          -----------------------------------------------*/
+   8          /* LCD color */
+   9          #define White          0xFFFF
+  10          #define Black          0x0000
+  11          #define Blue2          0x051F
+  12          #define Red            0xF800
+  13          #define Magenta        0xF81F
+  14          #define Green          0x07E0
+  15          sbit DATA=P2^0;         //语音芯片的数据口
+  16          sbit RST=P2^3;          //语音芯片的复位口
+  17          extern void ILI9325_Initial();
+  18          extern void coordinate();
+  19          extern void printcurve(float ic,int ib);
+  20          extern void printtype(char n,int bmin,int bmax);
+  21          extern void printchip(int bmin);
+  22          extern void IniOTP();
+  23          extern void wait();
+  24          void delay_ms(unsigned int count)//语音芯片专用延时命令 建议不要改 不然语音芯片的延时全都需要重新修改
+  25          {
+  26   1          int i,j;                                                                                
+  27   1          for(i=0;i<count;i++)                                                                    
+  28   1             {
+  29   2                   for(j=0;j<260;j++);
+  30   2             }                                                                                     
+  31   1      }
+  32          /*------------------------------------------------
+  33                                主函数
+  34          ------------------------------------------------*/
+  35          void IniOTP()
+  36          {
+  37   1              RST=0;
+  38   1              delay_ms(2);
+  39   1      }
+  40          
+  41          //屏幕初始化函数
+  42          void coordinate()
+  43          { 
+  44   1              int i; //初始化LCD
+  45   1             CLR_Screen(White); //用背景色清屏
+  46   1              //建立坐标轴
+  47   1                               Line(20,295,230,295,Black);//x轴
+  48   1                   Line(20,295,20,15,Black);//y轴
+  49   1                               for(i=1;i<9;i++)
+  50   1                     Line(20+22*i,295,20+22*i,290,Black);//x轴单位长度
+  51   1                                      for(i=1;i<11;i++)
+  52   1                                        Line(20,295-27*i,27,295-27*i,Black);//Y轴单位长度
+  53   1                                              for(i=1;i<9;i++)
+  54   1                                              {
+  55   2                      LCD_PutChar8x16(18+22*i,302,i+'0',Blue2,White);
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 2   
+
+  56   2                                              LCD_PutChar8x16(8,285-27*i,i+'0',Blue2,White);
+  57   2                                              }
+  58   1                                              LCD_PutString(8,285-27*9,"9",Blue2,White);
+  59   1                                              LCD_PutString(1,290-27*10,"10",Blue2,White);
+  60   1                                              LCD_PutString(16,298,"0",Blue2,White);
+  61   1                              for(i=1;i<6;i++)
+  62   1                                        {Put_pixel(20+i,15+i,Black);
+  63   2                                               Put_pixel(20-i,15+i,Black);
+  64   2                                               Put_pixel(230-i,295+i,Black);
+  65   2                                               Put_pixel(230-i,295-i,Black);
+  66   2                                       }
+  67   1               LCD_PutString(200,300,"Uce/V",Green,White);
+  68   1               LCD_PutString(0,0,"Ic/mA",Green,White);
+  69   1      }
+  70          
+  71          //输出特性曲线函数
+  72          void printcurve(float ic,int ib)
+  73          {
+  74   1      int j,k;
+  75   1                                           k=(27*ic-1)/(log(22*1.3));
+  76   1                                          //  Line(20,295,21,295-k*(log(1)+1),Red);//先画出原点到第一个点的线
+  77   1                                                      for(j=21;j<20+22*1.3;j++)
+  78   1                                                         Line(j,295-k*(log((j-20)+1)),j+1,295-k*(log((j-19)+1)),Red);
+  79   1                                          Line(48.6,295-ic*26.5,180,295-ic*26.5,Red); 
+  80   1                                              switch(ib)
+  81   1                                               {
+  82   2                                               case 20:
+  83   2                                               LCD_PutString(180,287-ic*26.5,"Ib=20uA",Black,White);
+  84   2                                               break;
+  85   2                                               case 30:
+  86   2                                               LCD_PutString(180,287-ic*26.5,"Ib=30uA",Black,White);
+  87   2                                               break;
+  88   2                                               case 40:
+  89   2                                               LCD_PutString(180,287-ic*26.5,"Ib=40uA",Black,White);
+  90   2                                               break;
+  91   2                                       }
+  92   1      }
+  93          
+  94          //语音播报测试函数DATA和RST要定义IO口
+  95          void OTPT(int n)
+  96          {
+  97   1              RST=1;
+  98   1              delay_ms(2);
+  99   1              RST=0;
+ 100   1              delay_ms(2);
+ 101   1              while(n>0)
+ 102   1              {
+ 103   2                DATA=1;
+ 104   2                delay_ms(1);
+ 105   2                      DATA=0;
+ 106   2                      delay_ms(1);
+ 107   2                      n--;
+ 108   2        }
+ 109   1      }
+ 110          void sb(int bmin)//播报放大倍数
+ 111          {
+ 112   1      int a,b,c;
+ 113   1              a=bmin/100;
+ 114   1              b=(bmin-a*100)/10;
+ 115   1              c=bmin%10;
+ 116   1              if(a==0)
+ 117   1              {       OTPT(20);
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 3   
+
+ 118   2                      delay_ms(1000);
+ 119   2                      OTPT(b+2);
+ 120   2                      delay_ms(330);
+ 121   2                      OTPT(c+2);
+ 122   2                      delay_ms(1000); 
+ 123   2                      IniOTP()  ;
+ 124   2              }
+ 125   1              else
+ 126   1              {   OTPT(20);
+ 127   2                      delay_ms(1000);
+ 128   2                      OTPT(a+2);
+ 129   2                      delay_ms(300);
+ 130   2                      OTPT(b+2);
+ 131   2                      delay_ms(330);
+ 132   2                      OTPT(c+2);
+ 133   2                      delay_ms(1000); 
+ 134   2                      IniOTP();
+ 135   2              }
+ 136   1      }
+ 137          void printtype(char n,int bmin,int bmax)//输出 NPN还是PNP 同时输出B的范围 要区分大小
+ 138          {
+ 139   1              
+ 140   1              char s[3];int a,b,c; char s1[2];
+ 141   1              a=bmin/100;
+ 142   1              b=(bmin-a*100)/10;
+ 143   1              c=bmin%10;
+ 144   1              
+ 145   1              s[0]=a+'0';
+ 146   1              s[1]=b+'0';
+ 147   1              s[2]=c+'0';
+ 148   1              if(a==0)
+ 149   1              {s1[0]=s[1];s1[1]=s[2];
+ 150   2                      LCD_PutString(105,10,"B=",Magenta,White);
+ 151   2                LCD_PutString(130,10,s1,Magenta,White);
+ 152   2              }
+ 153   1              else
+ 154   1              {       LCD_PutString(105,10,"B=",Magenta,White);
+ 155   2                LCD_PutString(122,10,s,Magenta,White);
+ 156   2              }
+ 157   1              
+ 158   1              a=bmax/100;
+ 159   1              b=(bmax-a*100)/10;
+ 160   1              c=bmax%10;
+ 161   1      
+ 162   1              s[0]=a+'0';
+ 163   1              s[1]=b+'0';
+ 164   1              s[2]=c+'0';
+ 165   1              if(a==0)
+ 166   1              {s1[0]=s[1];s1[1]=s[2];
+ 167   2               LCD_PutString(148,10,"--",Magenta,White);
+ 168   2               LCD_PutString(164,10,s1,Magenta,White);
+ 169   2              }
+ 170   1              else{
+ 171   2              LCD_PutString(148,10,"--",Magenta,White);
+ 172   2              LCD_PutString(164,10,s,Magenta,White);}
+ 173   1              if(n=='N')
+ 174   1              {LCD_PutString(60,10,"NPN",Magenta,White);
+ 175   2                      sb(bmin);//播放放大倍数
+ 176   2                      IniOTP()  ;
+ 177   2                      sb(bmax);
+ 178   2                      IniOTP() ;
+ 179   2                      OTPT(16);
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 4   
+
+ 180   2                      delay_ms(400);
+ 181   2                      OTPT(12);
+ 182   2                      delay_ms(180);
+ 183   2                      OTPT(13);
+ 184   2                      delay_ms(180);
+ 185   2                      OTPT(12);
+ 186   2                      delay_ms(180);
+ 187   2                      OTPT(17);
+ 188   2                      delay_ms(240);
+ 189   2                      OTPT(19);
+ 190   2                      delay_ms(2000);  
+ 191   2                      IniOTP() ;
+ 192   2                      /* 输出 "这是NPN型三极管"
+ 193   2                      IniOTP()
+ 194   2      //                */  
+ 195   2              
+ 196   2              }
+ 197   1              else
+ 198   1              {
+ 199   2                      LCD_PutString(60,10,"PNP",Magenta,White);
+ 200   2                      sb(bmin);//播放放大倍数
+ 201   2                      IniOTP()   ;
+ 202   2                      sb(bmax);
+ 203   2                      IniOTP()  ;
+ 204   2                      OTPT(16);
+ 205   2                      delay_ms(400);
+ 206   2                      OTPT(13);
+ 207   2                      delay_ms(180);
+ 208   2                      OTPT(12);
+ 209   2                      delay_ms(180);
+ 210   2                      OTPT(13);
+ 211   2                      delay_ms(180);
+ 212   2                      OTPT(17);
+ 213   2                      delay_ms(240);
+ 214   2                      OTPT(19);
+ 215   2                      delay_ms(2000); 
+ 216   2                      IniOTP();/* 输出 "这是NPN型三极管"      */
+ 217   2              }
+ 218   1      }
+ 219          void sbc(int bmin)//播报芯片类型
+ 220          {
+ 221   1              //74 LS 245 04  373 74HC377 74HC00 74HC08  00 04 08 32 86 245 
+ 222   1              switch(bmin)
+ 223   1              {
+ 224   2                      case 0:
+ 225   2                              OTPT(9);
+ 226   2                              delay_ms(330);
+ 227   2                              OTPT(6);
+ 228   2                              delay_ms(330);
+ 229   2                              OTPT(14);
+ 230   2                              delay_ms(330);
+ 231   2                              OTPT(15);
+ 232   2                              delay_ms(330);
+ 233   2                              OTPT(2);
+ 234   2                              delay_ms(330);
+ 235   2                              OTPT(2);
+ 236   2                              delay_ms(330);
+ 237   2                              OTPT(18);
+ 238   2                        delay_ms(2500); IniOTP()  ;
+ 239   2                              break;
+ 240   2                      case 4:
+ 241   2                              OTPT(9);
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 5   
+
+ 242   2                              delay_ms(330);
+ 243   2                              OTPT(6);
+ 244   2                              delay_ms(330);
+ 245   2                              OTPT(14);
+ 246   2                              delay_ms(330);
+ 247   2                              OTPT(15);
+ 248   2                              delay_ms(330);
+ 249   2                              OTPT(2);
+ 250   2                              delay_ms(330);
+ 251   2                              OTPT(6);
+ 252   2                              delay_ms(330);
+ 253   2                              OTPT(18);
+ 254   2                        delay_ms(2500);  IniOTP()  ;
+ 255   2                              break;
+ 256   2                      case 5:
+ 257   2                              OTPT(9);
+ 258   2                              delay_ms(330);
+ 259   2                              OTPT(6);
+ 260   2                              delay_ms(330);
+ 261   2                              OTPT(14);
+ 262   2                              delay_ms(330);
+ 263   2                              OTPT(15);
+ 264   2                              delay_ms(330);
+ 265   2                              OTPT(4);
+ 266   2                              delay_ms(330);
+ 267   2                              OTPT(6);
+ 268   2                              delay_ms(330);
+ 269   2                              OTPT(7);
+ 270   2                              delay_ms(330);
+ 271   2                              OTPT(18);
+ 272   2                        delay_ms(2500);        IniOTP()  ;
+ 273   2                              break;
+ 274   2                      case 8:
+ 275   2                              OTPT(9);
+ 276   2                              delay_ms(330);
+ 277   2                              OTPT(6);
+ 278   2                              delay_ms(330);
+ 279   2                              OTPT(14);
+ 280   2                              delay_ms(330);
+ 281   2                              OTPT(15);
+ 282   2                              delay_ms(330);
+ 283   2                              OTPT(2);
+ 284   2                              delay_ms(330);
+ 285   2                              OTPT(10);
+ 286   2                              delay_ms(330);
+ 287   2                        OTPT(18);
+ 288   2                        delay_ms(2500);  IniOTP()  ;
+ 289   2                              break;
+ 290   2                      case 2:
+ 291   2                              OTPT(9);
+ 292   2                              delay_ms(330);
+ 293   2                              OTPT(6);
+ 294   2                              delay_ms(330);
+ 295   2                              OTPT(14);
+ 296   2                              delay_ms(330);
+ 297   2                              OTPT(15);
+ 298   2                              delay_ms(330);
+ 299   2                              OTPT(5);
+ 300   2                              delay_ms(330);
+ 301   2                              OTPT(4);
+ 302   2                              delay_ms(330); 
+ 303   2                        OTPT(18);
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 6   
+
+ 304   2                        delay_ms(2500);         IniOTP()  ;
+ 305   2                              break;
+ 306   2                      case 6:
+ 307   2                              OTPT(9);
+ 308   2                              delay_ms(330);
+ 309   2                              OTPT(6);
+ 310   2                              delay_ms(330);
+ 311   2                              OTPT(14);
+ 312   2                              delay_ms(330);
+ 313   2                              OTPT(15);
+ 314   2                              delay_ms(330);
+ 315   2                              OTPT(10);
+ 316   2                              delay_ms(330);
+ 317   2                              OTPT(8);
+ 318   2                              delay_ms(330);
+ 319   2                        OTPT(18);
+ 320   2                        delay_ms(2500);       IniOTP()  ;
+ 321   2                              break;
+ 322   2              }
+ 323   1              
+ 324   1              
+ 325   1              
+ 326   1      }
+ 327          void printchip(int bmin)
+ 328          { 
+ 329   1              
+ 330   1              CLR_Screen(White); //用背景色清屏
+ 331   1              LCD_PutString(56,160,"7 4 H C ",Magenta,White);
+ 332   1              switch(bmin)
+ 333   1              {
+ 334   2                      case 0:
+ 335   2                              LCD_PutString(120,160,"0 0",Magenta,White);
+ 336   2                              break;
+ 337   2                      case 4:
+ 338   2                              LCD_PutString(120,160,"0 4",Magenta,White);
+ 339   2                              break;
+ 340   2                      case 5:
+ 341   2                              LCD_PutString(120,160,"2 4 5",Magenta,White);
+ 342   2                              break;
+ 343   2                      case 8:
+ 344   2                              LCD_PutString(120,160,"0 8",Magenta,White);
+ 345   2                              break;
+ 346   2                      case 2:
+ 347   2                              LCD_PutString(120,160,"3 2",Magenta,White);
+ 348   2                              break;
+ 349   2                      case 6:
+ 350   2                              LCD_PutString(120,160,"8 6",Magenta,White);
+ 351   2                              break;
+ 352   2              }
+ 353   1              sbc(bmin);                 IniOTP()  ;
+ 354   1      
+ 355   1      }
+ 356          void wait()
+ 357          {
+ 358   1              LCD_PutString(37,140,"if you want to test",Magenta,White);
+ 359   1              LCD_PutString(10,167,"please put the determinand",Magenta,White);
+ 360   1              LCD_PutString(40,190,"then press the key",Magenta,White);
+ 361   1      }
+ 362          
+ 363          
+ 364          
+ 365          
+C51 COMPILER V9.00   TFTM                                                                  11/10/2013 19:27:04 PAGE 7   
+
+ 366          /*main()
+ 367          { 
+ 368                  
+ 369            IniTFT();
+ 370                  printcurve(3,40);
+ 371                  printtype('N',43,133);
+ 372          
+ 373            while(1)
+ 374                 {
+ 375                       }
+ 376           
+ 377          }*/
+ 378          
+ 379          
+ 380          
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   2388    ----
+   CONSTANT SIZE    =    158    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----      36
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

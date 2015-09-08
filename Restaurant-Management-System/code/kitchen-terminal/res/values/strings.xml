@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">boteli</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+	<string name="dish_name">菜名：</string>
+	<string name="dish_num">数量：</string>
+	<string name="dish_wait">等待</string>
+	<string name="dish_begin">开始</string>
+	<string name="dish_finish">结束</string>
+	<string name="dish_full">充足</string>
+	<string name="dish_empty">不足</string>
+	<string name="dish_stuff">素材：</string>
+	<string name="dish_state">状态：</string>
+	<string name="table_id">桌号：</string>
+	<string name="app_title">未做完菜</string>
+	<string name="app_title2">已做完菜</string>
+	<string name="set">设置</string>
+	<string name="link">连接</string>
+	<string name="sort">分类</string>
+	<string name="recipe">菜单</string>
+	<string name="back">返回</string>
+	<string name="delete">删除</string>
+	<string name="fullget">全选</string>
+	<string name="stuffstore">食料储备</string>
+</resources>

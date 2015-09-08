@@ -1,0 +1,49 @@
+BEGIN{
+for(z=0;z<100;z++)
+for(i=0;i<241;i++)
+{
+to[z][i]=-1;
+arr[z][i]=0.0;
+}
+}
+{
+if($1!="-i")
+	no=$1;
+i=$2;
+o=$4;
+e=$8;
+arr[no][i]=$8;
+to[no][i]=o;
+}
+END {
+
+for(z=0;z<no+1;z++)
+{flag=1;
+for(i=1;i<241;i++)
+	if(to[z][i]==-1)
+	to[z][i]=0;
+while(flag==1)
+{
+flag=0;
+for(i=1;i<241;i++)
+{
+tmp=i;
+while(to[z][to[z][tmp]]!=-1)
+{
+arr[z][tmp]+=arr[z][to[z][tmp]];
+to[z][tmp]=to[z][to[z][tmp]];
+}
+if(to[z][i]!=0)
+flag=1;
+}
+}
+sum=0;
+for(i=1;i<241;i++)
+	if(arr[z][i]<=0)
+	sum-=arr[z][i];
+	else
+	sum+=arr[z][i];
+printf("%d %.9f\n", z+1, sum/240);
+}
+}
+

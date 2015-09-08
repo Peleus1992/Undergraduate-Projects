@@ -1,0 +1,12 @@
+Project Name: Common Electronic Component Testing Equipment
+Date: 06/2013-07/2013
+Team Member: Zhou Rongxin, Guo Weidong
+Objective: Design data acquisition and man-machine interaction modules to identify transistors’ types and the common 74HC series chips
+
+Directories:
+./code
+Open source code for transistor testing module, 74HC series testing module, display module, voice broadcast module and main control module.
+./materials
+All the references and circuit graphs are in this directory. ./materials/Report(Chinese) is the final report of this project.
+./pictures:
+The real pictures of the device.
