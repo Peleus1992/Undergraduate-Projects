@@ -1,0 +1,10 @@
+Project Name: Mailbox based on Hadoop
+Date: 11/2014-04/2015
+Team Member: Guo Weidong
+Objective: Design a e-mail box. Build it on Hadoop which is a distributed big data analysis frameword. By implementing the project on Hadoop, mailbox can achieve high scalability, high availability, high performance.
+
+./code
+Open source code for mailbox. ./code/src is the back-end program in Java to write and read HBase which is a distributed database and HDFS which is a distributed file system; ./code/WebRoot is the front-end program in HTML/Javascript to display the mailbox and provide UI.
+./demonstration.wmv
+The video shows this project.
+
